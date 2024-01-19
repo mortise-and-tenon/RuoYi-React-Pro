@@ -12,7 +12,7 @@ const nextConfig = {
         fallback: [
           {
             source: "/api/:path*",
-            destination: `http://localhost:8080/:path*`,
+            destination: `http://vue.ruoyi.vip/prod-api/:path*`,
           },
         ],
       };
