@@ -6,7 +6,7 @@ import AuthProvider from "./authProvider";
 
 export const metadata: Metadata = {
   title: "MorTnon RuoYi",
-  description: "MorTnon 的高级 RuoYi 前台",
+  description: "MorTnon 版本高级 RuoYi 前台",
 };
 
 export default function RootLayout({
