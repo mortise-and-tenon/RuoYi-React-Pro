@@ -1,18 +1,37 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+## 项目创建来源
 
-First, run the development server:
+- 基于 [Next.js](https://nextjs.org/) 创建项目
+
+```bash
+npm create-next-app
+```
+
+- 引入 [Antd](https://ant-design.antgroup.com/docs/react/use-with-next-cn)
+
+```bash
+npm install antd --save
+```
+
+- 引入 [Antd Pro Components](https://procomponents.ant.design/docs)
+
+```bash
+npm i @ant-design/pro-components --save
+```
+
+```bash
+npm i @emotion/react
+```
+
+## 项目相关命令
+
+- 启动项目
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 访问 [http://localhost:3000](http://localhost:3000)
+
+
 

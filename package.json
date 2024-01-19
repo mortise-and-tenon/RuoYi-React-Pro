@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.0",
+    "@ant-design/pro-components": "^2.6.48",
+    "@emotion/css": "^11.11.2",
+    "@emotion/react": "^11.11.3",
     "antd": "^5.13.1",
     "next": "14.1.0",
     "react": "^18",
