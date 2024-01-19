@@ -1,27 +1,34 @@
 "use client";
 
-import type { ProSettings } from "@ant-design/pro-components";
-import { PageContainer, ProCard, ProLayout } from "@ant-design/pro-components";
 import {
   GithubFilled,
   InfoCircleFilled,
   PlusCircleFilled,
   QuestionCircleFilled,
-  SearchOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
+import type { ProSettings } from "@ant-design/pro-components";
+import { ProLayout } from "@ant-design/pro-components";
 
-import { Input, Button } from "antd";
+import { Input } from "antd";
 
 import Link from "next/link";
 
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../authProvider";
 import defaultProps from "./_defaultProps";
-import { useState } from "react";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isLogin = useContext(AuthContext);
+
+  useEffect(() => {
+    console.log("login:", isLogin);
+  }, []);
+
   const [pathname, setPathname] = useState("/index");
 
   const settings: ProSettings | undefined = {
@@ -55,7 +62,7 @@ export default function RootLayout({
       actionsRender={(props) => {
         if (props.isMobile) return [];
         return [
-          props.layout !== "side" && document.body.clientWidth > 1400 ? (
+          props.layout !== "side" ? (
             <div
               key="SearchOutlined"
               aria-hidden
@@ -107,13 +114,13 @@ export default function RootLayout({
               paddingBlockStart: 12,
             }}
           >
-            <div>©2024 Mortnon.</div>
+            <div>©{new Date().getFullYear()} Mortnon.</div>
           </div>
         );
       }}
       {...settings}
     >
-      <PageContainer>{children}</PageContainer>
+      {children}
     </ProLayout>
   );
 }

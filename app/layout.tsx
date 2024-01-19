@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "./normalize.css";
+import { createContext } from "react";
+import AuthProvider from "./authProvider";
 
 export const metadata: Metadata = {
   title: "MorTnon RuoYi",
@@ -12,11 +14,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   return (
     <html lang="en">
       <body>
-        <AntdRegistry>{children}</AntdRegistry></body>
+        <AuthProvider>
+          <AntdRegistry>{children}</AntdRegistry>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
