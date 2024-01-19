@@ -1,7 +1,10 @@
+import { Button } from "antd";
 
 
 export default function Home() {
   return (
-    <main>Hello</main>
+    <div className="App">
+    <Button type="primary">Button</Button>
+  </div>
   );
 }
