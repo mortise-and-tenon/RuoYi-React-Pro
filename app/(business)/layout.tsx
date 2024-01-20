@@ -2,8 +2,11 @@
 
 import { Tooltip } from "@/node_modules/antd/es/index";
 import {
-  GithubOutlined, LogoutOutlined, QuestionCircleFilled,
-  SearchOutlined, UserOutlined
+  GithubOutlined,
+  LogoutOutlined,
+  QuestionCircleFilled,
+  SearchOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
 import { ProLayout } from "@ant-design/pro-components";
@@ -30,31 +33,32 @@ export default function RootLayout({
 
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
+    console.log("loginxx:", isLogin);
     if (!isLogin) {
       push("/login");
     }
     getProfile();
   }, [isLogin]);
 
-  //是否展示搜索框 
-  const [showSearch,setShowSearch] = useState(false);
+  //是否展示搜索框
+  const [showSearch, setShowSearch] = useState(false);
 
   //用户下拉菜单点击操作
   const onActionClick: MenuProps["onClick"] = ({ key }) => {
     if (key === "logout") {
       console.log("logout");
       logout();
-    }else if(key === "profile"){
+    } else if (key === "profile") {
       console.log("profile");
       push("/user/profile");
     }
   };
 
   //用户昵称
-  const [userInfo,setUserInfo] = useState({} as UserInfo);
+  const [userInfo, setUserInfo] = useState({nickName:"Monrtnon",avatar: "./avatar1.jpeg"} as UserInfo);
 
   //获取用户信息
-  const getProfile = async ()=>{
+  const getProfile = async () => {
     try {
       const response = await fetch("/api/getInfo", {
         method: "GET",
@@ -68,10 +72,10 @@ export default function RootLayout({
         const data = await response.json();
 
         if (data.code == 200) {
-          const userInfo:UserInfo = {
+          const userInfo: UserInfo = {
             nickName: data.user.nickName,
             avatar: data.user.sex === "1" ? "avatar1.jpeg" : "avatar0.jpeg",
-          }
+          };
 
           setUserInfo(userInfo);
         }
@@ -81,7 +85,7 @@ export default function RootLayout({
     } catch (error) {
     } finally {
     }
-  }
+  };
 
   //退出登录
   const logout = async () => {
@@ -148,7 +152,7 @@ export default function RootLayout({
                     label: "个人中心",
                   },
                   {
-                    type: 'divider',
+                    type: "divider",
                   },
                   {
                     key: "logout",
@@ -179,31 +183,32 @@ export default function RootLayout({
                 console.log("search click");
                 e.stopPropagation();
                 e.preventDefault();
-                setShowSearch(!showSearch);
               }}
             >
               <SearchOutlined
                 style={{
                   color: "var(--ant-primary-color)",
                 }}
+                onClick={() => setShowSearch(!showSearch)}
               />
               {showSearch && (
-              <Input
-                style={{
-                  borderRadius: 4,
-                  marginInlineEnd: 12,
-                  backgroundColor: "rgba(0,0,0,0.03)",
-                }}
-                prefix={
-                  <SearchOutlined
-                    style={{
-                      color: "rgba(0, 0, 0, 0.15)",
-                    }}
-                  />
-                }
-                placeholder="搜索"
-                variant="borderless"
-              />)}
+                <Input
+                  style={{
+                    borderRadius: 4,
+                    marginInlineEnd: 12,
+                    backgroundColor: "rgba(0,0,0,0.03)",
+                  }}
+                  prefix={
+                    <SearchOutlined
+                      style={{
+                        color: "rgba(0, 0, 0, 0.15)",
+                      }}
+                    />
+                  }
+                  placeholder="搜索"
+                  variant="borderless"
+                />
+              )}
             </div>
           ) : undefined,
           <Link
@@ -216,14 +221,14 @@ export default function RootLayout({
             </Tooltip>
           </Link>,
           <Link
-          key="question"
-          href="https://doc.ruoyi.vip/ruoyi-vue/"
-          target="_blank"
-        >
-          <Tooltip title="RuoYi 文档">
-            <QuestionCircleFilled style={{ color: "gray" }} />
-          </Tooltip>
-        </Link>,
+            key="question"
+            href="https://doc.ruoyi.vip/ruoyi-vue/"
+            target="_blank"
+          >
+            <Tooltip title="RuoYi 文档">
+              <QuestionCircleFilled style={{ color: "gray" }} />
+            </Tooltip>
+          </Link>,
         ];
       }}
       menuFooterRender={(props) => {
