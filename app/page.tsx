@@ -14,7 +14,7 @@ import { Spin, Flex } from "antd";
 
 import Link from "next/link";
 
-import { useEffect, useState,useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useRouter } from "next/navigation";
 
 import { AuthContext } from "./authProvider";
@@ -23,9 +23,10 @@ import styles from "./page.module.css";
 
 export default function Home() {
   const { push } = useRouter();
-  const isLogin = useContext(AuthContext);
+  const {isLogin} = useContext(AuthContext);
 
   useEffect(() => {
+    console.log("login:", isLogin);
     if (!isLogin) {
       push("/login");
     } else {
