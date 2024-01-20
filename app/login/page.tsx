@@ -61,8 +61,6 @@ export default function Login() {
 
   const router = useRouter();
 
-  const [messageApi, contextHolder] = message.useMessage();
-
   //提交登录
   const userLogin = async (values) => {
     const loginData: LoginReq = {

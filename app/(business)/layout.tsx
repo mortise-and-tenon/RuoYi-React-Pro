@@ -1,17 +1,14 @@
 "use client";
 
+import { Tooltip } from "@/node_modules/antd/es/index";
 import {
-  GithubFilled,
-  InfoCircleFilled,
-  PlusCircleFilled,
-  QuestionCircleFilled,
-  SearchOutlined,
-  LogoutOutlined,
+  GithubOutlined, LogoutOutlined, QuestionCircleFilled,
+  SearchOutlined, UserOutlined
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
 import { ProLayout } from "@ant-design/pro-components";
 
-import { Input, Dropdown, MenuProps } from "antd";
+import { Dropdown, Input, MenuProps } from "antd";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,37 +16,50 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../authProvider";
 import defaultProps from "./_defaultProps";
 
+import "./styles.css";
+import { UserInfo } from "../_modules/definies";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const { push } = useRouter();
-  const { isLogin,setIsLogin,userToken, setUserToken } = useContext(AuthContext);
+  const { isLogin, setIsLogin, userToken, setUserToken } =
+    useContext(AuthContext);
 
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
     if (!isLogin) {
       push("/login");
     }
+    getProfile();
   }, [isLogin]);
 
+  //是否展示搜索框 
+  const [showSearch,setShowSearch] = useState(false);
 
   //用户下拉菜单点击操作
   const onActionClick: MenuProps["onClick"] = ({ key }) => {
     if (key === "logout") {
       console.log("logout");
       logout();
+    }else if(key === "profile"){
+      console.log("profile");
+      push("/user/profile");
     }
   };
 
-  const logout = async () => {
+  //用户昵称
+  const [userInfo,setUserInfo] = useState({} as UserInfo);
+
+  //获取用户信息
+  const getProfile = async ()=>{
     try {
-      const response = await fetch("/api/logout", {
-        method: "POST",
+      const response = await fetch("/api/getInfo", {
+        method: "GET",
         headers: {
-          "Authorization": "Bearer " + userToken,
+          Authorization: "Bearer " + userToken,
         },
         credentials: "include",
       });
@@ -57,10 +67,37 @@ export default function RootLayout({
       if (response.ok) {
         const data = await response.json();
 
-        console.log("resp:", data);
+        if (data.code == 200) {
+          const userInfo:UserInfo = {
+            nickName: data.user.nickName,
+            avatar: data.user.sex === "1" ? "avatar1.jpeg" : "avatar0.jpeg",
+          }
+
+          setUserInfo(userInfo);
+        }
+      } else {
+        const data = await response.json();
+      }
+    } catch (error) {
+    } finally {
+    }
+  }
+
+  //退出登录
+  const logout = async () => {
+    try {
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + userToken,
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
 
         if (data.code == 200) {
-
           setIsLogin(false);
           setUserToken("");
         }
@@ -72,6 +109,7 @@ export default function RootLayout({
     }
   };
 
+  //默认当前展示首页
   const [pathname, setPathname] = useState("/index");
 
   const settings: ProSettings | undefined = {
@@ -96,14 +134,22 @@ export default function RootLayout({
         pathname,
       }}
       avatarProps={{
-        src: "https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg",
+        src: `./${userInfo.avatar}`,
         size: "small",
-        title: "Mortnon",
+        title: `${userInfo.nickName}`,
         render: (props, dom) => {
           return (
             <Dropdown
               menu={{
                 items: [
+                  {
+                    key: "profile",
+                    icon: <UserOutlined />,
+                    label: "个人中心",
+                  },
+                  {
+                    type: 'divider',
+                  },
                   {
                     key: "logout",
                     icon: <LogoutOutlined />,
@@ -128,13 +174,20 @@ export default function RootLayout({
               style={{
                 display: "flex",
                 alignItems: "center",
-                marginInlineEnd: 24,
               }}
               onMouseDown={(e) => {
+                console.log("search click");
                 e.stopPropagation();
                 e.preventDefault();
+                setShowSearch(!showSearch);
               }}
             >
+              <SearchOutlined
+                style={{
+                  color: "var(--ant-primary-color)",
+                }}
+              />
+              {showSearch && (
               <Input
                 style={{
                   borderRadius: 4,
@@ -148,20 +201,29 @@ export default function RootLayout({
                     }}
                   />
                 }
-                placeholder="搜索方案"
+                placeholder="搜索"
                 variant="borderless"
-              />
-              <PlusCircleFilled
-                style={{
-                  color: "var(--ant-primary-color)",
-                  fontSize: 24,
-                }}
-              />
+              />)}
             </div>
           ) : undefined,
-          <InfoCircleFilled key="InfoCircleFilled" />,
-          <QuestionCircleFilled key="QuestionCircleFilled" />,
-          <GithubFilled key="GithubFilled" />,
+          <Link
+            key="github"
+            href="https://github.com/mortise-and-tenon/RuoYi-React-Pro"
+            target="_blank"
+          >
+            <Tooltip title="Github 源码仓库">
+              <GithubOutlined style={{ color: "gray" }} />
+            </Tooltip>
+          </Link>,
+          <Link
+          key="question"
+          href="https://doc.ruoyi.vip/ruoyi-vue/"
+          target="_blank"
+        >
+          <Tooltip title="RuoYi 文档">
+            <QuestionCircleFilled style={{ color: "gray" }} />
+          </Tooltip>
+        </Link>,
         ];
       }}
       menuFooterRender={(props) => {

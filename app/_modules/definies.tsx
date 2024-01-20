@@ -5,3 +5,9 @@ export type LoginReq = {
     code: string,
     uuid: string
 }
+
+//用户简单信息
+export type UserInfo = {
+    nickName:string,
+    avatar: string,
+}
