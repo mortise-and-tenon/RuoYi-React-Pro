@@ -11,6 +11,9 @@ import {
   MenuOutlined,
   MonitorOutlined,
   ToolOutlined,
+  EditOutlined,
+  MessageOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
 import { PageContainer, ProLayout } from "@ant-design/pro-components";
@@ -21,7 +24,26 @@ import { Dropdown, Input, MenuProps } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import defaultProps from "./_defaultProps";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faUsers,
+  faGear,
+  faList,
+  faSitemap,
+  faAddressCard,
+  faBookAtlas,
+  faReceipt,
+  faRectangleList,
+  faChalkboardUser,
+  faThumbtack,
+  faFileWaveform,
+  faDesktop,
+  faDatabase,
+  faMemory,
+  faLocationArrow,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { RouteInfo, UserInfo } from "../_modules/definies";
 import "./styles.css";
@@ -121,46 +143,73 @@ export default function RootLayout({
     }
   };
 
+  //图标映射
   const IconMap = {
-    system: <HomeOutlined />,
-    monitor:<MonitorOutlined />,
-    toole: <ToolOutlined />,
-    guide: <ChromeFilled/>,
+    system: <FontAwesomeIcon icon={faGear} />,
+    monitor: <MonitorOutlined />,
+    tool: <ToolOutlined />,
+    guide: <FontAwesomeIcon icon={faLocationArrow} />,
     user: <UserOutlined />,
-    
+    peoples: <FontAwesomeIcon icon={faUsers} />,
+    treetable: <FontAwesomeIcon icon={faList} />,
+    tree: <FontAwesomeIcon icon={faSitemap} />,
+    post: <FontAwesomeIcon icon={faAddressCard} />,
+    dict: <FontAwesomeIcon icon={faBookAtlas} />,
+    edit: <EditOutlined />,
+    message: <MessageOutlined />,
+    log: <BookOutlined />,
+    online: <FontAwesomeIcon icon={faChalkboardUser} />,
+    job: <FontAwesomeIcon icon={faThumbtack} />,
+    druid: <FontAwesomeIcon icon={faFileWaveform} />,
+    server: <FontAwesomeIcon icon={faDesktop} />,
+    redis: <FontAwesomeIcon icon={faDatabase} />,
+    redislist: <FontAwesomeIcon icon={faMemory} />,
+    form: <FontAwesomeIcon icon={faRectangleList} />,
+    logininfor: <FontAwesomeIcon icon={faReceipt} />,
   };
 
   //获取菜单
   const getRoutes = async () => {
     const body = await fetchApi("/api/getRouters");
     const rootChildren: Array<RouteInfo> = new Array<RouteInfo>();
+
+    const indexRoute: RouteInfo = {
+      path: "/index",
+      name: "首页",
+      icon: <HomeOutlined />,
+    };
+
+    rootChildren.push(indexRoute);
+
     if (body.data && body.data.length > 0) {
       body.data.forEach((menu) => {
         const route: RouteInfo = {
           path: menu.meta.link !== null ? menu.meta.link : menu.path,
           name: menu.meta.title,
-          icon: menu.meta.icon !== null ? IconMap[menu.meta.icon as 'system'] : <MenuOutlined />,
+          icon:
+            menu.meta.icon !== null ? (
+              IconMap[menu.meta.icon.replace(/-/g,'') as "system"]
+            ) : (
+              <MenuOutlined />
+            ),
         };
 
         if (menu.children && menu.children.length > 0) {
           getSubMenu(route, menu.children);
         }
         rootChildren.push(route);
-
       });
-
     }
 
-    const bookHub:RouteInfo = {
+    const bookHub: RouteInfo = {
       path: "https://docs.bookhub.tech",
       name: "BookHub 网站",
-      icon: <ChromeFilled/>,
-    }
-
-    console.log("menu:",rootChildren);
+      icon: <ChromeFilled />,
+    };
 
     rootChildren.push(bookHub);
 
+    console.log("menu:", rootChildren);
     return rootChildren;
   };
 
@@ -170,7 +219,12 @@ export default function RootLayout({
       const route: RouteInfo = {
         path: menu.meta.link !== null ? menu.meta.link : menu.component,
         name: menu.meta.title,
-        icon: menu.meta.icon !== null ? IconMap[menu.meta.icon as 'system'] : <MenuOutlined />,
+        icon:
+          menu.meta.icon !== null ? (
+            IconMap[menu.meta.icon.replace(/-/g,'') as "system"]
+          ) : (
+            <MenuOutlined />
+          ),
       };
       routeChildren.push(route);
 
@@ -213,15 +267,44 @@ export default function RootLayout({
         request: getRoutes,
       }}
       onMenuHeaderClick={(e) => console.log(e)}
-      menuItemRender={(item, dom) => (
-        <div
-          onClick={() => {
-            setPathname(item.path || "/index");
-          }}
-        >
-          <Link href={item.path}>{dom}</Link>
-        </div>
-      )}
+      menuItemRender={(item, dom) => {
+        let shouldRenderIcon =
+          item.pro_layout_parentKeys && item.pro_layout_parentKeys.length > 0;
+        return (
+          <div
+            onClick={() => {
+              setPathname(item.path || "/index");
+            }}
+          >
+            <Link href={item.path}>
+              {shouldRenderIcon ? (
+                <span style={{ display: "flex", alignItems: "center" }}>
+                  {item.icon}
+                  <span style={{ marginLeft: "8px" }}>{dom}</span>
+                </span>
+              ) : (
+                dom
+              )}
+            </Link>
+          </div>
+        );
+      }}
+      subMenuItemRender={(item, dom) => {
+        let shouldRenderIcon =
+          item.pro_layout_parentKeys && item.pro_layout_parentKeys.length > 0;
+        return (
+          <>
+            {shouldRenderIcon ? (
+              <span style={{ display: "flex", alignItems: "center" }}>
+                {item.icon}
+                <span style={{ marginLeft: "8px" }}>{dom}</span>
+              </span>
+            ) : (
+              dom
+            )}
+          </>
+        );
+      }}
       location={{
         pathname,
       }}
