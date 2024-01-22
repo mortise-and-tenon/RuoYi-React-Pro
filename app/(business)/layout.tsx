@@ -8,7 +8,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
-import { ProLayout } from "@ant-design/pro-components";
+import { ProLayout, PageContainer } from "@ant-design/pro-components";
 import { deleteCookie, getCookie } from "cookies-next";
 
 import { Dropdown, Input, MenuProps } from "antd";
@@ -133,7 +133,7 @@ export default function RootLayout({
     layout: "mix",
     splitMenus: false,
     defaultCollapsed: false,
-    breakpoint:false
+    breakpoint: false,
   };
 
   return (
@@ -263,7 +263,7 @@ export default function RootLayout({
       }}
       {...settings}
     >
-      {children}
+      <PageContainer>{children}</PageContainer>
     </ProLayout>
   );
 }
