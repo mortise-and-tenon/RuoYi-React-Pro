@@ -1,19 +1,21 @@
 "use client";
 import { Tooltip } from "@/node_modules/antd/es/index";
 import {
+  ApiOutlined,
+  BookOutlined,
+  ChromeFilled,
+  CodeOutlined,
+  EditOutlined,
   GithubOutlined,
+  HomeOutlined,
   LogoutOutlined,
+  MenuOutlined,
+  MessageOutlined,
+  MonitorOutlined,
   QuestionCircleFilled,
   SearchOutlined,
-  UserOutlined,
-  HomeOutlined,
-  ChromeFilled,
-  MenuOutlined,
-  MonitorOutlined,
   ToolOutlined,
-  EditOutlined,
-  MessageOutlined,
-  BookOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
 import { PageContainer, ProLayout } from "@ant-design/pro-components";
@@ -25,25 +27,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faSearch,
-  faUsers,
-  faGear,
-  faList,
-  faSitemap,
   faAddressCard,
   faBookAtlas,
+  faChalkboardUser,
+  faDatabase,
+  faDesktop,
+  faFileWaveform,
+  faGear,
+  faList,
+  faLocationArrow,
+  faMemory,
   faReceipt,
   faRectangleList,
-  faChalkboardUser,
+  faSitemap,
+  faTableCells,
   faThumbtack,
-  faFileWaveform,
-  faDesktop,
-  faDatabase,
-  faMemory,
-  faLocationArrow,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { RouteInfo, UserInfo } from "../_modules/definies";
 import "./styles.css";
@@ -164,6 +166,9 @@ export default function RootLayout({
     server: <FontAwesomeIcon icon={faDesktop} />,
     redis: <FontAwesomeIcon icon={faDatabase} />,
     redislist: <FontAwesomeIcon icon={faMemory} />,
+    build: <FontAwesomeIcon icon={faTableCells} />,
+    code: <CodeOutlined />,
+    swagger: <ApiOutlined />,
     form: <FontAwesomeIcon icon={faRectangleList} />,
     logininfor: <FontAwesomeIcon icon={faReceipt} />,
   };
@@ -184,11 +189,11 @@ export default function RootLayout({
     if (body.data && body.data.length > 0) {
       body.data.forEach((menu) => {
         const route: RouteInfo = {
-          path: menu.meta.link !== null ? menu.meta.link : menu.path,
+          path: menu.path,
           name: menu.meta.title,
           icon:
             menu.meta.icon !== null ? (
-              IconMap[menu.meta.icon.replace(/-/g,'') as "system"]
+              IconMap[menu.meta.icon.replace(/-/g, "") as "system"]
             ) : (
               <MenuOutlined />
             ),
@@ -217,11 +222,11 @@ export default function RootLayout({
     const routeChildren: Array<RouteInfo> = new Array<RouteInfo>();
     menuChildren.forEach((menu) => {
       const route: RouteInfo = {
-        path: menu.meta.link !== null ? menu.meta.link : menu.component,
+        path: menu.path,
         name: menu.meta.title,
         icon:
           menu.meta.icon !== null ? (
-            IconMap[menu.meta.icon.replace(/-/g,'') as "system"]
+            IconMap[menu.meta.icon.replace(/-/g, "") as "system"]
           ) : (
             <MenuOutlined />
           ),
