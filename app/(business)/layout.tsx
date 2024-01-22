@@ -33,13 +33,13 @@ export default function RootLayout({
     push("/login");
   };
 
-  const [userToken,setUserToken] = useState("");
+  const [userToken, setUserToken] = useState("");
 
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
     const token = getCookie("token");
     setUserToken(token);
-    
+
     if (token === "") {
       redirectToLogin();
     }
@@ -83,7 +83,10 @@ export default function RootLayout({
         if (data.code == 200) {
           const userInfo: UserInfo = {
             nickName: data.user.nickName,
-            avatar: data.user.sex === "1" ? "https://imgs.bookhub.tech/avatar/avatar1.jpeg" : "https://imgs.bookhub.tech/avatar/avatar0.jpeg",
+            avatar:
+              data.user.sex === "1"
+                ? "https://imgs.bookhub.tech/avatar/avatar1.jpeg"
+                : "https://imgs.bookhub.tech/avatar/avatar0.jpeg",
           };
 
           setUserInfo(userInfo);
@@ -125,9 +128,14 @@ export default function RootLayout({
   //默认当前展示首页
   const [pathname, setPathname] = useState("/index");
 
+  //侧边菜单样式
   const settings: ProSettings | undefined = {
     layout: "mix",
+    splitMenus: false,
+    defaultCollapsed: false,
+    breakpoint:false
   };
+
   return (
     <ProLayout
       title="MorTnon RouYi"
