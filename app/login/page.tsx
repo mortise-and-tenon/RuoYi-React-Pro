@@ -130,7 +130,7 @@ export default function Login() {
         }}
       >
         <LoginFormPage
-          backgroundImageUrl="./bg.jpg"
+          backgroundImageUrl="/bg.jpg"
           logo="https://static.dongfangzan.cn/img/mortnon.svg"
           title={
             <span style={{ color: "rgba(255,255,255,1)" }}>MorTnon RuoYi</span>

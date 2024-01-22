@@ -6,9 +6,14 @@ import {
   QuestionCircleFilled,
   SearchOutlined,
   UserOutlined,
+  HomeOutlined,
+  ChromeFilled,
+  MenuOutlined,
+  MonitorOutlined,
+  ToolOutlined,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
-import { ProLayout, PageContainer } from "@ant-design/pro-components";
+import { PageContainer, ProLayout } from "@ant-design/pro-components";
 import { deleteCookie, getCookie } from "cookies-next";
 
 import { Dropdown, Input, MenuProps } from "antd";
@@ -18,9 +23,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import defaultProps from "./_defaultProps";
 
-import { UserInfo } from "../_modules/definies";
+import { RouteInfo, UserInfo } from "../_modules/definies";
 import "./styles.css";
-import { AuthHeader } from "../_modules/func";
 
 export default function RootLayout({
   children,
@@ -28,6 +32,40 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const { push } = useRouter();
+
+  async function fetchApi(url: string, options?: RequestInit) {
+    const token = getCookie("token");
+    const authHeader = {
+      Authorization: "Bearer " + token,
+    };
+
+    const requestHeader = {
+      ...options?.headers,
+      ...authHeader,
+      credentials: "include",
+    };
+
+    const requestOptions = {
+      ...options,
+      headers: requestHeader,
+    };
+
+    const response = await fetch(url, requestOptions);
+
+    try {
+      const body = await response.json();
+      if (response.ok) {
+        if (body.code == 401) {
+          push("/login");
+          return;
+        }
+      }
+
+      return body;
+    } catch (error) {
+      console.log("fetch error:", error);
+    }
+  }
 
   const redirectToLogin = () => {
     push("/login");
@@ -63,65 +101,96 @@ export default function RootLayout({
   //用户昵称
   const [userInfo, setUserInfo] = useState({
     nickName: "Monrtnon",
-    avatar: "/avatar1.jpeg",
+    avatar: "https://images.bookhub.tech/avatar/avatar1.jpeg",
   } as UserInfo);
 
   //获取用户信息
   const getProfile = async () => {
-    try {
-      const response = await fetch("/api/getInfo", {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + userToken,
-        },
-        credentials: "include",
+    const data = await fetchApi("/api/getInfo");
+
+    if (data !== undefined) {
+      const userInfo: UserInfo = {
+        nickName: data.user.nickName,
+        avatar:
+          data.user.sex === "1"
+            ? "https://images.bookhub.tech/avatar/avatar1.jpeg"
+            : "https://images.bookhub.tech/avatar/avatar0.jpeg",
+      };
+
+      setUserInfo(userInfo);
+    }
+  };
+
+  const IconMap = {
+    system: <HomeOutlined />,
+    monitor:<MonitorOutlined />,
+    toole: <ToolOutlined />,
+    guide: <ChromeFilled/>,
+    user: <UserOutlined />,
+    
+  };
+
+  //获取菜单
+  const getRoutes = async () => {
+    const body = await fetchApi("/api/getRouters");
+    const rootChildren: Array<RouteInfo> = new Array<RouteInfo>();
+    if (body.data && body.data.length > 0) {
+      body.data.forEach((menu) => {
+        const route: RouteInfo = {
+          path: menu.meta.link !== null ? menu.meta.link : menu.path,
+          name: menu.meta.title,
+          icon: menu.meta.icon !== null ? IconMap[menu.meta.icon as 'system'] : <MenuOutlined />,
+        };
+
+        if (menu.children && menu.children.length > 0) {
+          getSubMenu(route, menu.children);
+        }
+        rootChildren.push(route);
+
       });
 
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data.code == 200) {
-          const userInfo: UserInfo = {
-            nickName: data.user.nickName,
-            avatar:
-              data.user.sex === "1"
-                ? "https://imgs.bookhub.tech/avatar/avatar1.jpeg"
-                : "https://imgs.bookhub.tech/avatar/avatar0.jpeg",
-          };
-
-          setUserInfo(userInfo);
-        }
-      } else {
-        const data = await response.json();
-      }
-    } catch (error) {
-    } finally {
     }
+
+    const bookHub:RouteInfo = {
+      path: "https://docs.bookhub.tech",
+      name: "BookHub 网站",
+      icon: <ChromeFilled/>,
+    }
+
+    console.log("menu:",rootChildren);
+
+    rootChildren.push(bookHub);
+
+    return rootChildren;
+  };
+
+  const getSubMenu = (parent: RouteInfo, menuChildren) => {
+    const routeChildren: Array<RouteInfo> = new Array<RouteInfo>();
+    menuChildren.forEach((menu) => {
+      const route: RouteInfo = {
+        path: menu.meta.link !== null ? menu.meta.link : menu.component,
+        name: menu.meta.title,
+        icon: menu.meta.icon !== null ? IconMap[menu.meta.icon as 'system'] : <MenuOutlined />,
+      };
+      routeChildren.push(route);
+
+      if (menu.children && menu.children.length > 0) {
+        getSubMenu(route, menu.children);
+      }
+    });
+
+    parent.routes = routeChildren;
   };
 
   //退出登录
   const logout = async () => {
-    try {
-      const response = await fetch("/api/logout", {
-        method: "POST",
-        headers: {
-          Authorization: AuthHeader(userToken),
-        },
-        credentials: "include",
-      });
+    const data = await fetchApi("/api/logout", {
+      method: "POST",
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data.code == 200) {
-          deleteCookie("token");
-          redirectToLogin();
-        }
-      } else {
-        const data = await response.json();
-      }
-    } catch (error) {
-    } finally {
+    if (data.code == 200) {
+      deleteCookie("token");
+      redirectToLogin();
     }
   };
 
@@ -140,7 +209,9 @@ export default function RootLayout({
     <ProLayout
       title="MorTnon RouYi"
       logo="https://static.dongfangzan.cn/img/mortnon.svg"
-      {...defaultProps}
+      menu={{
+        request: getRoutes,
+      }}
       onMenuHeaderClick={(e) => console.log(e)}
       menuItemRender={(item, dom) => (
         <div
