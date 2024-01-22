@@ -1,33 +1,21 @@
 "use client";
 
-import type { ProSettings } from "@ant-design/pro-components";
-import { PageContainer, ProCard, ProLayout } from "@ant-design/pro-components";
-import {
-  GithubFilled,
-  InfoCircleFilled,
-  PlusCircleFilled,
-  QuestionCircleFilled,
-  SearchOutlined,
-} from "@ant-design/icons";
 
-import { Spin, Flex } from "antd";
+import { Flex, Spin } from "antd";
 
-import Link from "next/link";
 
-import { useEffect, useState, useContext } from "react";
+import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
-
-import { AuthContext } from "./authProvider";
+import { useEffect } from "react";
 
 import styles from "./page.module.css";
 
 export default function Home() {
   const { push } = useRouter();
-  const {isLogin} = useContext(AuthContext);
 
   useEffect(() => {
-    console.log("login:", isLogin);
-    if (!isLogin) {
+    const token = getCookie("token");
+    if (token === "") {
       push("/login");
     } else {
       push("/index");

@@ -4,13 +4,13 @@ import {
   LoginFormPage,
   ProConfigProvider,
   ProFormCheckbox,
-  ProFormText,
+  ProFormText
 } from "@ant-design/pro-components";
-import { Divider, Spin, theme, message } from "antd";
+import { Divider, message, Spin, theme } from "antd";
+import { setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../authProvider";
+import { useEffect, useState } from "react";
 import { LoginReq } from "../_modules/definies";
 
 type Captcha = {
@@ -25,8 +25,6 @@ export default function Login() {
   const [showCaptcha, setShowCaptcha] = useState(false);
   //验证码加载状态
   const [isLoadingImg, setIsLoadingImg] = useState(true);
-
-  const { setIsLogin, setUserToken } = useContext(AuthContext);
 
   //获取验证码
   const getCaptcha = async () => {
@@ -91,8 +89,7 @@ export default function Login() {
             content: "登录成功",
           });
 
-          setIsLogin(true);
-          setUserToken(data.token);
+          setCookie("token",data.token);
 
           router.push("/");
         } else {

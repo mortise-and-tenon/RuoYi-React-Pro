@@ -1,5 +1,4 @@
 "use client";
-
 import { Tooltip } from "@/node_modules/antd/es/index";
 import {
   GithubOutlined,
@@ -10,17 +9,18 @@ import {
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
 import { ProLayout } from "@ant-design/pro-components";
+import { deleteCookie, getCookie } from "cookies-next";
 
 import { Dropdown, Input, MenuProps } from "antd";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../authProvider";
+import { useEffect, useState } from "react";
 import defaultProps from "./_defaultProps";
 
-import "./styles.css";
 import { UserInfo } from "../_modules/definies";
+import "./styles.css";
+import { AuthHeader } from "../_modules/func";
 
 export default function RootLayout({
   children,
@@ -28,17 +28,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const { push } = useRouter();
-  const { isLogin, setIsLogin, userToken, setUserToken } =
-    useContext(AuthContext);
+
+  const redirectToLogin = () => {
+    push("/login");
+  };
+
+  const [userToken,setUserToken] = useState("");
 
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
-    console.log("loginxx:", isLogin);
-    if (!isLogin) {
-      push("/login");
+    const token = getCookie("token");
+    setUserToken(token);
+    
+    if (token === "") {
+      redirectToLogin();
     }
     getProfile();
-  }, [isLogin]);
+  }, []);
 
   //是否展示搜索框
   const [showSearch, setShowSearch] = useState(false);
@@ -55,7 +61,10 @@ export default function RootLayout({
   };
 
   //用户昵称
-  const [userInfo, setUserInfo] = useState({nickName:"Monrtnon",avatar: "./avatar1.jpeg"} as UserInfo);
+  const [userInfo, setUserInfo] = useState({
+    nickName: "Monrtnon",
+    avatar: "/avatar1.jpeg",
+  } as UserInfo);
 
   //获取用户信息
   const getProfile = async () => {
@@ -74,7 +83,7 @@ export default function RootLayout({
         if (data.code == 200) {
           const userInfo: UserInfo = {
             nickName: data.user.nickName,
-            avatar: data.user.sex === "1" ? "avatar1.jpeg" : "avatar0.jpeg",
+            avatar: data.user.sex === "1" ? "https://imgs.bookhub.tech/avatar/avatar1.jpeg" : "https://imgs.bookhub.tech/avatar/avatar0.jpeg",
           };
 
           setUserInfo(userInfo);
@@ -93,7 +102,7 @@ export default function RootLayout({
       const response = await fetch("/api/logout", {
         method: "POST",
         headers: {
-          Authorization: "Bearer " + userToken,
+          Authorization: AuthHeader(userToken),
         },
         credentials: "include",
       });
@@ -102,8 +111,8 @@ export default function RootLayout({
         const data = await response.json();
 
         if (data.code == 200) {
-          setIsLogin(false);
-          setUserToken("");
+          deleteCookie("token");
+          redirectToLogin();
         }
       } else {
         const data = await response.json();
@@ -138,7 +147,7 @@ export default function RootLayout({
         pathname,
       }}
       avatarProps={{
-        src: `./${userInfo.avatar}`,
+        src: `${userInfo.avatar}`,
         size: "small",
         title: `${userInfo.nickName}`,
         render: (props, dom) => {
