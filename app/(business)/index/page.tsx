@@ -1,6 +1,11 @@
 "use client";
 
+import { PageContainer } from "@ant-design/pro-components";
+
 export default function Index() {
-  
-  return <div>welcome</div>;
+  return (
+    <PageContainer>
+      <div>welcome</div>
+    </PageContainer>
+  );
 }

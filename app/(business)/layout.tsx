@@ -1,5 +1,4 @@
 "use client";
-import { Tooltip } from "@/node_modules/antd/es/index";
 import {
   ApiOutlined,
   BookOutlined,
@@ -18,15 +17,12 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
-import { PageContainer, ProLayout } from "@ant-design/pro-components";
+import { ProLayout } from "@ant-design/pro-components";
 import { deleteCookie, getCookie } from "cookies-next";
-
-import { Dropdown, Input, MenuProps } from "antd";
-
+import { Dropdown, Input, MenuProps, Tooltip } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import {
   faAddressCard,
   faBookAtlas,
@@ -46,7 +42,6 @@ import {
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import { RouteInfo, UserInfo } from "../_modules/definies";
 import "./styles.css";
 
@@ -422,7 +417,7 @@ export default function RootLayout({
       }}
       {...settings}
     >
-      <PageContainer>{children}</PageContainer>
+      {children}
     </ProLayout>
   );
 }
