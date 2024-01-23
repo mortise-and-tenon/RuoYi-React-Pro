@@ -48,14 +48,15 @@ const getBase64 = (img: FileType, callback: (url: string) => void) => {
   reader.readAsDataURL(img);
 };
 
+//上传图片前校验
 const beforeUpload = (file: FileType) => {
   const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
   if (!isJpgOrPng) {
-    message.error("You can only upload JPG/PNG file!");
+    message.error("只能上传 JPG/PNG 格式图片!");
   }
   const isLt2M = file.size / 1024 / 1024 < 2;
   if (!isLt2M) {
-    message.error("Image must smaller than 2MB!");
+    message.error("图片大小不能超过 2MB!");
   }
   return isJpgOrPng && isLt2M;
 };
@@ -88,7 +89,13 @@ export default function Profile() {
       console.log("profile:", userData);
 
       setUser(userData);
-      setImageUrl(userData.sex === "1" ? "/avatar1.jpeg" : "/avatar0.jpeg");
+      setImageUrl(
+        data.avatar === ""
+          ? userData.sex === "1"
+            ? "/avatar1.jpeg"
+            : "/avatar0.jpeg"
+          : "/api" + data.avatar
+      );
 
       return userData;
     }
@@ -138,6 +145,22 @@ export default function Profile() {
     );
 
     return body;
+  };
+
+  const uploadAvatar = async (options) => {
+    const formData = new FormData();
+    console.log("avatar:", options);
+    formData.append("avatarfile", options.file);
+    const body = await fetchApi("/api/system/user/profile/avatar", push, {
+      method: "POST",
+      body: formData,
+    });
+    if (body.code == 200) {
+      message.success("上传头像成功");
+      setImageUrl("/api" + body.imgUrl);
+    } else {
+      message.error(body.msg);
+    }
   };
 
   //定义的基本资料的tab页
@@ -307,11 +330,11 @@ export default function Profile() {
           <Flex justify="center" align="center">
             <div>
               <Upload
-                name="avatar"
+                name="avatarfile"
                 listType="picture-circle"
                 className="avatar-uploader"
                 showUploadList={false}
-                action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+                customRequest={uploadAvatar}
                 beforeUpload={beforeUpload}
                 onChange={handleChange}
               >

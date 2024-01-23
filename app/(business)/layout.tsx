@@ -99,9 +99,11 @@ export default function RootLayout({
       const userInfo: UserInfo = {
         nickName: data.user.nickName,
         avatar:
-          data.user.sex === "1"
-            ? "/avatar1.jpeg"
-            : "/avatar0.jpeg",
+          data.user.avatar === ""
+            ? data.user.sex === "1"
+              ? "/avatar1.jpeg"
+              : "/avatar0.jpeg"
+            : "/api" + data.user.avatar,
       };
 
       setUserInfo(userInfo);
