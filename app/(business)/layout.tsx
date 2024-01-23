@@ -45,46 +45,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { RouteInfo, UserInfo } from "../_modules/definies";
 import "./styles.css";
 
+import { fetchApi } from "../_modules/func";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const { push } = useRouter();
-
-  async function fetchApi(url: string, options?: RequestInit) {
-    const token = getCookie("token");
-    const authHeader = {
-      Authorization: "Bearer " + token,
-    };
-
-    const requestHeader = {
-      ...options?.headers,
-      ...authHeader,
-      credentials: "include",
-    };
-
-    const requestOptions = {
-      ...options,
-      headers: requestHeader,
-    };
-
-    const response = await fetch(url, requestOptions);
-
-    try {
-      const body = await response.json();
-      if (response.ok) {
-        if (body.code == 401) {
-          push("/login");
-          return;
-        }
-      }
-
-      return body;
-    } catch (error) {
-      console.log("fetch error:", error);
-    }
-  }
 
   const redirectToLogin = () => {
     push("/login");
@@ -120,20 +88,20 @@ export default function RootLayout({
   //用户昵称
   const [userInfo, setUserInfo] = useState({
     nickName: "Monrtnon",
-    avatar: "https://images.bookhub.tech/avatar/avatar1.jpeg",
+    avatar: "/avatar1.jpeg",
   } as UserInfo);
 
   //获取用户信息
   const getProfile = async () => {
-    const data = await fetchApi("/api/getInfo");
+    const data = await fetchApi("/api/getInfo", push);
 
     if (data !== undefined) {
       const userInfo: UserInfo = {
         nickName: data.user.nickName,
         avatar:
           data.user.sex === "1"
-            ? "https://images.bookhub.tech/avatar/avatar1.jpeg"
-            : "https://images.bookhub.tech/avatar/avatar0.jpeg",
+            ? "/avatar1.jpeg"
+            : "/avatar0.jpeg",
       };
 
       setUserInfo(userInfo);
@@ -170,7 +138,7 @@ export default function RootLayout({
 
   //获取菜单
   const getRoutes = async () => {
-    const body = await fetchApi("/api/getRouters");
+    const body = await fetchApi("/api/getRouters", push);
     const rootChildren: Array<RouteInfo> = new Array<RouteInfo>();
 
     const indexRoute: RouteInfo = {
@@ -238,7 +206,7 @@ export default function RootLayout({
 
   //退出登录
   const logout = async () => {
-    const data = await fetchApi("/api/logout", {
+    const data = await fetchApi("/api/logout", push, {
       method: "POST",
     });
 

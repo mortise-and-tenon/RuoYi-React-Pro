@@ -23,7 +23,7 @@ export type UserDetailInfo = {
   postGroup: string;
   roleName: string;
   nickName: string;
-  sex: number;
+  sex: number|string;
   createTime: string;
 };
 

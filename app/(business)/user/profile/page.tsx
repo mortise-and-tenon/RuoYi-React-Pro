@@ -5,10 +5,25 @@ import {
   PageContainer,
   ProCard,
   ProDescriptions,
+  ProForm,
+  ProFormText,
+  ProFormRadio,
 } from "@ant-design/pro-components";
-import { Divider, Upload, message, Flex, Row, Col } from "antd";
+import {
+  Divider,
+  Upload,
+  message,
+  Flex,
+  Row,
+  Col,
+  Tabs,
+  TabItemType,
+  Space,
+} from "antd";
 
-import type { GetProp, UploadProps } from "antd";
+import type { GetProp, UploadProps, TabsProps } from "antd";
+
+import { fetchApi } from "@/app/_modules/func";
 
 import {
   CalendarOutlined,
@@ -22,19 +37,8 @@ import {
 import { faSitemap, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useState } from "react";
-
-const user: UserDetailInfo = {
-  userName: "admin",
-  phonenumber: "13012345678",
-  email: "awu@qq.com",
-  deptName: "研发部",
-  postGroup: "董事长",
-  roleName: "超级管理员",
-  nickName: "若依",
-  sex: 1,
-  createTime: "2023-04-23 16:11:38",
-};
+import { useEffect, useState } from "react";
+import { useRouter } from "@/node_modules/next/navigation";
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
@@ -58,9 +62,37 @@ const beforeUpload = (file: FileType) => {
 
 export default function Profile() {
   const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>(
-    "https://images.bookhub.tech/avatar/avatar1.jpeg"
-  );
+  const [imageUrl, setImageUrl] = useState<string>();
+
+  const { push } = useRouter();
+
+  const [user, setUser] = useState({} as UserDetailInfo);
+
+  //获取用户profile
+  const getProfile = async () => {
+    const body = await fetchApi("/api/system/user/profile", push);
+    if (body !== undefined) {
+      const data = body.data;
+      const userData: UserDetailInfo = {
+        userName: data.userName,
+        phonenumber: data.phonenumber,
+        email: data.email,
+        deptName: data.dept.deptName,
+        postGroup: body.postGroup,
+        roleName: data.roles[0].roleName,
+        nickName: data.nickName,
+        sex: data.sex,
+        createTime: data.createTime,
+      };
+
+      console.log("profile:", userData);
+
+      setUser(userData);
+      setImageUrl(userData.sex === "1" ? "/avatar1.jpeg" : "/avatar0.jpeg");
+
+      return userData;
+    }
+  };
 
   const handleChange: UploadProps["onChange"] = (info) => {
     if (info.file.status === "uploading") {
@@ -76,15 +108,194 @@ export default function Profile() {
     }
   };
 
-  const uploadButton = (
-    <button style={{ border: 0, background: "none" }} type="button">
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
+  //更新用户基本信息
+  const updateProfile = async (values) => {
+    console.log("put info:", values);
+    const body = await fetchApi("/api/system/user/profile", push, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+    console.log("put info body：", body);
+    return body;
+  };
+
+  //修改用户密码
+  const updatePassword = async (values) => {
+    const params = {
+      oldPassword: values.oldPassword,
+      newPassword: values.newPassword,
+    };
+    console.log("put pwd2:", new URLSearchParams(params));
+    const body = await fetchApi(
+      `/api/system/user/profile/updatePwd?${new URLSearchParams(params)}`,
+      push,
+      {
+        method: "PUT",
+      }
+    );
+
+    return body;
+  };
+
+  //定义的基本资料的tab页
+  const items: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "基本资料",
+      children: (
+        <ProForm<{
+          nickName: string;
+          phonenumber: string;
+          email: string;
+          sex: string;
+        }>
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 14 }}
+          layout="horizontal"
+          submitter={{
+            render: (props, doms) => {
+              return (
+                <Row>
+                  <Col span={14} offset={4}>
+                    <Space>{doms}</Space>
+                  </Col>
+                </Row>
+              );
+            },
+          }}
+          onFinish={async (values) => {
+            const body = await updateProfile(values);
+            if (body.code == 200) {
+              message.success("修改成功");
+            } else {
+              message.error(body.msg);
+            }
+          }}
+          params={{}}
+          request={async () => {
+            const data = await getProfile();
+            console.log("user:", data);
+            return data;
+          }}
+        >
+          <ProFormText
+            width="md"
+            name="nickName"
+            label="用户昵称"
+            placeholder="请输入用户昵称"
+            rules={[{ required: true, message: "请输入用户昵称" }]}
+          />
+          <ProFormText
+            width="md"
+            name="phonenumber"
+            label="手机号"
+            placeholder="请输入手机号"
+            rules={[{ required: true, message: "请输入手机号" }]}
+          />
+          <ProFormText
+            name="email"
+            width="md"
+            label="邮箱"
+            placeholder="请输入邮箱"
+            rules={[{ required: true, message: "请输入邮箱" }]}
+          />
+          <ProFormRadio.Group
+            name="sex"
+            width="md"
+            label="性别"
+            options={[
+              {
+                label: "男",
+                value: "0",
+              },
+              {
+                label: "女",
+                value: "1",
+              },
+            ]}
+            rules={[{ required: true, message: "请选择性别" }]}
+          />
+        </ProForm>
+      ),
+    },
+    {
+      key: "2",
+      label: "修改密码",
+      children: (
+        <ProForm<{
+          oldPassword: string;
+          newPassword: string;
+        }>
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 14 }}
+          layout="horizontal"
+          submitter={{
+            render: (props, doms) => {
+              return (
+                <Row>
+                  <Col span={14} offset={4}>
+                    <Space>{doms}</Space>
+                  </Col>
+                </Row>
+              );
+            },
+          }}
+          onFinish={async (values) => {
+            const body = await updatePassword(values);
+            if (body.code == 200) {
+              message.success("修改成功");
+            } else {
+              message.error(body.msg);
+            }
+          }}
+          params={{}}
+        >
+          <ProFormText.Password
+            width="md"
+            name="oldPassword"
+            label="当前密码"
+            placeholder="请输入当前密码"
+            rules={[{ required: true, message: "请输入当前密码" }]}
+          />
+          <ProFormText.Password
+            width="md"
+            name="newPassword"
+            label="新密码"
+            placeholder="请输入新密码"
+            rules={[{ required: true, message: "请输入新密码" }]}
+          />
+          <ProFormText.Password
+            width="md"
+            name="repeatPassword"
+            label="确认新密码"
+            placeholder="请再次输入新密码"
+            rules={[
+              { required: true, message: "请再次输入新密码" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("新密码两次输入不一致"));
+                },
+              }),
+            ]}
+          />
+        </ProForm>
+      ),
+    },
+  ];
 
   return (
-    <PageContainer>
+    <PageContainer
+      header={{
+        title: "个人中心",
+        breadcrumb: {},
+      }}
+    >
       <ProCard gutter={[16, 16]}>
         <ProCard
           colSpan="30%"
@@ -93,9 +304,8 @@ export default function Profile() {
           bordered
           hoverable
         >
-          <Row>
-            <Col md={8} xs={0}></Col>
-            <Col md={8} xs={24}>
+          <Flex justify="center" align="center">
+            <div>
               <Upload
                 name="avatar"
                 listType="picture-circle"
@@ -105,16 +315,30 @@ export default function Profile() {
                 beforeUpload={beforeUpload}
                 onChange={handleChange}
               >
-                {imageUrl ? (
-                  <img src={imageUrl} alt="avatar" style={{ width: "100%" }} />
-                ) : (
-                  uploadButton
-                )}
+                <div
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                  }}
+                >
+                  {imageUrl && (
+                    <img
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                      src={imageUrl}
+                      alt="avatar"
+                    />
+                  )}
+                </div>
               </Upload>
-            </Col>
-            <Col md={8} xs={0}></Col>
-          </Row>
-        <Divider/>
+            </div>
+          </Flex>
+          <Divider />
           <ProDescriptions column={1}>
             <ProDescriptions.Item
               label={
@@ -179,7 +403,7 @@ export default function Profile() {
           </ProDescriptions>
         </ProCard>
         <ProCard title="基本资料" headerBordered bordered hoverable>
-          Auto
+          <Tabs defaultActiveKey="1" items={items} />
         </ProCard>
       </ProCard>
     </PageContainer>
