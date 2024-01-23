@@ -55,7 +55,7 @@ export default function Index() {
               <Space direction="vertical">
                 <Text>
                   RuoYi
-                  是一个用得很多的后台管理框架，在很多原型验证或快速开发中使用较广。
+                  是一个广泛使用的的后台管理框架，适合原型验证或快速开发项目。
                 </Text>
                 <Text>
                   RuoYi 的前后端分离版本中，前端项目使用了 Vue 和
@@ -69,7 +69,7 @@ export default function Index() {
                   开发了本项目的 RuoYi 前端。
                 </Text>
                 <Text>
-                  本项目采用 NextJs、AntD 和 AntD ProComponents
+                  本项目主要采用 NextJs、AntD 和 AntD ProComponents
                   开发，可以完美替换 RuoYi
                   前后端分离版本的前端，且具有更好的美观度和交互性。本项目可以直接使用，也适合
                   React 技术栈的开发人员二次开发使用。
