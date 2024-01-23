@@ -1,221 +1,206 @@
 "use client";
 
-import { EllipsisOutlined, PlusOutlined,SearchOutlined,DeleteOutlined } from "@ant-design/icons";
-import type { ActionType, ProColumns } from "@ant-design/pro-components";
-import {
-  ProTable,
-  TableDropdown,
-  PageContainer,
-} from "@ant-design/pro-components";
-import { Button, Dropdown, Space, Tag } from "antd";
-import { useRef } from "react";
+import { fetchApi } from '@/app/_modules/func';
+import { ClearOutlined, DeleteOutlined, ImportOutlined } from '@ant-design/icons';
+import type { ProColumns } from '@ant-design/pro-components';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { Button } from 'antd';
+import { useRouter } from 'next/navigation';
 
 
-import {faArrowsRotate} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+export type TableListItem = {
+  key: number;
+  operId: string;
+  title: string;
+  businessType: string;
+  operName:string,
+  operIp:string,
+  operLocation:string,
+  status:string,
+  operTime:string,
+  costTime:string,
+};
+const tableListDataSource: TableListItem[] = [];
 
-export const waitTimePromise = async (time: number = 100) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
+for (let i = 0; i < 5; i += 1) {
+  tableListDataSource.push({
+    key: i,
+    operId: 'AppName',
+    title: "模块",
+    businessType: "1",
+    operName: "0",
+    operIp:"127.0.0.1",
+    operLocation:"四川",
+    status: "success",
+    operTime:"2024-01-23 14:25:37",
+    costTime: "10ms"
   });
-};
+}
 
-export const waitTime = async (time: number = 100) => {
-  await waitTimePromise(time);
-};
-
-type LogItem = {
-    operId:number|string,
-    title: string,
-    businessType: number|string,
-    operName:string,
-    operIp:string,
-    operLocation:string,
-    status:number|string,
-    operTime:string,
-    costTime:number,
-};
-
-//列定义
-const columns: ProColumns<LogItem>[] = [
+//表格列定义
+const columns: ProColumns<TableListItem>[] = [
   {
-    dataIndex: "index",
-    valueType: "indexBorder",
+    dataIndex: 'index',
+    valueType: 'indexBorder',
     width: 48,
   },
   {
-    title: "日志编号",
-    dataIndex: "operId",
+    title: '日志编号',
+    dataIndex: 'operId',
+    search:false,
+  },
+  {
+    title: '系统模块',
+    dataIndex: 'title',
+  },
+  {
+    title: '操作类型',
+    dataIndex: 'businessType',
+    valueEnum: {
+      add: {
+        text: "新增",
+        status: "1",
+      },
+      modify: {
+        text: "修改",
+        status: "2",
+      },
+      delete: {
+        text: "删除",
+        status: "3",
+      },
+      auth: {
+        text: "授权",
+        status: "4",
+      },
+      export: {
+        text: "导出",
+        status: "5",
+      },
+      import: {
+        text: "导入",
+        status: "6",
+      },
+      quit: {
+        text: "强退",
+        status: "7",
+      },
+      code: {
+        text: "生成代码",
+        status: "8",
+      },
+      clear: {
+        text: "清空数据",
+        status: "9",
+      },
+      other: {
+        text: "其他",
+        status: "0",
+      },
+    }
+  },
+  {
+    title: "操作人员",
+    dataIndex: "operName",
+  },
+  {
+    title: "操作地址",
+    dataIndex: "operIp",
+  },
+  {
+    title: "操作地点",
+    dataIndex: "operLocation",
     search: false,
   },
-//   {
-//     title: "系统模块",
-//     dataIndex: "title",
-//   },
-//   {
-//     title: "操作类型",
-//     dataIndex: "businessType",
-//     valueType: "select",
-//     valueEnum: {
-//       add: {
-//         text: "新增",
-//         status: 1,
-//       },
-//       modify: {
-//         text: "修改",
-//         status: 2,
-//       },
-//       delete: {
-//         text: "删除",
-//         status: 3,
-//       },
-//       auth: {
-//         text: "授权",
-//         status: 4,
-//       },
-//       export: {
-//         text: "导出",
-//         status: 5,
-//       },
-//       import: {
-//         text: "导入",
-//         status: 6,
-//       },
-//       quit: {
-//         text: "强退",
-//         status: 7,
-//       },
-//       code: {
-//         text: "生成代码",
-//         status: 8,
-//       },
-//       clear: {
-//         text: "清空数据",
-//         status: 9,
-//       },
-//       other: {
-//         text: "其他",
-//         status: 0,
-//       },
-//     },
-//   },
-//   {
-//     title: "操作人员",
-//     dataIndex: "operName",
-//   },
-//   {
-//     title: "操作地址",
-//     dataIndex: "operIp",
-//   },
-//   {
-//     title: "操作地点",
-//     dataIndex: "operLocation",
-//     search: false,
-//   },
-//   {
-//     title: "操作状态",
-//     dataIndex: "status",
-//     valueType: "select",
-//     valueEnum: {
-//       success: {
-//         text: "成功",
-//         status: 0,
-//       },
-//       failure: {
-//         text: "失败",
-//         status: 1,
-//       },
-//     },
-//   },
-//   {
-//     title: "操作日期",
-//     dataIndex: "operTime",
-//     valueType: "dateRange",
-//     hideInTable: true,
-//     search: {
-//       transform: (value) => {
-//         return {
-//           startTime: value[0],
-//           endTime: value[1],
-//         };
-//       },
-//     },
-//   },
-//   {
-//     title: "消耗时间",
-//     key: "costTime",
-//     search: false,
-//   },
+  {
+    title: "操作状态",
+    dataIndex: "status",
+    valueType: "select",
+    valueEnum: {
+      success: {
+        text: "成功",
+        status: "0",
+      },
+      failure: {
+        text: "失败",
+        status: "1",
+      },
+    },
+  },
+  {
+    title: "操作日期",
+    dataIndex: "operTime",
+    valueType: "dateTimeRange",
+    search: {
+      transform: (value) => {
+        return {
+          startTime: value[0],
+          endTime: value[1],
+        };
+      },
+    },
+  },
+  {
+    title: "消耗时间",
+    dataIndex: "costTime",
+    search: false,
+  },
+  {
+    title: "操作",
+    key: 'option',
+    search:false,
+    render: () => [
+      <a key="link">详情</a>,
+    ],
+  }
 ];
 
-export default function Operlog() {
-  const actionRef = useRef<ActionType>();
+export default function OperLog() {
+  const {push} = useRouter();
+
+  const getLog= async (params, sorter, filter)=>{
+    const searchParams = {
+      pageNum: params.current,
+      pageSize:params.pageSize,
+    }
+    
+    const body = await fetchApi(`/api/monitor/operlog/list?${new URLSearchParams(searchParams)}`,push);
+    console.log("data:",body);
+    return body;
+  }
   return (
     <PageContainer>
-      <ProTable<LogItem>
-        columns={columns}
-        // actionRef={actionRef}
-        cardBordered
-        // request={async (params, sort, filter) => {
-        //   console.log(sort, filter);
-        //   await waitTime(2000);
-        //   return request<{
-        //     data: GithubIssueItem[];
-        //   }>("https://proapi.azurewebsites.net/github/issues", {
-        //     params,
-        //   });
-        // }}
-        // editable={{
-        //   type: "multiple",
-        // }}
-        // columnsState={{
-        //   persistenceKey: "pro-table-singe-demos",
-        //   persistenceType: "localStorage",
-        //   defaultValue: {
-        //     option: { fixed: "right", disable: true },
-        //   },
-        //   onChange(value) {
-        //     console.log("value: ", value);
-        //   },
-        // }}
-        // rowKey="id"
-        // search={{
-        //   labelWidth: "auto",
-        // }}
-        // options={{
-        //   setting: {
-        //     listsHeight: 400,
-        //   },
-        // }}
-        // form={{
-        //   // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-        //   syncToUrl: (values, type) => {
-        //     if (type === "get") {
-        //       return {
-        //         ...values,
-        //         created_at: [values.startTime, values.endTime],
-        //       };
-        //     }
-        //     return values;
-        //   },
-        // }}
-        // pagination={{
-        //   pageSize: 5,
-        //   onChange: (page) => console.log("page:",page),
-        // }}
-        // dateFormatter="string"
-        // toolBarRender={() => [
-        //   <Button key="delete" icon={<DeleteOutlined />}>删除</Button>,
-        //   <Button key="clear" type="primary">
-        //     清空
-        //   </Button>,
-        //   <Button key="export" type="primary">
-        //   导出
-        // </Button>,
-        // ]}
-      />
+    <ProTable<TableListItem>
+      columns={columns}
+      request={async (params, sorter, filter) => {
+        // 表单搜索项会从 params 传入，传递给后端接口。
+        console.log(params, sorter, filter);
+        const data = await getLog(params,sorter,filter);
+        return Promise.resolve({
+          data: data.rows,
+          success: true,
+          total: data.total,
+        });
+      }}
+      rowKey="key"
+      pagination={{
+        showQuickJumper: true,
+      }}
+      search={{
+        defaultCollapsed: false,
+        searchText:"搜索"
+      }}
+      dateFormatter="string"
+      toolBarRender={() => [
+        <Button key="danger" danger icon={<DeleteOutlined />}>
+          删除
+        </Button>,
+        <Button key="clear" danger icon={<ClearOutlined />}>清空</Button>,
+        <Button type="primary" key="primary" icon={<ImportOutlined />}>
+          导出
+        </Button>,
+      ]}
+    />
     </PageContainer>
   );
-}
+};
