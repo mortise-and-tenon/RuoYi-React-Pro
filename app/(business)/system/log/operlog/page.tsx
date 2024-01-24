@@ -4,39 +4,29 @@ import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
   ClearOutlined,
   DeleteOutlined,
+  EyeOutlined,
   ImportOutlined,
   ReloadOutlined,
-  EyeOutlined,
-  CloseOutlined,
+  ExclamationCircleFilled,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
   PageContainer,
-  ProTable,
   ProDescriptions,
+  ProTable,
 } from "@ant-design/pro-components";
-import {
-  Button,
-  Space,
-  Tag,
-  Checkbox,
-  Modal,
-  Row,
-  Col,
-  Typography,
-  Flex,
-} from "antd";
+import { Button, Modal, Space, Tag, message } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
   faCheck,
-  faXmark,
-  faToggleOn,
   faToggleOff,
+  faToggleOn,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 
 export type TableListItem = {
   operId: string;
@@ -229,6 +219,9 @@ export default function OperLog() {
     return body;
   };
 
+  //删除按钮是否可用，选中行时才可用
+  const [rowCanDelete, setRowCanDelete] = useState(false);
+
   //选中行操作
   const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
   const rowSelection = {
@@ -239,7 +232,45 @@ export default function OperLog() {
         selectedRows
       );
       setSelectedRowKeys(newSelectedRowKeys);
+      setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
     },
+  };
+
+  //是否打开删除日志数据对话框
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  //是否处于确认状态中
+  const [confirmLoading, setConfirmLoading] = useState(false)
+
+  //点击删除按钮
+  const deleteRow = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  //关闭删除日志对话框
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  //确定删除选中的日志数据
+  const executeDeleteRow = async () => {
+    setConfirmLoading(true);
+    const body = await fetchApi(
+      `/api/monitor/operlog/${selectedRowKeys.join(",")}`,
+      push,
+      {
+        method: "DELETE",
+      }
+    );
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("删除成功");
+        setIsDeleteModalOpen(false);
+      } else {
+        message.error(body.msg);
+      }
+    }
+    setConfirmLoading(false);
   };
 
   //控制是否展示行详情模态框
@@ -348,7 +379,13 @@ export default function OperLog() {
         actionRef={actionRef}
         toolbar={{
           actions: [
-            <Button key="danger" danger icon={<DeleteOutlined />}>
+            <Button
+              key="danger"
+              danger
+              icon={<DeleteOutlined />}
+              disabled={!rowCanDelete}
+              onClick={deleteRow}
+            >
               删除
             </Button>,
             <Button key="clear" danger icon={<ClearOutlined />}>
@@ -389,6 +426,20 @@ export default function OperLog() {
           ],
         }}
       />
+      <Modal
+        title={
+          <>
+            <ExclamationCircleFilled style={{ color: "#faad14" }} /> 系统提示
+          </>
+        }
+        open={isDeleteModalOpen}
+        onOk={executeDeleteRow}
+        onCancel={closeDeleteModal}
+        confirmLoading={confirmLoading}
+      >
+        是否确认删除日志编号为“{selectedRowKeys.join(",")}”的数据项？
+      </Modal>
+
       {selectedRow !== undefined && (
         <Modal
           title="操作日志详情"
