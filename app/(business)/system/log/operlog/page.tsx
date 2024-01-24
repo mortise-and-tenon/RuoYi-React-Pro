@@ -209,8 +209,6 @@ export default function OperLog() {
 
     delete searchParams.current;
 
-    console.log("params:", searchParams);
-
     const body = await fetchApi(
       `/api/monitor/operlog/list?${new URLSearchParams(searchParams)}`,
       push
@@ -240,16 +238,29 @@ export default function OperLog() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   //是否处于确认状态中
-  const [confirmLoading, setConfirmLoading] = useState(false)
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  //是否打开清空日志对话框
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
   //点击删除按钮
-  const deleteRow = () => {
+  const onClickDeleteRow = () => {
     setIsDeleteModalOpen(true);
+  };
+
+  //点击清空按钮
+  const onClickClear = () => {
+    setIsClearModalOpen(true);
   };
 
   //关闭删除日志对话框
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
+  };
+
+  //关闭清空日志对话框
+  const closeClearModal = () => {
+    setIsClearModalOpen(false);
   };
 
   //确定删除选中的日志数据
@@ -270,6 +281,26 @@ export default function OperLog() {
         message.error(body.msg);
       }
     }
+    setConfirmLoading(false);
+  };
+
+  //确定清空日志数据
+  const executeClear = async () => {
+    setConfirmLoading(true);
+
+    const body = await fetchApi("/api/monitor/operlog/clean", push, {
+      method: "DELETE",
+    });
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("清空成功");
+        setIsClearModalOpen(false);
+      } else {
+        message.error(body.msg);
+      }
+    }
+
     setConfirmLoading(false);
   };
 
@@ -384,11 +415,16 @@ export default function OperLog() {
               danger
               icon={<DeleteOutlined />}
               disabled={!rowCanDelete}
-              onClick={deleteRow}
+              onClick={onClickDeleteRow}
             >
               删除
             </Button>,
-            <Button key="clear" danger icon={<ClearOutlined />}>
+            <Button
+              key="clear"
+              danger
+              icon={<ClearOutlined />}
+              onClick={onClickClear}
+            >
               清空
             </Button>,
             <Button
@@ -438,6 +474,20 @@ export default function OperLog() {
         confirmLoading={confirmLoading}
       >
         是否确认删除日志编号为“{selectedRowKeys.join(",")}”的数据项？
+      </Modal>
+
+      <Modal
+        title={
+          <>
+            <ExclamationCircleFilled style={{ color: "#faad14" }} /> 系统提示
+          </>
+        }
+        open={isClearModalOpen}
+        onOk={executeClear}
+        onCancel={closeClearModal}
+        confirmLoading={confirmLoading}
+      >
+        是否确认清空所有操作日志数据项？
       </Modal>
 
       {selectedRow !== undefined && (
