@@ -1,13 +1,13 @@
 "use client";
 
-import { fetchApi } from "@/app/_modules/func";
+import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
   ClearOutlined,
   DeleteOutlined,
   ImportOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import type { ProColumns,ProFormInstance  } from "@ant-design/pro-components";
+import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import { PageContainer, ProTable } from "@ant-design/pro-components";
 import { Button, Space, Tag, Checkbox } from "antd";
 import { useRouter } from "next/navigation";
@@ -16,11 +16,11 @@ import {
   faCheck,
   faXmark,
   faToggleOn,
-  faToggleOff
+  faToggleOff,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useState,useRef } from "react";
+import { useState, useRef } from "react";
 
 export type TableListItem = {
   operId: string;
@@ -220,11 +220,53 @@ export default function OperLog() {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const ref = useRef<ProFormInstance>();
+  const actionRef = useRef<ProFormInstance>();
+  //表单对象引用
+  const formRef = useRef<ProFormInstance>();
+
+  //当前页数和每页条数
+  const [page, setPage] = useState(1);
+  const defualtPageSize = 10;
+  const [pageSize, setPageSize] = useState(defualtPageSize);
+
+  const pageChange = (page: number, pageSize: number) => {
+    setPage(page);
+    setPageSize(pageSize);
+  };
+
+  //导出日志文件
+  const exportTable = async () => {
+    if (formRef.current) {
+      const formData = new FormData();
+
+      const data = {
+        pageNum: page,
+        pageSize: pageSize,
+        ...formRef.current.getFieldsValue(),
+      };
+
+      Object.keys(data).forEach((key) => {
+        if (data[key] !== undefined) {
+          formData.append(key, data[key]);
+        }
+      });
+
+      await fetchFile(
+        "/api/monitor/operlog/export",
+        push,
+        {
+          method: "POST",
+          body: formData,
+        },
+        "operlog.xlsx"
+      );
+    }
+  };
 
   return (
     <PageContainer>
       <ProTable<TableListItem>
+        formRef={formRef}
         rowKey={(record) => record.operId}
         rowSelection={{
           selectedRowKeys,
@@ -248,8 +290,10 @@ export default function OperLog() {
           });
         }}
         pagination={{
-          pageSize: 10,
+          pageSize: defualtPageSize,
           showQuickJumper: true,
+          showSizeChanger: true,
+          onChange: pageChange,
         }}
         search={
           showSearch
@@ -260,7 +304,7 @@ export default function OperLog() {
             : false
         }
         dateFormatter="string"
-        actionRef={ref}
+        actionRef={actionRef}
         toolbar={{
           actions: [
             <Button key="danger" danger icon={<DeleteOutlined />}>
@@ -269,14 +313,23 @@ export default function OperLog() {
             <Button key="clear" danger icon={<ClearOutlined />}>
               清空
             </Button>,
-            <Button key="export" type="primary" icon={<ImportOutlined />}>
+            <Button
+              key="export"
+              type="primary"
+              icon={<ImportOutlined />}
+              onClick={exportTable}
+            >
               导出
             </Button>,
           ],
           settings: [
             {
               key: "switch",
-              icon: showSearch ? <FontAwesomeIcon icon={faToggleOn} /> : <FontAwesomeIcon icon={faToggleOff} />,
+              icon: showSearch ? (
+                <FontAwesomeIcon icon={faToggleOn} />
+              ) : (
+                <FontAwesomeIcon icon={faToggleOff} />
+              ),
               tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
               onClick: (key: string) => {
                 setShowSearch(!showSearch);
@@ -287,9 +340,9 @@ export default function OperLog() {
               tooltip: "刷新",
               icon: <ReloadOutlined />,
               onClick: (key: string) => {
-                if (ref.current) {
-                    ref.current.reload();
-                  }
+                if (actionRef.current) {
+                  actionRef.current.reload();
+                }
               },
             },
           ],

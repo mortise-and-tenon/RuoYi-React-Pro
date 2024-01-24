@@ -149,7 +149,6 @@ export default function Profile() {
 
   const uploadAvatar = async (options) => {
     const formData = new FormData();
-    console.log("avatar:", options);
     formData.append("avatarfile", options.file);
     const body = await fetchApi("/api/system/user/profile/avatar", push, {
       method: "POST",
