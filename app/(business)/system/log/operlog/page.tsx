@@ -6,10 +6,26 @@ import {
   DeleteOutlined,
   ImportOutlined,
   ReloadOutlined,
+  EyeOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
-import { PageContainer, ProTable } from "@ant-design/pro-components";
-import { Button, Space, Tag, Checkbox } from "antd";
+import {
+  PageContainer,
+  ProTable,
+  ProDescriptions,
+} from "@ant-design/pro-components";
+import {
+  Button,
+  Space,
+  Tag,
+  Checkbox,
+  Modal,
+  Row,
+  Col,
+  Typography,
+  Flex,
+} from "antd";
 import { useRouter } from "next/navigation";
 
 import {
@@ -34,156 +50,165 @@ export type TableListItem = {
   costTime: string;
 };
 
-//表格列定义
-const columns: ProColumns<TableListItem>[] = [
-  {
-    title: "日志编号",
-    dataIndex: "operId",
-    search: false,
-  },
-  {
-    title: "系统模块",
-    dataIndex: "title",
-    order: 9,
-  },
-  {
-    title: "操作类型",
-    dataIndex: "businessType",
-    order: 7,
-    valueEnum: {
-      1: {
-        text: "新增",
-        status: "1",
-      },
-      2: {
-        text: "修改",
-        status: "2",
-      },
-      3: {
-        text: "删除",
-        status: "3",
-      },
-      4: {
-        text: "授权",
-        status: "4",
-      },
-      5: {
-        text: "导出",
-        status: "5",
-      },
-      6: {
-        text: "导入",
-        status: "6",
-      },
-      7: {
-        text: "强退",
-        status: "7",
-      },
-      8: {
-        text: "生成代码",
-        status: "8",
-      },
-      9: {
-        text: "清空数据",
-        status: "9",
-      },
-      0: {
-        text: "其他",
-        status: "0",
-      },
-    },
-  },
-  {
-    title: "操作人员",
-    dataIndex: "operName",
-    sorter: true,
-    order: 8,
-  },
-  {
-    title: "操作地址",
-    dataIndex: "operIp",
-    order: 10,
-  },
-  {
-    title: "操作地点",
-    dataIndex: "operLocation",
-    search: false,
-  },
-  {
-    title: "操作状态",
-    dataIndex: "status",
-    valueType: "select",
-    render: (_, record) => {
-      return (
-        <Space>
-          <Tag
-            color={record.status == 0 ? "green" : "red"}
-            icon={
-              record.status == 0 ? (
-                <FontAwesomeIcon icon={faCheck} />
-              ) : (
-                <FontAwesomeIcon icon={faXmark} />
-              )
-            }
-          >
-            {_}
-          </Tag>
-        </Space>
-      );
-    },
-    valueEnum: {
-      0: {
-        text: "成功",
-        status: "0",
-      },
-      1: {
-        text: "失败",
-        status: "1",
-      },
-    },
-    order: 6,
-  },
-  {
-    title: "操作日期",
-    dataIndex: "operTime",
-    valueType: "datetime",
-    search: false,
-    sorter: true,
-  },
-  {
-    title: "操作日期",
-    dataIndex: "operTimeRange",
-    valueType: "dateRange",
-    hideInTable: true,
-    order: 5,
-    search: {
-      transform: (value) => {
-        return {
-          "params[beginTime]": `${value[0]} 23:59:59`,
-          "params[endTime]": `${value[1]} 23:59:59`,
-        };
-      },
-    },
-  },
-  {
-    title: "消耗时间",
-    dataIndex: "costTime",
-    sorter: true,
-    search: false,
-    render: (_, record) => {
-      return <span>{_}毫秒</span>;
-    },
-  },
-  {
-    title: "操作",
-    key: "option",
-    search: false,
-    render: () => [<a key="link">详情</a>],
-  },
-];
-
 export default function OperLog() {
   const { push } = useRouter();
+
+  //表格列定义
+  const columns: ProColumns<TableListItem>[] = [
+    {
+      title: "日志编号",
+      dataIndex: "operId",
+      search: false,
+    },
+    {
+      title: "系统模块",
+      dataIndex: "title",
+      order: 9,
+    },
+    {
+      title: "操作类型",
+      dataIndex: "businessType",
+      order: 7,
+      valueEnum: {
+        1: {
+          text: "新增",
+          status: "1",
+        },
+        2: {
+          text: "修改",
+          status: "2",
+        },
+        3: {
+          text: "删除",
+          status: "3",
+        },
+        4: {
+          text: "授权",
+          status: "4",
+        },
+        5: {
+          text: "导出",
+          status: "5",
+        },
+        6: {
+          text: "导入",
+          status: "6",
+        },
+        7: {
+          text: "强退",
+          status: "7",
+        },
+        8: {
+          text: "生成代码",
+          status: "8",
+        },
+        9: {
+          text: "清空数据",
+          status: "9",
+        },
+        0: {
+          text: "其他",
+          status: "0",
+        },
+      },
+    },
+    {
+      title: "操作人员",
+      dataIndex: "operName",
+      sorter: true,
+      order: 8,
+    },
+    {
+      title: "操作地址",
+      dataIndex: "operIp",
+      order: 10,
+    },
+    {
+      title: "操作地点",
+      dataIndex: "operLocation",
+      search: false,
+    },
+    {
+      title: "操作状态",
+      dataIndex: "status",
+      valueType: "select",
+      render: (_, record) => {
+        return (
+          <Space>
+            <Tag
+              color={record.status == 0 ? "green" : "red"}
+              icon={
+                record.status == 0 ? (
+                  <FontAwesomeIcon icon={faCheck} />
+                ) : (
+                  <FontAwesomeIcon icon={faXmark} />
+                )
+              }
+            >
+              {_}
+            </Tag>
+          </Space>
+        );
+      },
+      valueEnum: {
+        0: {
+          text: "成功",
+          status: "0",
+        },
+        1: {
+          text: "失败",
+          status: "1",
+        },
+      },
+      order: 6,
+    },
+    {
+      title: "操作日期",
+      dataIndex: "operTime",
+      valueType: "datetime",
+      search: false,
+      sorter: true,
+    },
+    {
+      title: "操作日期",
+      dataIndex: "operTimeRange",
+      valueType: "dateRange",
+      hideInTable: true,
+      order: 5,
+      search: {
+        transform: (value) => {
+          return {
+            "params[beginTime]": `${value[0]} 23:59:59`,
+            "params[endTime]": `${value[1]} 23:59:59`,
+          };
+        },
+      },
+    },
+    {
+      title: "消耗时间",
+      dataIndex: "costTime",
+      sorter: true,
+      search: false,
+      render: (_, record) => {
+        return <span>{_}毫秒</span>;
+      },
+    },
+    {
+      title: "操作",
+      key: "option",
+      search: false,
+      render: (_, record) => [
+        <Button
+          key={record.operId}
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => showRowModal(record)}
+        >
+          详情
+        </Button>,
+      ],
+    },
+  ];
 
   //查询日志数据
   const getLog = async (params, sorter, filter) => {
@@ -216,6 +241,22 @@ export default function OperLog() {
       setSelectedRowKeys(newSelectedRowKeys);
     },
   };
+
+  //控制是否展示行详情模态框
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  //关闭行详情展示
+  function closeRowModal() {
+    setIsModalOpen(false);
+  }
+
+  const [selectedRow, setSelectedRow] = useState(undefined as any);
+
+  //展示行详情
+  function showRowModal(record) {
+    setIsModalOpen(true);
+    setSelectedRow(record);
+  }
 
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
@@ -348,6 +389,121 @@ export default function OperLog() {
           ],
         }}
       />
+      {selectedRow !== undefined && (
+        <Modal
+          title="操作日志详情"
+          footer={<Button onClick={closeRowModal}>关闭</Button>}
+          open={isModalOpen}
+          onCancel={closeRowModal}
+        >
+          <ProDescriptions column={10}>
+            <ProDescriptions.Item span={3} label="操作模块">
+              {selectedRow.title} /
+            </ProDescriptions.Item>
+            <ProDescriptions.Item
+              span={2}
+              valueEnum={{
+                1: {
+                  text: "新增",
+                  status: "1",
+                },
+                2: {
+                  text: "修改",
+                  status: "2",
+                },
+                3: {
+                  text: "删除",
+                  status: "3",
+                },
+                4: {
+                  text: "授权",
+                  status: "4",
+                },
+                5: {
+                  text: "导出",
+                  status: "5",
+                },
+                6: {
+                  text: "导入",
+                  status: "6",
+                },
+                7: {
+                  text: "强退",
+                  status: "7",
+                },
+                8: {
+                  text: "生成代码",
+                  status: "8",
+                },
+                9: {
+                  text: "清空数据",
+                  status: "9",
+                },
+                0: {
+                  text: "其他",
+                  status: "0",
+                },
+              }}
+            >
+              {selectedRow.businessType}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item span={5} label="请求地址">
+              {selectedRow.operUrl}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+          <ProDescriptions column={6}>
+            <ProDescriptions.Item span={3} label="登录信息">
+              {selectedRow.operName}/{selectedRow.operIp}/
+              {selectedRow.operLocation}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item span={3} label="请求方式">
+              {selectedRow.requestMethod}
+            </ProDescriptions.Item>
+
+            <ProDescriptions.Item span={6} label="操作方法">
+              {selectedRow.method}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item span={6} label="请求参数">
+              {selectedRow.operParam}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item span={6} label="返回参数">
+              {selectedRow.jsonResult}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+
+          <ProDescriptions column={8}>
+            <ProDescriptions.Item
+              span={2}
+              label="操作状态"
+              valueEnum={{
+                0: {
+                  text: "成功",
+                  status: "0",
+                },
+                1: {
+                  text: "失败",
+                  status: "1",
+                },
+              }}
+            >
+              {selectedRow.status}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item span={2} label="消耗时间">
+              {selectedRow.costTime}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item span={4} label="操作时间">
+              {selectedRow.operTime}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+          {selectedRow.errorMsg && (
+            <ProDescriptions>
+              <ProDescriptions.Item label="异常信息">
+                {selectedRow.errorMsg}
+              </ProDescriptions.Item>
+            </ProDescriptions>
+          )}
+        </Modal>
+      )}
     </PageContainer>
   );
 }
