@@ -1,111 +1,108 @@
 "use client";
 
-import { fetchApi } from '@/app/_modules/func';
-import { ClearOutlined, DeleteOutlined, ImportOutlined } from '@ant-design/icons';
-import type { ProColumns } from '@ant-design/pro-components';
-import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { Button } from 'antd';
-import { useRouter } from 'next/navigation';
+import { fetchApi } from "@/app/_modules/func";
+import {
+  ClearOutlined,
+  DeleteOutlined,
+  ImportOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
+import type { ProColumns,ProFormInstance  } from "@ant-design/pro-components";
+import { PageContainer, ProTable } from "@ant-design/pro-components";
+import { Button, Space, Tag, Checkbox } from "antd";
+import { useRouter } from "next/navigation";
 
+import {
+  faCheck,
+  faXmark,
+  faToggleOn,
+  faToggleOff
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import { useState,useRef } from "react";
 
 export type TableListItem = {
-  key: number;
   operId: string;
   title: string;
   businessType: string;
-  operName:string,
-  operIp:string,
-  operLocation:string,
-  status:string,
-  operTime:string,
-  costTime:string,
+  operName: string;
+  operIp: string;
+  operLocation: string;
+  status: string;
+  operTime: string;
+  costTime: string;
 };
-const tableListDataSource: TableListItem[] = [];
-
-for (let i = 0; i < 5; i += 1) {
-  tableListDataSource.push({
-    key: i,
-    operId: 'AppName',
-    title: "模块",
-    businessType: "1",
-    operName: "0",
-    operIp:"127.0.0.1",
-    operLocation:"四川",
-    status: "success",
-    operTime:"2024-01-23 14:25:37",
-    costTime: "10ms"
-  });
-}
 
 //表格列定义
 const columns: ProColumns<TableListItem>[] = [
   {
-    dataIndex: 'index',
-    valueType: 'indexBorder',
-    width: 48,
+    title: "日志编号",
+    dataIndex: "operId",
+    search: false,
   },
   {
-    title: '日志编号',
-    dataIndex: 'operId',
-    search:false,
+    title: "系统模块",
+    dataIndex: "title",
+    order: 9,
   },
   {
-    title: '系统模块',
-    dataIndex: 'title',
-  },
-  {
-    title: '操作类型',
-    dataIndex: 'businessType',
+    title: "操作类型",
+    dataIndex: "businessType",
+    order: 7,
     valueEnum: {
-      add: {
+      1: {
         text: "新增",
         status: "1",
       },
-      modify: {
+      2: {
         text: "修改",
         status: "2",
       },
-      delete: {
+      3: {
         text: "删除",
         status: "3",
       },
-      auth: {
+      4: {
         text: "授权",
         status: "4",
       },
-      export: {
+      5: {
         text: "导出",
         status: "5",
       },
-      import: {
+      6: {
         text: "导入",
         status: "6",
       },
-      quit: {
+      7: {
         text: "强退",
         status: "7",
       },
-      code: {
+      8: {
         text: "生成代码",
         status: "8",
       },
-      clear: {
+      9: {
         text: "清空数据",
         status: "9",
       },
-      other: {
+      0: {
         text: "其他",
         status: "0",
       },
-    }
+    },
   },
   {
     title: "操作人员",
     dataIndex: "operName",
+    sorter: true,
+    order: 8,
   },
   {
     title: "操作地址",
     dataIndex: "operIp",
+    order: 10,
   },
   {
     title: "操作地点",
@@ -116,26 +113,54 @@ const columns: ProColumns<TableListItem>[] = [
     title: "操作状态",
     dataIndex: "status",
     valueType: "select",
+    render: (_, record) => {
+      return (
+        <Space>
+          <Tag
+            color={record.status == 0 ? "green" : "red"}
+            icon={
+              record.status == 0 ? (
+                <FontAwesomeIcon icon={faCheck} />
+              ) : (
+                <FontAwesomeIcon icon={faXmark} />
+              )
+            }
+          >
+            {_}
+          </Tag>
+        </Space>
+      );
+    },
     valueEnum: {
-      success: {
+      0: {
         text: "成功",
         status: "0",
       },
-      failure: {
+      1: {
         text: "失败",
         status: "1",
       },
     },
+    order: 6,
   },
   {
     title: "操作日期",
     dataIndex: "operTime",
-    valueType: "dateTimeRange",
+    valueType: "datetime",
+    search: false,
+    sorter: true,
+  },
+  {
+    title: "操作日期",
+    dataIndex: "operTimeRange",
+    valueType: "dateRange",
+    hideInTable: true,
+    order: 5,
     search: {
       transform: (value) => {
         return {
-          startTime: value[0],
-          endTime: value[1],
+          "params[beginTime]": `${value[0]} 23:59:59`,
+          "params[endTime]": `${value[1]} 23:59:59`,
         };
       },
     },
@@ -143,64 +168,133 @@ const columns: ProColumns<TableListItem>[] = [
   {
     title: "消耗时间",
     dataIndex: "costTime",
+    sorter: true,
     search: false,
+    render: (_, record) => {
+      return <span>{_}毫秒</span>;
+    },
   },
   {
     title: "操作",
-    key: 'option',
-    search:false,
-    render: () => [
-      <a key="link">详情</a>,
-    ],
-  }
+    key: "option",
+    search: false,
+    render: () => [<a key="link">详情</a>],
+  },
 ];
 
 export default function OperLog() {
-  const {push} = useRouter();
+  const { push } = useRouter();
 
-  const getLog= async (params, sorter, filter)=>{
+  //查询日志数据
+  const getLog = async (params, sorter, filter) => {
     const searchParams = {
       pageNum: params.current,
-      pageSize:params.pageSize,
-    }
-    
-    const body = await fetchApi(`/api/monitor/operlog/list?${new URLSearchParams(searchParams)}`,push);
-    console.log("data:",body);
+      ...params,
+    };
+
+    delete searchParams.current;
+
+    console.log("params:", searchParams);
+
+    const body = await fetchApi(
+      `/api/monitor/operlog/list?${new URLSearchParams(searchParams)}`,
+      push
+    );
+    console.log("data:", body);
     return body;
-  }
+  };
+
+  //选中行操作
+  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const rowSelection = {
+    onChange: (newSelectedRowKeys, selectedRows) => {
+      console.log(
+        `selectedRowKeys: ${newSelectedRowKeys}`,
+        "selectedRows: ",
+        selectedRows
+      );
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  //搜索栏显示状态
+  const [showSearch, setShowSearch] = useState(true);
+  //action对象引用
+  const ref = useRef<ProFormInstance>();
+
   return (
     <PageContainer>
-    <ProTable<TableListItem>
-      columns={columns}
-      request={async (params, sorter, filter) => {
-        // 表单搜索项会从 params 传入，传递给后端接口。
-        console.log(params, sorter, filter);
-        const data = await getLog(params,sorter,filter);
-        return Promise.resolve({
-          data: data.rows,
-          success: true,
-          total: data.total,
-        });
-      }}
-      rowKey="key"
-      pagination={{
-        showQuickJumper: true,
-      }}
-      search={{
-        defaultCollapsed: false,
-        searchText:"搜索"
-      }}
-      dateFormatter="string"
-      toolBarRender={() => [
-        <Button key="danger" danger icon={<DeleteOutlined />}>
-          删除
-        </Button>,
-        <Button key="clear" danger icon={<ClearOutlined />}>清空</Button>,
-        <Button type="primary" key="primary" icon={<ImportOutlined />}>
-          导出
-        </Button>,
-      ]}
-    />
+      <ProTable<TableListItem>
+        rowKey={(record) => record.operId}
+        rowSelection={{
+          selectedRowKeys,
+          ...rowSelection,
+        }}
+        columns={columns}
+        request={async (params, sorter, filter) => {
+          // 表单搜索项会从 params 传入，传递给后端接口。
+          console.log(params, sorter, filter);
+          const data = await getLog(params, sorter, filter);
+          if (data !== undefined) {
+            return Promise.resolve({
+              data: data.rows,
+              success: true,
+              total: data.total,
+            });
+          }
+          return Promise.resolve({
+            data: [],
+            success: true,
+          });
+        }}
+        pagination={{
+          pageSize: 10,
+          showQuickJumper: true,
+        }}
+        search={
+          showSearch
+            ? {
+                defaultCollapsed: false,
+                searchText: "搜索",
+              }
+            : false
+        }
+        dateFormatter="string"
+        actionRef={ref}
+        toolbar={{
+          actions: [
+            <Button key="danger" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>,
+            <Button key="clear" danger icon={<ClearOutlined />}>
+              清空
+            </Button>,
+            <Button key="export" type="primary" icon={<ImportOutlined />}>
+              导出
+            </Button>,
+          ],
+          settings: [
+            {
+              key: "switch",
+              icon: showSearch ? <FontAwesomeIcon icon={faToggleOn} /> : <FontAwesomeIcon icon={faToggleOff} />,
+              tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
+              onClick: (key: string) => {
+                setShowSearch(!showSearch);
+              },
+            },
+            {
+              key: "refresh",
+              tooltip: "刷新",
+              icon: <ReloadOutlined />,
+              onClick: (key: string) => {
+                if (ref.current) {
+                    ref.current.reload();
+                  }
+              },
+            },
+          ],
+        }}
+      />
     </PageContainer>
   );
-};
+}
