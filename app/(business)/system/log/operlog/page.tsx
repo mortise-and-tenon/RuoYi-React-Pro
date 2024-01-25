@@ -209,8 +209,19 @@ export default function OperLog() {
 
     delete searchParams.current;
 
+    const queryParams = new URLSearchParams(searchParams);
+
+    Object.keys(sorter).forEach((key)=>{
+        queryParams.append("orderByColumn",key);
+        if(sorter[key] === "ascend"){
+          queryParams.append("isAsc","ascending");
+        }else {
+          queryParams.append("isAsc","descending");
+        }
+    });
+
     const body = await fetchApi(
-      `/api/monitor/operlog/list?${new URLSearchParams(searchParams)}`,
+      `/api/monitor/operlog/list?${queryParams}`,
       push
     );
     console.log("data:", body);
@@ -224,11 +235,6 @@ export default function OperLog() {
   const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
   const rowSelection = {
     onChange: (newSelectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${newSelectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
     },
