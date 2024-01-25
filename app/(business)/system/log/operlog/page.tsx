@@ -276,7 +276,15 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("删除成功");
+        
+        //关闭删除日志对话框
         setIsDeleteModalOpen(false);
+        //删除按钮变回不可点击
+        setRowCanDelete(false);
+        //刷新列表
+        if (actionRef.current) {
+          actionRef.current.reload();
+        }
       } else {
         message.error(body.msg);
       }
@@ -296,6 +304,10 @@ export default function OperLog() {
       if (body.code == 200) {
         message.success("清空成功");
         setIsClearModalOpen(false);
+        //刷新列表
+        if (actionRef.current) {
+            actionRef.current.reload();
+          }
       } else {
         message.error(body.msg);
       }
