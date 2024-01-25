@@ -219,7 +219,7 @@ export default function RootLayout({
   };
 
   //默认当前展示首页
-  const [pathname, setPathname] = useState("/index");
+  const [pathname, setPathname] = useState(location.pathname);
 
   //侧边菜单样式
   const settings: ProSettings | undefined = {
