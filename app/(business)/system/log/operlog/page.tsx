@@ -240,38 +240,36 @@ export default function OperLog() {
     },
   };
 
-  //是否打开删除日志数据对话框
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  //是否处于确认状态中
-  const [confirmLoading, setConfirmLoading] = useState(false);
-
-  //是否打开清空日志对话框
-  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
-
   //点击删除按钮
   const onClickDeleteRow = () => {
-    setIsDeleteModalOpen(true);
+    Modal.confirm({
+      title: '系统提示',
+      icon: <ExclamationCircleFilled />,
+      content: `是否确认删除日志编号为“${selectedRowKeys.join(",")}”的数据项？`,
+      onOk() {
+        executeDeleteRow();
+      },
+      onCancel() {
+      },
+    });
   };
 
   //点击清空按钮
   const onClickClear = () => {
-    setIsClearModalOpen(true);
-  };
-
-  //关闭删除日志对话框
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  //关闭清空日志对话框
-  const closeClearModal = () => {
-    setIsClearModalOpen(false);
+    Modal.confirm({
+      title: '系统提示',
+      icon: <ExclamationCircleFilled />,
+      content: '是否确认清空所有操作日志数据项？',
+      onOk() {
+        executeClear();
+      },
+      onCancel() {
+      },
+    });
   };
 
   //确定删除选中的日志数据
   const executeDeleteRow = async () => {
-    setConfirmLoading(true);
     const body = await fetchApi(
       `/api/monitor/operlog/${selectedRowKeys.join(",")}`,
       push,
@@ -283,8 +281,6 @@ export default function OperLog() {
       if (body.code == 200) {
         message.success("删除成功");
         
-        //关闭删除日志对话框
-        setIsDeleteModalOpen(false);
         //删除按钮变回不可点击
         setRowCanDelete(false);
         //刷新列表
@@ -295,7 +291,6 @@ export default function OperLog() {
         message.error(body.msg);
       }
     }
-    setConfirmLoading(false);
   };
 
   //确定清空日志数据
@@ -480,33 +475,7 @@ export default function OperLog() {
           ],
         }}
       />
-      <Modal
-        title={
-          <>
-            <ExclamationCircleFilled style={{ color: "#faad14" }} /> 系统提示
-          </>
-        }
-        open={isDeleteModalOpen}
-        onOk={executeDeleteRow}
-        onCancel={closeDeleteModal}
-        confirmLoading={confirmLoading}
-      >
-        是否确认删除日志编号为“{selectedRowKeys.join(",")}”的数据项？
-      </Modal>
-
-      <Modal
-        title={
-          <>
-            <ExclamationCircleFilled style={{ color: "#faad14" }} /> 系统提示
-          </>
-        }
-        open={isClearModalOpen}
-        onOk={executeClear}
-        onCancel={closeClearModal}
-        confirmLoading={confirmLoading}
-      >
-        是否确认清空所有操作日志数据项？
-      </Modal>
+      
 
       {selectedRow !== undefined && (
         <Modal

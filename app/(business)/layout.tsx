@@ -15,11 +15,12 @@ import {
   SearchOutlined,
   ToolOutlined,
   UserOutlined,
+  ExclamationCircleFilled
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
 import { ProLayout } from "@ant-design/pro-components";
 import { deleteCookie, getCookie } from "cookies-next";
-import { Dropdown, Input, MenuProps, Tooltip } from "antd";
+import { Dropdown, Input, MenuProps, Tooltip,Modal } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -58,12 +59,10 @@ export default function RootLayout({
     push("/login");
   };
 
-  const [userToken, setUserToken] = useState("");
 
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
     const token = getCookie("token");
-    setUserToken(token);
 
     if (token === "") {
       redirectToLogin();
@@ -74,11 +73,16 @@ export default function RootLayout({
   //是否展示搜索框
   const [showSearch, setShowSearch] = useState(false);
 
+
+  //是否展示退出对话框
+  const [isLogoutShow,setIsLogoutShow] = useState(false);
+  //是否加载中
+  const [confirmLoading,setConfirmLoading] = useState(false);
+
   //用户下拉菜单点击操作
   const onActionClick: MenuProps["onClick"] = ({ key }) => {
     if (key === "logout") {
-      console.log("logout");
-      logout();
+     setIsLogoutShow(true);
     } else if (key === "profile") {
       console.log("profile");
       push("/user/profile");
@@ -208,6 +212,7 @@ export default function RootLayout({
 
   //退出登录
   const logout = async () => {
+    setConfirmLoading(true);
     const data = await fetchApi("/api/logout", push, {
       method: "POST",
     });
@@ -215,6 +220,8 @@ export default function RootLayout({
     if (data.code == 200) {
       deleteCookie("token");
       redirectToLogin();
+      setIsLogoutShow(false);
+      setConfirmLoading(false);
     }
   };
 
@@ -387,6 +394,19 @@ export default function RootLayout({
       }}
       {...settings}
     >
+      <Modal
+        title={
+          <>
+            <ExclamationCircleFilled style={{ color: "#faad14" }} /> 提示
+          </>
+        }
+        open={isLogoutShow}
+        onOk={logout}
+        onCancel={()=>setIsLogoutShow(false)}
+        confirmLoading={confirmLoading}
+      >
+        确定注销并退出系统吗？
+      </Modal>
       {children}
     </ProLayout>
   );
