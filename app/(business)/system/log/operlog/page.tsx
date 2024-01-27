@@ -305,6 +305,8 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("清空成功");
+        //选中的数据恢复为空
+        setSelectedRowKeys([]);
         //刷新列表
         if (actionRef.current) {
             actionRef.current.reload();

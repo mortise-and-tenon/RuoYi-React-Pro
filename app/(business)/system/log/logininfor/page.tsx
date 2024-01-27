@@ -8,6 +8,7 @@ import {
   ImportOutlined,
   ReloadOutlined,
   ExclamationCircleFilled,
+  UnlockOutlined,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
@@ -57,31 +58,31 @@ export default function OperLog() {
       sorter: true,
     },
     {
-        title: "登录地址",
-        dataIndex: "ipaddr",
-        order:4,
-      },
+      title: "登录地址",
+      dataIndex: "ipaddr",
+      order: 4,
+    },
     {
-        title: "登录地点",
-        dataIndex: "loginLocation",
-        search:false,
-      },
-      
-      {
-        title: "浏览器",
-        dataIndex: "browser",
-        search:false,
-      },
-      {
-        title: "操作系统",
-        dataIndex: "os",
-        search:false,
-      },
+      title: "登录地点",
+      dataIndex: "loginLocation",
+      search: false,
+    },
+
+    {
+      title: "浏览器",
+      dataIndex: "browser",
+      search: false,
+    },
+    {
+      title: "操作系统",
+      dataIndex: "os",
+      search: false,
+    },
     {
       title: "登录状态",
       dataIndex: "status",
       valueType: "select",
-      order:2,
+      order: 2,
       render: (_, record) => {
         return (
           <Space>
@@ -112,10 +113,10 @@ export default function OperLog() {
       },
     },
     {
-        title: "操作信息",
-        dataIndex: "msg",
-        search:false,
-      },
+      title: "操作信息",
+      dataIndex: "msg",
+      search: false,
+    },
     {
       title: "登录日期",
       dataIndex: "loginTime",
@@ -151,13 +152,13 @@ export default function OperLog() {
 
     const queryParams = new URLSearchParams(searchParams);
 
-    Object.keys(sorter).forEach((key)=>{
-        queryParams.append("orderByColumn",key);
-        if(sorter[key] === "ascend"){
-          queryParams.append("isAsc","ascending");
-        }else {
-          queryParams.append("isAsc","descending");
-        }
+    Object.keys(sorter).forEach((key) => {
+      queryParams.append("orderByColumn", key);
+      if (sorter[key] === "ascend") {
+        queryParams.append("isAsc", "ascending");
+      } else {
+        queryParams.append("isAsc", "descending");
+      }
     });
 
     const body = await fetchApi(
@@ -173,38 +174,64 @@ export default function OperLog() {
 
   //选中行操作
   const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRow, setSelectedRow] = useState(undefined as any);
+
+  //解锁按钮是否可用
+  const [rowCanUnlock, setRowCanUnlock] = useState(false);
+
   const rowSelection = {
     onChange: (newSelectedRowKeys, selectedRows) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
+
+      if (newSelectedRowKeys && newSelectedRowKeys.length == 1) {
+        console.log("row:",selectedRows[0]);
+        setSelectedRow(selectedRows[0]);
+        setRowCanUnlock(true);
+      } else {
+        setRowCanUnlock(false);
+        setSelectedRow(undefined);
+      }
     },
   };
 
   //点击删除按钮
   const onClickDeleteRow = () => {
     Modal.confirm({
-      title: '系统提示',
+      title: "系统提示",
       icon: <ExclamationCircleFilled />,
       content: `是否确认删除访问编号为“${selectedRowKeys.join(",")}”的数据项？`,
       onOk() {
         executeDeleteRow();
       },
-      onCancel() {
-      },
+      onCancel() {},
     });
   };
 
   //点击清空按钮
   const onClickClear = () => {
     Modal.confirm({
-      title: '系统提示',
+      title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: '是否确认清空所有操作日志数据项？',
+      content: "是否确认清空所有操作日志数据项？",
       onOk() {
         executeClear();
       },
-      onCancel() {
+      onCancel() {},
+    });
+  };
+
+  //点击解锁按钮
+  const onClickUnlock = () => {
+    console.log("row:",selectedRow);
+    Modal.confirm({
+      title: "系统提示",
+      icon: <ExclamationCircleFilled />,
+      content: `是否确认解锁用户"${selectedRow.userName}"数据项?`,
+      onOk() {
+        executeUnlock();
       },
+      onCancel() {},
     });
   };
 
@@ -220,7 +247,7 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("删除成功");
-        
+
         //删除按钮变回不可点击
         setRowCanDelete(false);
         //选中行数据重置为空
@@ -244,31 +271,35 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("清空成功");
+        //选中行数据重置为空
+        setSelectedRowKeys([]);
         //刷新列表
         if (actionRef.current) {
-            actionRef.current.reload();
-          }
+          actionRef.current.reload();
+        }
       } else {
         message.error(body.msg);
       }
     }
   };
 
-  //控制是否展示行详情模态框
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  //确定解锁用户
+  const executeUnlock = async (userName:string) => {
+    const body = await fetchApi(`/api/monitor/logininfor/unlock/${userName}`, push);
 
-  //关闭行详情展示
-  function closeRowModal() {
-    setIsModalOpen(false);
-  }
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("解锁成功");
+        //刷新列表
+        if (actionRef.current) {
+          actionRef.current.reload();
+        }
+      } else {
+        message.error(body.msg);
+      }
+    }
+  };
 
-  const [selectedRow, setSelectedRow] = useState(undefined as any);
-
-  //展示行详情
-  function showRowModal(record) {
-    setIsModalOpen(true);
-    setSelectedRow(record);
-  }
 
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
@@ -376,6 +407,14 @@ export default function OperLog() {
               onClick={onClickClear}
             >
               清空
+            </Button>,
+            <Button
+              key="unlock"
+              icon={<UnlockOutlined />}
+              disabled={!rowCanUnlock}
+              onClick={onClickUnlock}
+            >
+              解锁
             </Button>,
             <Button
               key="export"
