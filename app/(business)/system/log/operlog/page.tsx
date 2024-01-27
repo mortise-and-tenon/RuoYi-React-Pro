@@ -168,7 +168,7 @@ export default function OperLog() {
       search: {
         transform: (value) => {
           return {
-            "params[beginTime]": `${value[0]} 23:59:59`,
+            "params[beginTime]": `${value[0]} 00:00:00`,
             "params[endTime]": `${value[1]} 23:59:59`,
           };
         },
@@ -283,6 +283,8 @@ export default function OperLog() {
         
         //删除按钮变回不可点击
         setRowCanDelete(false);
+        //选中的数据恢复为空
+        setSelectedRowKeys([]);
         //刷新列表
         if (actionRef.current) {
           actionRef.current.reload();
@@ -295,7 +297,6 @@ export default function OperLog() {
 
   //确定清空日志数据
   const executeClear = async () => {
-    setConfirmLoading(true);
 
     const body = await fetchApi("/api/monitor/operlog/clean", push, {
       method: "DELETE",
@@ -304,7 +305,6 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("清空成功");
-        setIsClearModalOpen(false);
         //刷新列表
         if (actionRef.current) {
             actionRef.current.reload();
@@ -313,8 +313,6 @@ export default function OperLog() {
         message.error(body.msg);
       }
     }
-
-    setConfirmLoading(false);
   };
 
   //控制是否展示行详情模态框
