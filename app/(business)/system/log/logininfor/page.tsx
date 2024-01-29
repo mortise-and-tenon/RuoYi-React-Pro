@@ -24,6 +24,7 @@ import {
   faToggleOff,
   faToggleOn,
   faXmark,
+  faDownload
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -185,7 +186,7 @@ export default function OperLog() {
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
       if (newSelectedRowKeys && newSelectedRowKeys.length == 1) {
-        console.log("row:",selectedRows[0]);
+        console.log("row:", selectedRows[0]);
         setSelectedRow(selectedRows[0]);
         setRowCanUnlock(true);
       } else {
@@ -223,13 +224,13 @@ export default function OperLog() {
 
   //点击解锁按钮
   const onClickUnlock = () => {
-    console.log("row:",selectedRow);
+    console.log("row:", selectedRow);
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
       content: `是否确认解锁用户"${selectedRow.userName}"数据项?`,
       onOk() {
-        executeUnlock();
+        executeUnlock(selectedRow.userName);
       },
       onCancel() {},
     });
@@ -284,8 +285,11 @@ export default function OperLog() {
   };
 
   //确定解锁用户
-  const executeUnlock = async (userName:string) => {
-    const body = await fetchApi(`/api/monitor/logininfor/unlock/${userName}`, push);
+  const executeUnlock = async (userName: string) => {
+    const body = await fetchApi(
+      `/api/monitor/logininfor/unlock/${userName}`,
+      push
+    );
 
     if (body !== undefined) {
       if (body.code == 200) {
@@ -299,7 +303,6 @@ export default function OperLog() {
       }
     }
   };
-
 
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
@@ -419,7 +422,7 @@ export default function OperLog() {
             <Button
               key="export"
               type="primary"
-              icon={<ImportOutlined />}
+              icon={<FontAwesomeIcon icon={faDownload} />}
               onClick={exportTable}
             >
               导出

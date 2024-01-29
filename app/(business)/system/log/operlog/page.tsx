@@ -23,6 +23,7 @@ import {
   faToggleOff,
   faToggleOn,
   faXmark,
+  faDownload
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -443,7 +444,7 @@ export default function OperLog() {
             <Button
               key="export"
               type="primary"
-              icon={<ImportOutlined />}
+              icon={<FontAwesomeIcon icon={faDownload} />}
               onClick={exportTable}
             >
               导出
