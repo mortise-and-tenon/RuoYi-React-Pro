@@ -20,6 +20,14 @@ import {
   ProDescriptions,
   ProTable,
   ProCard,
+  ProForm,
+  ModalForm,
+  ProFormDateRangePicker,
+  ProFormSelect,
+  ProFormText,
+  ProFormCheckbox,
+  ProFormRadio,
+  ProFormTextArea,
 } from "@ant-design/pro-components";
 import {
   Button,
@@ -121,6 +129,7 @@ export default function User() {
               unCheckedChildren={<CloseOutlined />}
               defaultChecked={record.status === "0"}
               checked={rowStatusMap[record.userId]}
+              disabled={record.userId == 1}
               onChange={(checked, event) => {
                 showSwitchUserStatusModal(checked, record);
               }}
@@ -150,6 +159,21 @@ export default function User() {
           };
         },
       },
+    },
+    {
+      title: "操作",
+      key: "option",
+      search: false,
+      render: (_, record) => [
+        <Button
+          key={record.operId}
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => showRowModal(record)}
+        >
+          详情
+        </Button>,
+      ],
     },
   ];
 
@@ -194,7 +218,9 @@ export default function User() {
       icon: <ExclamationCircleFilled />,
       content: `确认要${checked ? "启用" : "停用"}"${record.userName}"用户吗？`,
       onOk() {
-        executeSwitchStatus(checked, record.userId);
+        executeSwitchStatus(checked, record.userId, () => {
+          setRowStatusMap({ ...rowStatusMap, [record.userId]: !checked });
+        });
       },
       onCancel() {
         setRowStatusMap({ ...rowStatusMap, [record.userId]: !checked });
@@ -203,7 +229,11 @@ export default function User() {
   };
 
   //确认变更用户状态
-  const executeSwitchStatus = async (checked: boolean, userId: string) => {
+  const executeSwitchStatus = async (
+    checked: boolean,
+    userId: string,
+    erroCallback: () => {}
+  ) => {
     const modifyData = {
       userId: userId,
       status: checked ? "0" : "1",
@@ -221,9 +251,13 @@ export default function User() {
         message.success(body.msg);
       } else {
         message.error(body.msg);
+        erroCallback();
       }
     }
   };
+
+  //是否展示添加用户对话框
+  const [showAddModal, setShowAddModal] = useState(false);
 
   //删除按钮是否可用，选中行时才可用
   const [rowCanDelete, setRowCanDelete] = useState(false);
@@ -241,7 +275,6 @@ export default function User() {
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
       if (newSelectedRowKeys && newSelectedRowKeys.length == 1) {
-        console.log("row:", selectedRows[0]);
         setSelectedRow(selectedRows[0]);
         setRowCanModify(true);
       } else {
@@ -249,6 +282,14 @@ export default function User() {
         setSelectedRow(undefined);
       }
     },
+  };
+
+  //确定新建用户
+  const confirmAddUser = () => {};
+
+  //关闭新建对话框
+  const cancelAddUser = () => {
+    setShowAddModal(false);
   };
 
   //点击修改按钮
@@ -261,7 +302,7 @@ export default function User() {
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除访问编号为“${selectedRowKeys.join(",")}”的数据项？`,
+      content: `是否确认删除用户编号为“${selectedRowKeys.join(",")}”的数据项？`,
       onOk() {
         executeDeleteRow();
       },
@@ -286,7 +327,7 @@ export default function User() {
   //确定删除选中的日志数据
   const executeDeleteRow = async () => {
     const body = await fetchApi(
-      `/api/monitor/logininfor/${selectedRowKeys.join(",")}`,
+      `/api/system/user/${selectedRowKeys.join(",")}`,
       push,
       {
         method: "DELETE",
@@ -368,13 +409,13 @@ export default function User() {
       });
 
       await fetchFile(
-        "/api/monitor/logininfor/export",
+        "/api/system/user/export",
         push,
         {
           method: "POST",
           body: formData,
         },
-        "logininfor.xlsx"
+        "user.xlsx"
       );
     }
   };
@@ -390,7 +431,7 @@ export default function User() {
         <Col xs={24} sm={18} md={18}>
           <ProTable<TableListItem>
             formRef={formRef}
-            rowKey={(record) => record.infoId}
+            rowKey={(record) => record.userId}
             rowSelection={{
               selectedRowKeys,
               ...rowSelection,
@@ -430,13 +471,138 @@ export default function User() {
             actionRef={actionRef}
             toolbar={{
               actions: [
-                <Button
-                  icon={<PlusOutlined />}
-                  type="primary"
-                  onClick={onClickModifyRow}
+                <ModalForm<{
+                  name: string;
+                  company: string;
+                }>
+                  title="添加用户"
+                  trigger={
+                    <Button icon={<PlusOutlined />} type="primary">
+                      新建
+                    </Button>
+                  }
+                  // layout="horizontal"
+                  // form={form}
+                  autoFocusFirstInput
+                  modalProps={{
+                    destroyOnClose: true,
+                    // onCancel: () => console.log('run'),
+                  }}
+                  submitTimeout={2000}
+                  onFinish={async (values) => {
+                    await waitTime(2000);
+                    console.log(values.name);
+                    message.success("提交成功");
+                    return true;
+                  }}
                 >
-                  新建
-                </Button>,
+                  <ProForm.Group>
+                    <ProFormText
+                      width="md"
+                      name="nickName"
+                      label="用户昵称"
+                      placeholder="请输入用户昵称"
+                    />
+
+                    <ProFormText
+                      width="md"
+                      name="company"
+                      label="归属部门"
+                      placeholder="请选择归属部门"
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormText
+                      width="md"
+                      name="phoneNumber"
+                      label="手机号码"
+                      placeholder="请输入手机号码"
+                    />
+                    <ProFormText
+                      width="md"
+                      name="email"
+                      label="邮箱"
+                      placeholder="请输入邮箱"
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormText
+                      width="md"
+                      name="userName"
+                      label="用户名称"
+                      placeholder="请输入用户名称"
+                    />
+                    <ProFormText.Password
+                      width="md"
+                      name="password"
+                      label="用户密码"
+                      placeholder="请输入用户密码"
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormSelect
+                      request={async () => [
+                        {
+                          value: "chapter",
+                          label: "盖章后生效",
+                        },
+                      ]}
+                      width="md"
+                      name="sex"
+                      label="用户性别"
+                    />
+                    <ProFormRadio.Group
+                      name="status"
+                      width="sm"
+                      label="状态"
+                      value="0"
+                      options={[
+                        {
+                          label: "正常",
+                          value: "0",
+                        },
+                        {
+                          label: "停用",
+                          value: "1",
+                        },
+                      ]}
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormSelect
+                      request={async () => [
+                        {
+                          value: "chapter",
+                          label: "盖章后生效",
+                        },
+                      ]}
+                      width="md"
+                      name="position"
+                      label="岗位"
+                    />
+                    <ProFormSelect
+                      request={async () => [
+                        {
+                          value: "chapter",
+                          label: "盖章后生效",
+                        },
+                      ]}
+                      width="md"
+                      name="role"
+                      label="角色"
+                    />
+                  </ProForm.Group>
+                  
+                    <ProFormTextArea
+                      name="comment"
+                      width="xl"
+                      layout="horizontal"
+                      label="备注"
+                      placeholder="请输入内容"
+                      // fieldProps={inputTextAreaProps}
+                    />
+                 
+                </ModalForm>,
                 <Button
                   icon={<FontAwesomeIcon icon={faPenToSquare} />}
                   disabled={!rowCanModify}
