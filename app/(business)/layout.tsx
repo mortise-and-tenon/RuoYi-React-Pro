@@ -65,6 +65,7 @@ export default function RootLayout({
 
     if (token === "") {
       redirectToLogin();
+      return;
     }
     getProfile();
   }, []);

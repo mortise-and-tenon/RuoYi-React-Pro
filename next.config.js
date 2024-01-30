@@ -5,6 +5,10 @@ const nextConfig = {
       return {
         fallback: [
           {
+            source: "/api/system/user",
+            destination: `http://localhost:8080/system/user/`,
+          },
+          {
             source: "/api/:path*",
             destination: `http://localhost:8080/:path*`,
           },

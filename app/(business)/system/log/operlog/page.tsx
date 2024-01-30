@@ -381,7 +381,7 @@ export default function OperLog() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer title={false}>
       <ProTable<TableListItem>
         formRef={formRef}
         rowKey={(record) => record.operId}

@@ -28,6 +28,7 @@ import {
   ProFormCheckbox,
   ProFormRadio,
   ProFormTextArea,
+  ProFormTreeSelect,
 } from "@ant-design/pro-components";
 import {
   Button,
@@ -40,6 +41,7 @@ import {
   Row,
   Col,
   Switch,
+  Tooltip,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -54,8 +56,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useRef, useState } from "react";
-import { Tooltip } from "@/node_modules/antd/es/index";
+import { useRef, useState, useEffect } from "react";
 
 export type TableListItem = {
   operId: string;
@@ -69,8 +70,21 @@ export type TableListItem = {
   costTime: string;
 };
 
+export type OptionType = {
+  label: string;
+  value: string | number;
+};
+
 export default function User() {
   const { push } = useRouter();
+
+  //新建用户预置密码值
+  const [defaultPassword, setDefaultPassword] = useState("");
+
+  useEffect(() => {
+    queryDefaultPassword();
+    queryPostion();
+  }, []);
 
   //控制行的状态值的恢复
   const [rowStatusMap, setRowStatusMap] = useState<{ [key: number]: boolean }>(
@@ -198,7 +212,6 @@ export default function User() {
     });
 
     const body = await fetchApi(`/api/system/user/list?${queryParams}`, push);
-    console.log("data:", body);
 
     if (body !== undefined) {
       body.rows.forEach((row) => {
@@ -256,9 +269,6 @@ export default function User() {
     }
   };
 
-  //是否展示添加用户对话框
-  const [showAddModal, setShowAddModal] = useState(false);
-
   //删除按钮是否可用，选中行时才可用
   const [rowCanDelete, setRowCanDelete] = useState(false);
 
@@ -284,17 +294,167 @@ export default function User() {
     },
   };
 
-  //确定新建用户
-  const confirmAddUser = () => {};
-
-  //关闭新建对话框
-  const cancelAddUser = () => {
-    setShowAddModal(false);
+  //查询组织树
+  const queryOrgTree = async () => {
+    const body = await fetchApi("/api/system/user/deptTree", push);
+    if (body !== undefined) {
+      return body.data;
+    }
   };
 
-  //点击修改按钮
-  const onClickModifyRow = () => {
-    console.log("修改");
+  //查询性别分类
+  const querySexType = async () => {
+    const body = await fetchApi(
+      "/api/system/dict/data/type/sys_user_sex",
+      push
+    );
+    if (body !== undefined) {
+      return body.data;
+    }
+  };
+
+  //查询新建用户预置密码
+  const queryDefaultPassword = async () => {
+    const body = await fetchApi(
+      "/api/system/config/configKey/sys.user.initPassword",
+      push
+    );
+    if (body !== undefined) {
+      setDefaultPassword(body.msg);
+    }
+  };
+
+  //岗位数据
+  const [positionValue, setPositionValue] = useState<{ [key: number]: string }>(
+    {}
+  );
+
+  //角色数据
+  const [roleValue, setRoleValue] = useState<{ [key: number]: string }>({});
+
+  //查询岗位
+  const queryPostion = async () => {
+    const body = await fetchApi("/api/system/user/", push);
+
+    if (body !== undefined) {
+      body.posts.forEach((post) => {
+        positionValue[post.postId] = post.postName;
+        setPositionValue(positionValue);
+      });
+      body.roles.forEach((role) => {
+        roleValue[role.roleId] = role.roleName;
+        setRoleValue(roleValue);
+      });
+    }
+  };
+
+  //确定新建用户
+  const executeAddUser = async (values) => {
+    const body = await fetchApi("/api/system/user", push, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+
+    if (body != undefined) {
+      if (body.code == 200) {
+        message.success(body.msg);
+        if (actionRef.current) {
+          actionRef.current.reload();
+        }
+        return true;
+      }
+
+      message.error(body.msg);
+      return false;
+    }
+    return false;
+  };
+
+  //修改用户表单引用
+  const modifyFormRef = useRef<ProFormInstance>();
+
+  //待修改用户的岗位可选数据
+  const modifyPositionValue: Array<OptionType> = new Array<OptionType>();
+  //待修改用户的角色可选数据
+  const modifyRoleValue: Array<OptionType> = new Array<OptionType>();
+
+  const requestModifyPositionValue = async () => {
+    return modifyPositionValue;
+  };
+
+  const requestModifyRoleValue = async () => {
+    return modifyRoleValue;
+  };
+
+  //查询用户信息
+  const queryUserInfo = async () => {
+    if (selectedRow !== undefined) {
+      const body = await fetchApi(
+        `/api/system/user/${selectedRow.userId}`,
+        push
+      );
+
+      if (body !== undefined) {
+        if (body.code == 200) {
+          body.posts.forEach((post) => {
+            const option: OptionType = {
+              label: post.postName,
+              value: post.postId,
+            };
+            modifyPositionValue.push(option);
+          });
+          body.roles.forEach((role) => {
+            const option: OptionType = {
+              label: role.roleName,
+              value: role.roleId,
+            };
+            modifyRoleValue.push(option);
+          });
+
+          modifyFormRef?.current?.setFieldsValue({
+            nickName: body.data.nickName,
+            deptId: body.data.deptId,
+            phonenumber: body.data.phonenumber,
+            email: body.data.email,
+            sex: body.data.sex,
+            status: body.data.status,
+            postIds: body.postIds, 
+            roleIds: body.roleIds,
+            remark: body.data.remark,
+          });
+        }
+      }
+    }
+  };
+
+  //确认修改用户
+  const executeModifyUser = async (values) => {
+    values["userId"] = selectedRow["userId"];
+    values["userName"] = selectedRow["userName"];
+    console.log("modify:", values);
+    const body = await fetchApi("/api/system/user", push, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success(body.msg);
+        //刷新列表
+        if (actionRef.current) {
+            actionRef.current.reload();
+          }
+        return true;
+      }
+      message.error(body.msg);
+      return false;
+    }
   };
 
   //点击删除按钮
@@ -312,7 +472,6 @@ export default function User() {
 
   //点击导入按钮
   const onClickImport = () => {
-    console.log("row:", selectedRow);
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
@@ -324,7 +483,7 @@ export default function User() {
     });
   };
 
-  //确定删除选中的日志数据
+  //确定删除选中的用户
   const executeDeleteRow = async () => {
     const body = await fetchApi(
       `/api/system/user/${selectedRowKeys.join(",")}`,
@@ -351,15 +510,9 @@ export default function User() {
     }
   };
 
-  //确认修改
-  const executeModify = async () => {};
-
   //确定导入
-  const executeImport = async (userName: string) => {
-    const body = await fetchApi(
-      `/api/monitor/logininfor/unlock/${userName}`,
-      push
-    );
+  const executeImport = async () => {
+    const body = await fetchApi(`/api/`, push);
 
     if (body !== undefined) {
       if (body.code == 200) {
@@ -421,7 +574,7 @@ export default function User() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer title={false}>
       <Row gutter={{ xs: 8, sm: 8, md: 8 }}>
         <Col xs={24} sm={6} md={6}>
           <ProCard>
@@ -439,7 +592,6 @@ export default function User() {
             columns={columns}
             request={async (params, sorter, filter) => {
               // 表单搜索项会从 params 传入，传递给后端接口。
-              console.log(params, sorter, filter);
               const data = await getUser(params, sorter, filter);
               if (data !== undefined) {
                 return Promise.resolve({
@@ -471,29 +623,20 @@ export default function User() {
             actionRef={actionRef}
             toolbar={{
               actions: [
-                <ModalForm<{
-                  name: string;
-                  company: string;
-                }>
+                <ModalForm
                   title="添加用户"
                   trigger={
                     <Button icon={<PlusOutlined />} type="primary">
                       新建
                     </Button>
                   }
-                  // layout="horizontal"
-                  // form={form}
                   autoFocusFirstInput
                   modalProps={{
                     destroyOnClose: true,
-                    // onCancel: () => console.log('run'),
                   }}
                   submitTimeout={2000}
                   onFinish={async (values) => {
-                    await waitTime(2000);
-                    console.log(values.name);
-                    message.success("提交成功");
-                    return true;
+                    return executeAddUser(values);
                   }}
                 >
                   <ProForm.Group>
@@ -502,27 +645,47 @@ export default function User() {
                       name="nickName"
                       label="用户昵称"
                       placeholder="请输入用户昵称"
+                      rules={[{ required: true, message: "请输入用户昵称" }]}
                     />
 
-                    <ProFormText
+                    <ProFormTreeSelect
                       width="md"
-                      name="company"
+                      name="deptId"
                       label="归属部门"
                       placeholder="请选择归属部门"
+                      request={queryOrgTree}
+                      fieldProps={{
+                        filterTreeNode: true,
+                        showSearch: true,
+                        treeNodeFilterProp: "label",
+                        fieldNames: {
+                          label: "label",
+                          value: "id",
+                        },
+                      }}
                     />
                   </ProForm.Group>
                   <ProForm.Group>
                     <ProFormText
                       width="md"
-                      name="phoneNumber"
+                      name="phonenumber"
                       label="手机号码"
                       placeholder="请输入手机号码"
+                      rules={[
+                        {
+                          pattern: /^1\d{10}$/,
+                          message: "请输入正确的手机号码",
+                        },
+                      ]}
                     />
                     <ProFormText
                       width="md"
                       name="email"
                       label="邮箱"
                       placeholder="请输入邮箱"
+                      rules={[
+                        { type: "email", message: "请输入正确的邮箱地址" },
+                      ]}
                     />
                   </ProForm.Group>
                   <ProForm.Group>
@@ -531,25 +694,28 @@ export default function User() {
                       name="userName"
                       label="用户名称"
                       placeholder="请输入用户名称"
+                      rules={[{ required: true, message: "请输入用户名称" }]}
                     />
                     <ProFormText.Password
                       width="md"
                       name="password"
                       label="用户密码"
+                      initialValue={defaultPassword}
                       placeholder="请输入用户密码"
                     />
                   </ProForm.Group>
                   <ProForm.Group>
                     <ProFormSelect
-                      request={async () => [
-                        {
-                          value: "chapter",
-                          label: "盖章后生效",
-                        },
-                      ]}
                       width="md"
                       name="sex"
                       label="用户性别"
+                      request={querySexType}
+                      fieldProps={{
+                        fieldNames: {
+                          label: "dictLabel",
+                          value: "dictValue",
+                        },
+                      }}
                     />
                     <ProFormRadio.Group
                       name="status"
@@ -570,46 +736,165 @@ export default function User() {
                   </ProForm.Group>
                   <ProForm.Group>
                     <ProFormSelect
-                      request={async () => [
-                        {
-                          value: "chapter",
-                          label: "盖章后生效",
-                        },
-                      ]}
                       width="md"
-                      name="position"
+                      name="postIds"
                       label="岗位"
+                      fieldProps={{
+                        mode: "multiple",
+                      }}
+                      valueEnum={positionValue}
                     />
                     <ProFormSelect
-                      request={async () => [
-                        {
-                          value: "chapter",
-                          label: "盖章后生效",
-                        },
-                      ]}
                       width="md"
-                      name="role"
+                      name="roleIds"
                       label="角色"
+                      fieldProps={{
+                        mode: "multiple",
+                      }}
+                      valueEnum={roleValue}
                     />
                   </ProForm.Group>
-                  
-                    <ProFormTextArea
-                      name="comment"
-                      width="xl"
-                      layout="horizontal"
-                      label="备注"
-                      placeholder="请输入内容"
-                      // fieldProps={inputTextAreaProps}
-                    />
-                 
+
+                  <ProFormTextArea
+                    name="remark"
+                    width="688px"
+                    layout="horizontal"
+                    label="备注"
+                    placeholder="请输入内容"
+                  />
                 </ModalForm>,
-                <Button
-                  icon={<FontAwesomeIcon icon={faPenToSquare} />}
-                  disabled={!rowCanModify}
-                  onClick={onClickModifyRow}
+                <ModalForm
+                  title="修改用户"
+                  formRef={modifyFormRef}
+                  trigger={
+                    <Button
+                      icon={<FontAwesomeIcon icon={faPenToSquare} />}
+                      disabled={!rowCanModify}
+                      onClick={queryUserInfo}
+                    >
+                      修改
+                    </Button>
+                  }
+                  autoFocusFirstInput
+                  modalProps={{
+                    destroyOnClose: true,
+                    onCancel: () => {},
+                  }}
+                  submitTimeout={2000}
+                  onFinish={async (values) => {
+                    return executeModifyUser(values);
+                  }}
                 >
-                  修改
-                </Button>,
+                  <ProForm.Group>
+                    <ProFormText
+                      width="md"
+                      name="nickName"
+                      label="用户昵称"
+                      placeholder="请输入用户昵称"
+                      rules={[{ required: true, message: "请输入用户昵称" }]}
+                    />
+
+                    <ProFormTreeSelect
+                      width="md"
+                      name="deptId"
+                      label="归属部门"
+                      placeholder="请选择归属部门"
+                      request={queryOrgTree}
+                      fieldProps={{
+                        filterTreeNode: true,
+                        showSearch: true,
+                        treeNodeFilterProp: "label",
+                        fieldNames: {
+                          label: "label",
+                          value: "id",
+                        },
+                      }}
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormText
+                      width="md"
+                      name="phonenumber"
+                      label="手机号码"
+                      placeholder="请输入手机号码"
+                      rules={[
+                        {
+                          pattern: /^1\d{10}$/,
+                          message: "请输入正确的手机号码",
+                        },
+                      ]}
+                    />
+                    <ProFormText
+                      width="md"
+                      name="email"
+                      label="邮箱"
+                      placeholder="请输入邮箱"
+                      rules={[
+                        { type: "email", message: "请输入正确的邮箱地址" },
+                      ]}
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormSelect
+                      width="md"
+                      name="sex"
+                      label="用户性别"
+                      request={querySexType}
+                      fieldProps={{
+                        fieldNames: {
+                          label: "dictLabel",
+                          value: "dictValue",
+                        },
+                      }}
+                    />
+                    <ProFormRadio.Group
+                      name="status"
+                      width="sm"
+                      label="状态"
+                      options={[
+                        {
+                          label: "正常",
+                          value: "0",
+                        },
+                        {
+                          label: "停用",
+                          value: "1",
+                        },
+                      ]}
+                    />
+                  </ProForm.Group>
+                  <ProForm.Group>
+                    <ProFormSelect
+                      width="md"
+                      name="postIds"
+                      label="岗位"
+                      fieldProps={{
+                        mode: "multiple",
+                      }}
+                      //   valueEnum={modifyPositionValue}
+                      request={requestModifyPositionValue}
+                    />
+                    <ProFormSelect
+                      width="md"
+                      name="roleIds"
+                      label="角色"
+                      fieldProps={{
+                        mode: "multiple",
+                      }}
+                      //   valueEnum={modifyRoleValue}
+                      request={requestModifyRoleValue}
+                    />
+                  </ProForm.Group>
+
+                  <ProFormTextArea
+                    name="remark"
+                    width="688px"
+                    layout="horizontal"
+                    label="备注"
+                    placeholder="请输入内容"
+                  />
+                </ModalForm>,
+
                 <Button
                   key="danger"
                   danger
