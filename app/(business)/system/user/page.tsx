@@ -14,6 +14,8 @@ import {
   ExportOutlined,
   PlusOutlined,
   DownOutlined,
+  CaretDownOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
@@ -45,7 +47,9 @@ import {
   Tooltip,
   TreeSelect,
   Tree,
+  Spin,
 } from "antd";
+import type { TreeDataNode } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
@@ -77,13 +81,6 @@ export type OptionType = {
   label: string;
   value: string | number;
 };
-
-interface TreeDataNode {
-  title: string;
-  key: string;
-  isLeaf?: boolean;
-  children?: TreeDataNode[];
-}
 
 export default function User() {
   const { push } = useRouter();
@@ -308,14 +305,10 @@ export default function User() {
   //选择组织树执行过滤
   const selectOrgData = () => {};
 
-  const initTreeData: TreeDataNode[] = [
-    { title: "Expand to load", key: "0" },
-    { title: "Expand to load", key: "1" },
-    { title: "Tree Node", key: "2", isLeaf: true },
-  ];
-
+  //用于搜索的组织选择数据
   const [orgTreeData, setOrgTreeData] = useState([] as Array<TreeDataNode>);
 
+  //用于对话框的组织选择数据
   const [orgSelectData, setOrgSelectData] = useState([]);
 
   //查询组织树
@@ -324,7 +317,6 @@ export default function User() {
     if (body !== undefined) {
       setOrgTreeData(generateOrgTree(body.data));
       setOrgSelectData(body.data);
-      //   return body.data;
     }
   };
 
@@ -337,6 +329,7 @@ export default function User() {
         title: parent.label,
         key: parent.id,
       };
+
       children.push(node);
 
       if (hasChild) {
@@ -357,6 +350,7 @@ export default function User() {
       };
 
       children.push(node);
+
       if (hasChild) {
         generateOrgChildTree(item.children, node);
       }
@@ -642,14 +636,23 @@ export default function User() {
       <Row gutter={{ xs: 8, sm: 8, md: 8 }}>
         <Col xs={24} sm={6} md={6}>
           <ProCard>
-            <Input placeholder="请输入部门名称" />
-            <Tree
-              showLine
-              switcherIcon={<DownOutlined />}
-              defaultExpandedKeys={["0-0-0"]}
-              onSelect={selectOrgData}
-              treeData={orgTreeData}
-            />
+            <Input placeholder="请输入部门名称" prefix={<SearchOutlined />}/>
+            
+              {orgTreeData.length > 0 ? (
+                <Flex style={{ marginTop: "16px" }}>
+                <Tree
+                  switcherIcon={<CaretDownOutlined />}
+                  defaultExpandAll
+                  onSelect={selectOrgData}
+                  treeData={orgTreeData}
+                />
+                </Flex>
+              ) : (
+                <Flex justify="center" style={{ marginTop: "16px" }}>
+                <Spin />
+                </Flex>
+              )}
+            
           </ProCard>
         </Col>
         <Col xs={24} sm={18} md={18}>
