@@ -13,6 +13,7 @@ import {
   CloseOutlined,
   ExportOutlined,
   PlusOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
@@ -42,6 +43,8 @@ import {
   Col,
   Switch,
   Tooltip,
+  TreeSelect,
+  Tree,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -75,6 +78,13 @@ export type OptionType = {
   value: string | number;
 };
 
+interface TreeDataNode {
+  title: string;
+  key: string;
+  isLeaf?: boolean;
+  children?: TreeDataNode[];
+}
+
 export default function User() {
   const { push } = useRouter();
 
@@ -84,6 +94,7 @@ export default function User() {
   useEffect(() => {
     queryDefaultPassword();
     queryPostion();
+    queryOrgTree();
   }, []);
 
   //控制行的状态值的恢复
@@ -294,12 +305,65 @@ export default function User() {
     },
   };
 
+  //选择组织树执行过滤
+  const selectOrgData = () => {};
+
+  const initTreeData: TreeDataNode[] = [
+    { title: "Expand to load", key: "0" },
+    { title: "Expand to load", key: "1" },
+    { title: "Tree Node", key: "2", isLeaf: true },
+  ];
+
+  const [orgTreeData, setOrgTreeData] = useState([] as Array<TreeDataNode>);
+
+  const [orgSelectData, setOrgSelectData] = useState([]);
+
   //查询组织树
   const queryOrgTree = async () => {
     const body = await fetchApi("/api/system/user/deptTree", push);
     if (body !== undefined) {
-      return body.data;
+      setOrgTreeData(generateOrgTree(body.data));
+      setOrgSelectData(body.data);
+      //   return body.data;
     }
+  };
+
+  const generateOrgTree = (orgData: []) => {
+    const children: Array<TreeDataNode> = new Array<TreeDataNode>();
+
+    orgData.forEach((parent) => {
+      const hasChild = parent.children && parent.children.length > 0;
+      const node: TreeDataNode = {
+        title: parent.label,
+        key: parent.id,
+      };
+      children.push(node);
+
+      if (hasChild) {
+        generateOrgChildTree(parent.children, node);
+      }
+    });
+    return children;
+  };
+
+  const generateOrgChildTree = (orgData: [], parent: TreeDataNode) => {
+    const children: Array<TreeDataNode> = new Array<TreeDataNode>();
+    orgData.forEach((item) => {
+      const hasChild = item.children && item.children.length > 0;
+      const node: TreeDataNode = {
+        title: item.label,
+        key: item.id,
+        isLeaf: !hasChild,
+      };
+
+      children.push(node);
+      if (hasChild) {
+        generateOrgChildTree(item.children, node);
+      }
+    });
+
+    parent.children = children;
+    return parent;
   };
 
   //查询性别分类
@@ -421,7 +485,7 @@ export default function User() {
             email: body.data.email,
             sex: body.data.sex,
             status: body.data.status,
-            postIds: body.postIds, 
+            postIds: body.postIds,
             roleIds: body.roleIds,
             remark: body.data.remark,
           });
@@ -448,8 +512,8 @@ export default function User() {
         message.success(body.msg);
         //刷新列表
         if (actionRef.current) {
-            actionRef.current.reload();
-          }
+          actionRef.current.reload();
+        }
         return true;
       }
       message.error(body.msg);
@@ -579,6 +643,13 @@ export default function User() {
         <Col xs={24} sm={6} md={6}>
           <ProCard>
             <Input placeholder="请输入部门名称" />
+            <Tree
+              showLine
+              switcherIcon={<DownOutlined />}
+              defaultExpandedKeys={["0-0-0"]}
+              onSelect={selectOrgData}
+              treeData={orgTreeData}
+            />
           </ProCard>
         </Col>
         <Col xs={24} sm={18} md={18}>
@@ -653,7 +724,9 @@ export default function User() {
                       name="deptId"
                       label="归属部门"
                       placeholder="请选择归属部门"
-                      request={queryOrgTree}
+                      request={async () => {
+                        return orgSelectData;
+                      }}
                       fieldProps={{
                         filterTreeNode: true,
                         showSearch: true,
@@ -799,7 +872,9 @@ export default function User() {
                       name="deptId"
                       label="归属部门"
                       placeholder="请选择归属部门"
-                      request={queryOrgTree}
+                      request={async () => {
+                        return orgSelectData;
+                      }}
                       fieldProps={{
                         filterTreeNode: true,
                         showSearch: true,
