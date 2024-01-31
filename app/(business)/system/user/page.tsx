@@ -177,16 +177,35 @@ export default function User() {
       search: false,
       render: (_, record) => [
         <Button
-          key={record.operId}
+          key={record.userId}
           type="link"
-          icon={<EyeOutlined />}
-          onClick={() => showRowModal(record)}
+          icon={<FontAwesomeIcon icon={faPenToSquare} />}
+          onClick={() => showRowModifyModal(record)}
         >
-          详情
+          修改
         </Button>,
+        <Button
+        key="danger"
+        type="link"
+        danger
+        icon={<DeleteOutlined />}
+        disabled={!rowCanDelete}
+        onClick={()=>onClickDeleteRow(record)}
+      >
+        删除
+      </Button>
       ],
     },
   ];
+
+  //是否展示修改用户对话框
+  const [showModifyUserModal, setShowModifyUserModal] = useState(false);
+
+  //展示修改用户对话框
+  const showRowModifyModal = (record?) => {
+    queryUserInfo(record);
+    setShowModifyUserModal(true);
+  };
 
   //查询用户数据
   const getUser = async (params, sorter, filter) => {
@@ -331,7 +350,6 @@ export default function User() {
 
   //搜索组织树数据
   const onSearchDept = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("search:", e.target.value);
     setSearchValue(e.target.value);
   };
 
@@ -364,7 +382,6 @@ export default function User() {
       });
 
     const data = loop(orgTreeData);
-    console.log("filter:", data);
     return data;
   }, [orgTreeData, searchValue]);
 
@@ -483,42 +500,56 @@ export default function User() {
   const modifyFormRef = useRef<ProFormInstance>();
 
   //待修改用户的岗位可选数据
-  const modifyPositionValue: Array<OptionType> = new Array<OptionType>();
+  const [modifyPositionValue, setModifyPositionValue] = useState(
+    [] as Array<OptionType>
+  );
   //待修改用户的角色可选数据
-  const modifyRoleValue: Array<OptionType> = new Array<OptionType>();
+  const [modifyRoleValue, setModifyRoleValue] = useState(
+    [] as Array<OptionType>
+  );
 
-  const requestModifyPositionValue = async () => {
-    return modifyPositionValue;
-  };
-
-  const requestModifyRoleValue = async () => {
-    return modifyRoleValue;
-  };
+  //操作用户的附加数据
+  const [attachUserdata, setAttachUserdata] = useState<{ [key: string]: any }>(
+    {}
+  );
 
   //查询用户信息
-  const queryUserInfo = async () => {
-    if (selectedRow !== undefined) {
-      const body = await fetchApi(
-        `/api/system/user/${selectedRow.userId}`,
-        push
-      );
+  const queryUserInfo = async (record?) => {
+    const userId = record !== undefined ? record.userId : selectedRow.userId;
+    const userName =
+      record !== undefined ? record.userName : selectedRow.userName;
+
+    attachUserdata["userId"] = userId;
+    attachUserdata["userName"] = userName;
+
+    setAttachUserdata(attachUserdata);
+
+    if (userId !== undefined) {
+      const body = await fetchApi(`/api/system/user/${userId}`, push);
 
       if (body !== undefined) {
         if (body.code == 200) {
+          const positionArray: Array<OptionType> = new Array<OptionType>();
           body.posts.forEach((post) => {
             const option: OptionType = {
               label: post.postName,
               value: post.postId,
             };
-            modifyPositionValue.push(option);
+            positionArray.push(option);
           });
+
+          setModifyPositionValue(positionArray);
+
+          const roeArray: Array<OptionType> = new Array<OptionType>();
           body.roles.forEach((role) => {
             const option: OptionType = {
               label: role.roleName,
               value: role.roleId,
             };
-            modifyRoleValue.push(option);
+            roeArray.push(option);
           });
+
+          setModifyRoleValue(roeArray);
 
           modifyFormRef?.current?.setFieldsValue({
             nickName: body.data.nickName,
@@ -538,8 +569,8 @@ export default function User() {
 
   //确认修改用户
   const executeModifyUser = async (values) => {
-    values["userId"] = selectedRow["userId"];
-    values["userName"] = selectedRow["userName"];
+    values["userId"] = attachUserdata["userId"];
+    values["userName"] = attachUserdata["userName"];
     console.log("modify:", values);
     const body = await fetchApi("/api/system/user", push, {
       method: "PUT",
@@ -564,13 +595,15 @@ export default function User() {
   };
 
   //点击删除按钮
-  const onClickDeleteRow = () => {
+  const onClickDeleteRow = (record?) => {
+    console.log("xxx:",record);
+    const userId = record != undefined ? record.userId : selectedRowKeys.join(",")
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除用户编号为“${selectedRowKeys.join(",")}”的数据项？`,
+      content: `是否确认删除用户编号为“${userId}”的数据项？`,
       onOk() {
-        executeDeleteRow();
+        executeDeleteRow(userId);
       },
       onCancel() {},
     });
@@ -590,9 +623,9 @@ export default function User() {
   };
 
   //确定删除选中的用户
-  const executeDeleteRow = async () => {
+  const executeDeleteRow = async (userId) => {
     const body = await fetchApi(
-      `/api/system/user/${selectedRowKeys.join(",")}`,
+      `/api/system/user/${userId}`,
       push,
       {
         method: "DELETE",
@@ -674,7 +707,7 @@ export default function User() {
           method: "POST",
           body: formData,
         },
-        "user.xlsx"
+        `user_${new Date().getTime()}.xlsx`
       );
     }
   };
@@ -896,15 +929,18 @@ export default function User() {
                     <Button
                       icon={<FontAwesomeIcon icon={faPenToSquare} />}
                       disabled={!rowCanModify}
-                      onClick={queryUserInfo}
+                      onClick={() => showRowModifyModal()}
                     >
                       修改
                     </Button>
                   }
+                  open={showModifyUserModal}
                   autoFocusFirstInput
                   modalProps={{
                     destroyOnClose: true,
-                    onCancel: () => {},
+                    onCancel: () => {
+                      setShowModifyUserModal(false);
+                    },
                   }}
                   submitTimeout={2000}
                   onFinish={async (values) => {
@@ -999,8 +1035,7 @@ export default function User() {
                       fieldProps={{
                         mode: "multiple",
                       }}
-                      //   valueEnum={modifyPositionValue}
-                      request={requestModifyPositionValue}
+                      options={modifyPositionValue}
                     />
                     <ProFormSelect
                       width="md"
@@ -1009,8 +1044,7 @@ export default function User() {
                       fieldProps={{
                         mode: "multiple",
                       }}
-                      //   valueEnum={modifyRoleValue}
-                      request={requestModifyRoleValue}
+                      options={modifyRoleValue}
                     />
                   </ProForm.Group>
 
@@ -1028,7 +1062,7 @@ export default function User() {
                   danger
                   icon={<DeleteOutlined />}
                   disabled={!rowCanDelete}
-                  onClick={onClickDeleteRow}
+                  onClick={()=>onClickDeleteRow()}
                 >
                   删除
                 </Button>,

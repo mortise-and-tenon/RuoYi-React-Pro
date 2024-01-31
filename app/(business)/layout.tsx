@@ -360,6 +360,7 @@ export default function RootLayout({
             </div>
           ) : undefined,
           <Link
+            style={{ padding: "0 6px" }}
             key="github"
             href="https://github.com/mortise-and-tenon/RuoYi-React-Pro"
             target="_blank"
@@ -369,6 +370,7 @@ export default function RootLayout({
             </Tooltip>
           </Link>,
           <Link
+            style={{ padding: "0 6px" }}
             key="question"
             href="https://doc.ruoyi.vip/ruoyi-vue/"
             target="_blank"

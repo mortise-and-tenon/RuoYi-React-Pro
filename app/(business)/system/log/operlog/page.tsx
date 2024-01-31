@@ -375,7 +375,7 @@ export default function OperLog() {
           method: "POST",
           body: formData,
         },
-        "operlog.xlsx"
+        `operlog_${new Date().getTime()}.xlsx`
       );
     }
   };

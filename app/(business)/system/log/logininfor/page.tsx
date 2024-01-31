@@ -345,7 +345,7 @@ export default function OperLog() {
           method: "POST",
           body: formData,
         },
-        "logininfor.xlsx"
+        `logininfor_${new Date().getTime()}.xlsx`
       );
     }
   };
