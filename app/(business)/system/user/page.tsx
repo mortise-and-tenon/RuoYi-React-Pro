@@ -215,7 +215,7 @@ export default function User() {
                   },
                   {
                     key: "2",
-                    label: <a href="/system/user/auth">分配角色</a>,
+                    label: <a href={`/system/user/auth/${record.userId}`}>分配角色</a>,
                     icon: <FontAwesomeIcon icon={faUsers} />,
                   },
                 ],
