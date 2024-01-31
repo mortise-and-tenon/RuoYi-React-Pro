@@ -2,68 +2,57 @@
 
 import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
-  ClearOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  ImportOutlined,
-  ReloadOutlined,
-  ExclamationCircleFilled,
-  UnlockOutlined,
+  CaretDownOutlined,
   CheckOutlined,
   CloseOutlined,
-  ExportOutlined,
+  DeleteOutlined,
+  ExclamationCircleFilled,
+  EyeOutlined,
   PlusOutlined,
-  DownOutlined,
-  CaretDownOutlined,
-  SearchOutlined
+  ReloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
+  ModalForm,
   PageContainer,
-  ProDescriptions,
-  ProTable,
   ProCard,
   ProForm,
-  ModalForm,
-  ProFormDateRangePicker,
+  ProFormRadio,
   ProFormSelect,
   ProFormText,
-  ProFormCheckbox,
-  ProFormRadio,
   ProFormTextArea,
   ProFormTreeSelect,
+  ProTable,
 } from "@ant-design/pro-components";
+import type { TreeDataNode } from "antd";
 import {
   Button,
-  Modal,
-  Space,
-  Tag,
-  message,
+  Col,
   Flex,
   Input,
+  message,
+  Modal,
   Row,
-  Col,
-  Switch,
-  Tooltip,
-  TreeSelect,
-  Tree,
+  Space,
   Spin,
+  Switch,
+  Tree,
 } from "antd";
-import type { TreeDataNode } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
-  faCheck,
+  faDownload,
+  faPenToSquare,
   faToggleOff,
   faToggleOn,
-  faXmark,
-  faDownload,
   faUpload,
-  faPenToSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const { Search } = Input;
 
 export type TableListItem = {
   operId: string;
@@ -219,6 +208,11 @@ export default function User() {
       }
     });
 
+    //如果有组织id，添加相应查询参数
+    if (searchDeptId != 0) {
+      queryParams.append("deptId", searchDeptId.toString());
+    }
+
     const body = await fetchApi(`/api/system/user/list?${queryParams}`, push);
 
     if (body !== undefined) {
@@ -302,8 +296,19 @@ export default function User() {
     },
   };
 
+  //查询用的组织id
+  const [searchDeptId, setSearchDeptId] = useState(0);
+
   //选择组织树执行过滤
-  const selectOrgData = () => {};
+  const selectOrgData = (selectedDeptKey, e) => {
+    if (selectedDeptKey && selectedDeptKey.length > 0) {
+      setSearchDeptId(selectedDeptKey[0]);
+    } else {
+      setSearchDeptId(0);
+    }
+
+    formRef.current.submit();
+  };
 
   //用于搜索的组织选择数据
   const [orgTreeData, setOrgTreeData] = useState([] as Array<TreeDataNode>);
@@ -316,9 +321,52 @@ export default function User() {
     const body = await fetchApi("/api/system/user/deptTree", push);
     if (body !== undefined) {
       setOrgTreeData(generateOrgTree(body.data));
+      setSearchValue("");
       setOrgSelectData(body.data);
     }
   };
+
+  //搜索部门的值
+  const [searchValue, setSearchValue] = useState("");
+
+  //搜索组织树数据
+  const onSearchDept = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("search:", e.target.value);
+    setSearchValue(e.target.value);
+  };
+
+  //搜索过滤后的组织树展示数据
+  const filterOrgTree = useMemo(() => {
+    const loop = (data: TreeDataNode[]): TreeDataNode[] =>
+      data.map((item) => {
+        const strTitle = item.title as string;
+        const index = strTitle.indexOf(searchValue);
+        const beforeStr = strTitle.substring(0, index);
+        const afterStr = strTitle.slice(index + searchValue.length);
+        const title =
+          index > -1 ? (
+            <span>
+              {beforeStr}
+              <span style={{ color: "#f50" }}>{searchValue}</span>
+              {afterStr}
+            </span>
+          ) : (
+            <span>{strTitle}</span>
+          );
+        if (item.children) {
+          return { title, key: item.key, children: loop(item.children) };
+        }
+
+        return {
+          title,
+          key: item.key,
+        };
+      });
+
+    const data = loop(orgTreeData);
+    console.log("filter:", data);
+    return data;
+  }, [orgTreeData, searchValue]);
 
   const generateOrgTree = (orgData: []) => {
     const children: Array<TreeDataNode> = new Array<TreeDataNode>();
@@ -636,23 +684,25 @@ export default function User() {
       <Row gutter={{ xs: 8, sm: 8, md: 8 }}>
         <Col xs={24} sm={6} md={6}>
           <ProCard>
-            <Input placeholder="请输入部门名称" prefix={<SearchOutlined />}/>
-            
-              {orgTreeData.length > 0 ? (
-                <Flex style={{ marginTop: "16px" }}>
+            <Input
+              placeholder="输入部门名称搜索"
+              prefix={<SearchOutlined />}
+              onChange={onSearchDept}
+            />
+            {filterOrgTree.length > 0 ? (
+              <Flex>
                 <Tree
                   switcherIcon={<CaretDownOutlined />}
                   defaultExpandAll
                   onSelect={selectOrgData}
-                  treeData={orgTreeData}
+                  treeData={filterOrgTree}
                 />
-                </Flex>
-              ) : (
-                <Flex justify="center" style={{ marginTop: "16px" }}>
+              </Flex>
+            ) : (
+              <Flex justify="center" style={{ marginTop: "16px" }}>
                 <Spin />
-                </Flex>
-              )}
-            
+              </Flex>
+            )}
           </ProCard>
         </Col>
         <Col xs={24} sm={18} md={18}>
