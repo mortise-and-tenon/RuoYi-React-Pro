@@ -11,6 +11,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
+  KeyOutlined,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
@@ -25,7 +26,7 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from "@ant-design/pro-components";
-import type { TreeDataNode } from "antd";
+import type { TreeDataNode, MenuProps } from "antd";
 import {
   Button,
   Col,
@@ -38,6 +39,8 @@ import {
   Spin,
   Switch,
   Tree,
+  Dropdown,
+  Form,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -47,12 +50,11 @@ import {
   faToggleOff,
   faToggleOn,
   faUpload,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-
-const { Search } = Input;
 
 export type TableListItem = {
   operId: string;
@@ -175,26 +177,59 @@ export default function User() {
       title: "操作",
       key: "option",
       search: false,
-      render: (_, record) => [
-        <Button
-          key={record.userId}
-          type="link"
-          icon={<FontAwesomeIcon icon={faPenToSquare} />}
-          onClick={() => showRowModifyModal(record)}
-        >
-          修改
-        </Button>,
-        <Button
-        key="danger"
-        type="link"
-        danger
-        icon={<DeleteOutlined />}
-        disabled={!rowCanDelete}
-        onClick={()=>onClickDeleteRow(record)}
-      >
-        删除
-      </Button>
-      ],
+      render: (_, record) => {
+        if (record.userId != 1)
+          return [
+            <Button
+              key={record.userId}
+              type="link"
+              icon={<FontAwesomeIcon icon={faPenToSquare} />}
+              onClick={() => showRowModifyModal(record)}
+            >
+              修改
+            </Button>,
+            <Button
+              key="danger"
+              type="link"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => onClickDeleteRow(record)}
+            >
+              删除
+            </Button>,
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "1",
+                    label: (
+                      <a
+                        onClick={() => {
+                          modifyUserPwd(record);
+                        }}
+                      >
+                        重置密码
+                      </a>
+                    ),
+                    icon: <KeyOutlined />,
+                  },
+                  {
+                    key: "2",
+                    label: <a href="/system/user/auth">分配角色</a>,
+                    icon: <FontAwesomeIcon icon={faUsers} />,
+                  },
+                ],
+              }}
+            >
+              <a onClick={(e) => e.preventDefault()}>
+                <Space>
+                  更多
+                  <CaretDownOutlined />
+                </Space>
+              </a>
+            </Dropdown>,
+          ];
+      },
     },
   ];
 
@@ -205,6 +240,51 @@ export default function User() {
   const showRowModifyModal = (record?) => {
     queryUserInfo(record);
     setShowModifyUserModal(true);
+  };
+
+  //是否展示修改密码
+  const [showModifyUserPwdModal, setShowModifyUserPwdModal] = useState(false);
+
+  //重置密码表单引用
+  const [pwdFormRef] = Form.useForm();
+
+  const modifyUserPwd = (record) => {
+    attachUserdata["userId"] = record.userId;
+    attachUserdata["userName"] = record.userName;
+    setAttachUserdata(attachUserdata);
+
+    setShowModifyUserPwdModal(true);
+  };
+
+  //确认重置密码
+  const confirmModifyUserPwd = () => {
+    pwdFormRef.submit();
+  };
+
+  //取消重置密码
+  const cancelModifyUserPwd = () => {
+    setShowModifyUserPwdModal(false);
+  };
+
+  //执行重置密码
+  const executeModifyUserPwd = async (values) => {
+    setShowModifyUserPwdModal(false);
+    values["userId"] = attachUserdata["userId"];
+    const body = await fetchApi("/api/system/user/resetPwd", push, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+    if (body != undefined) {
+      if (body.code == 200) {
+        message.success(`修改${attachUserdata["userName"]}密码成功`);
+      } else {
+        message.error(body.msg);
+      }
+    }
+    pwdFormRef.resetFields();
   };
 
   //查询用户数据
@@ -596,8 +676,9 @@ export default function User() {
 
   //点击删除按钮
   const onClickDeleteRow = (record?) => {
-    console.log("xxx:",record);
-    const userId = record != undefined ? record.userId : selectedRowKeys.join(",")
+    console.log("xxx:", record);
+    const userId =
+      record != undefined ? record.userId : selectedRowKeys.join(",");
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
@@ -624,13 +705,9 @@ export default function User() {
 
   //确定删除选中的用户
   const executeDeleteRow = async (userId) => {
-    const body = await fetchApi(
-      `/api/system/user/${userId}`,
-      push,
-      {
-        method: "DELETE",
-      }
-    );
+    const body = await fetchApi(`/api/system/user/${userId}`, push, {
+      method: "DELETE",
+    });
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("删除成功");
@@ -718,6 +795,7 @@ export default function User() {
         <Col xs={24} sm={6} md={6}>
           <ProCard>
             <Input
+              style={{ marginBottom: 16 }}
               placeholder="输入部门名称搜索"
               prefix={<SearchOutlined />}
               onChange={onSearchDept}
@@ -1062,7 +1140,7 @@ export default function User() {
                   danger
                   icon={<DeleteOutlined />}
                   disabled={!rowCanDelete}
-                  onClick={()=>onClickDeleteRow()}
+                  onClick={() => onClickDeleteRow()}
                 >
                   删除
                 </Button>,
@@ -1111,6 +1189,28 @@ export default function User() {
           />
         </Col>
       </Row>
+
+      <Modal
+        title={`修改${attachUserdata["userName"]}密码`}
+        open={showModifyUserPwdModal}
+        onOk={confirmModifyUserPwd}
+        onCancel={cancelModifyUserPwd}
+      >
+        <Form
+          form={pwdFormRef}
+          onFinish={async (values) => {
+            return executeModifyUserPwd(values);
+          }}
+        >
+          <Form.Item
+            label="新密码"
+            name="password"
+            rules={[{ required: true, message: "请输入新密码" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 }
