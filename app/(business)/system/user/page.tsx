@@ -12,6 +12,9 @@ import {
   ReloadOutlined,
   SearchOutlined,
   KeyOutlined,
+  LoadingOutlined,
+  CloudUploadOutlined,
+  FileAddOutlined,
 } from "@ant-design/icons";
 import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
 import {
@@ -26,7 +29,7 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps } from "antd";
+import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
 import {
   Button,
   Col,
@@ -41,6 +44,9 @@ import {
   Tree,
   Dropdown,
   Form,
+  Upload,
+  Typography,
+  Checkbox,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -55,6 +61,10 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+
+type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
+
+const { Dragger } = Upload;
 
 export type OptionType = {
   label: string;
@@ -203,7 +213,15 @@ export default function User() {
                   },
                   {
                     key: "2",
-                    label: <a href={`/system/user/auth/${record.userId}`}>分配角色</a>,
+                    label: (
+                      <a
+                        onClick={() =>
+                          push(`/system/user/auth/${record.userId}`)
+                        }
+                      >
+                        分配角色
+                      </a>
+                    ),
                     icon: <FontAwesomeIcon icon={faUsers} />,
                   },
                 ],
@@ -678,17 +696,56 @@ export default function User() {
     });
   };
 
+  //选中上传文件列表
+  const [fileList, setFileList] = useState([]);
+
+  //上传前检查
+  const beforeUpload = (file: FileType) => {
+    setFileList([file]);
+    const isExcel =
+      file.type ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    if (!isExcel) {
+      message.error("请上传 xls、xlsx 格式文件！");
+      setFileList([]);
+    }
+    return false;
+  };
+
+  //移除待上传文件
+  const removeFile = () => {
+    setFileList([]);
+  };
+
+  //上传文件是否刷新已有用户数据
+  const [uploadSupport, setUploadSupport] = useState(false);
+
+  //文件上传状态
+  const [uploading, setUploading] = useState(false);
+
+  //上传处理，手动上传下不会执行
+  const handleChange: UploadProps["onChange"] = (info) => {
+    if (info.file.status === "uploading") {
+      setUploading(true);
+      return;
+    }
+    if (info.file.status === "done") {
+      setUploading(false);
+      console.log(info.file.response);
+      if (info.file.response.code == 200) {
+        message.success(info.file.response.msg);
+      } else {
+        message.error(info.file.response.msg);
+      }
+    }
+  };
+
+  //导入对话框是否展示
+  const [showImportModal, setShowImportModal] = useState(false);
+
   //点击导入按钮
   const onClickImport = () => {
-    Modal.confirm({
-      title: "系统提示",
-      icon: <ExclamationCircleFilled />,
-      content: `导入`,
-      onOk() {
-        executeImport();
-      },
-      onCancel() {},
-    });
+    setShowImportModal(true);
   };
 
   //确定删除选中的用户
@@ -716,11 +773,32 @@ export default function User() {
 
   //确定导入
   const executeImport = async () => {
-    const body = await fetchApi(`/api/`, push);
+    if (fileList.length == 0) {
+      message.error("请选择上传的文件");
+      return;
+    }
+
+    setUploading(true);
+
+    const file = fileList[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    const body = await fetchApi(
+      `/api/system/user/importData?updateSupport=${uploadSupport}`,
+      push,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    setUploading(false);
+    setUploadSupport(false);
 
     if (body !== undefined) {
+      setFileList([]);
       if (body.code == 200) {
-        message.success("解锁成功");
+        message.success("用户导入成功");
         //刷新列表
         if (actionRef.current) {
           actionRef.current.reload();
@@ -729,6 +807,13 @@ export default function User() {
         message.error(body.msg);
       }
     }
+  };
+
+  //取消导入对话框
+  const cancelImportModal = () => {
+    setShowImportModal(false);
+    setUploadSupport(false);
+    setFileList([]);
   };
 
   //搜索栏显示状态
@@ -1198,6 +1283,53 @@ export default function User() {
             <Input.Password />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="用户导入"
+        open={showImportModal}
+        onOk={executeImport}
+        onCancel={cancelImportModal}
+      >
+        <Flex justify="center">
+          <div>
+            <Dragger
+              name="avatar"
+              listType="text"
+              multiple="false"
+              fileList ={fileList}
+              beforeUpload={beforeUpload}
+              onChange={handleChange}
+              onRemove={removeFile}
+              showUploadList={{
+                showDownloadIcon: false,
+                showRemoveIcon: true,
+                removeIcon: (
+                  <CloseOutlined
+                  />
+                ),
+              }}
+            >
+              <p className="ant-upload-drag-icon">
+                {uploading ? <LoadingOutlined /> : <FileAddOutlined />}
+              </p>
+              <p className="ant-upload-text">点击此处或拖曳文件到此处上传</p>
+              <p className="ant-upload-hint">仅支持 xls、xlsx 格式文件</p>
+            </Dragger>
+          </div>
+        </Flex>
+        <Flex justify="center" style={{marginTop:30}}>
+          <Typography.Text>
+            <Checkbox
+              checked={uploadSupport}
+              onChange={(e) => {
+                setUploadSupport(e.target.checked);
+              }}
+            >
+              允许更新已有用户的数据
+            </Checkbox>
+          </Typography.Text>
+        </Flex>
       </Modal>
     </PageContainer>
   );
