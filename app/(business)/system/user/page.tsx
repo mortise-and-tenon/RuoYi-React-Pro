@@ -179,7 +179,7 @@ export default function User() {
         if (record.userId != 1)
           return [
             <Button
-              key={record.userId}
+              key="modifyBtn"
               type="link"
               icon={<FontAwesomeIcon icon={faPenToSquare} />}
               onClick={() => showRowModifyModal(record)}
@@ -187,7 +187,7 @@ export default function User() {
               修改
             </Button>,
             <Button
-              key="danger"
+              key="deleteBtn"
               type="link"
               danger
               icon={<DeleteOutlined />}
@@ -196,6 +196,7 @@ export default function User() {
               删除
             </Button>,
             <Dropdown
+              key="moreDrop"
               menu={{
                 items: [
                   {
@@ -401,7 +402,7 @@ export default function User() {
     },
     getCheckboxProps: (record) => ({
       disabled: record.userId == 1,
-    })
+    }),
   };
 
   //查询用的组织id
@@ -935,6 +936,7 @@ export default function User() {
             toolbar={{
               actions: [
                 <ModalForm
+                  key="addmodal"
                   title="添加用户"
                   trigger={
                     <Button icon={<PlusOutlined />} type="primary">
@@ -1077,6 +1079,7 @@ export default function User() {
                   />
                 </ModalForm>,
                 <ModalForm
+                  key="modifymodal"
                   title="修改用户"
                   formRef={modifyFormRef}
                   trigger={
@@ -1300,17 +1303,14 @@ export default function User() {
               name="avatar"
               listType="text"
               multiple="false"
-              fileList ={fileList}
+              fileList={fileList}
               beforeUpload={beforeUpload}
               onChange={handleChange}
               onRemove={removeFile}
               showUploadList={{
                 showDownloadIcon: false,
                 showRemoveIcon: true,
-                removeIcon: (
-                  <CloseOutlined
-                  />
-                ),
+                removeIcon: <CloseOutlined />,
               }}
             >
               <p className="ant-upload-drag-icon">
@@ -1321,7 +1321,7 @@ export default function User() {
             </Dragger>
           </div>
         </Flex>
-        <Flex justify="center" style={{marginTop:30}}>
+        <Flex justify="center" style={{ marginTop: 30 }}>
           <Typography.Text>
             <Checkbox
               checked={uploadSupport}

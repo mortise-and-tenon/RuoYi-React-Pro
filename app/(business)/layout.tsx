@@ -155,7 +155,7 @@ export default function RootLayout({
     rootChildren.push(indexRoute);
 
     if (body.data && body.data.length > 0) {
-      body.data.forEach((menu) => {
+      body.data.forEach((menu: any) => {
         const route: RouteInfo = {
           path: menu.path,
           name: menu.meta.title,
@@ -186,9 +186,9 @@ export default function RootLayout({
     return rootChildren;
   };
 
-  const getSubMenu = (parent: RouteInfo, menuChildren) => {
+  const getSubMenu = (parent: RouteInfo, menuChildren: any) => {
     const routeChildren: Array<RouteInfo> = new Array<RouteInfo>();
-    menuChildren.forEach((menu) => {
+    menuChildren.forEach((menu: any) => {
       const route: RouteInfo = {
         path: menu.path,
         name: menu.meta.title,
@@ -232,8 +232,6 @@ export default function RootLayout({
   const settings: ProSettings | undefined = {
     layout: "mix",
     splitMenus: false,
-    defaultCollapsed: false,
-    breakpoint: false,
   };
 
   return (
@@ -253,7 +251,7 @@ export default function RootLayout({
               setPathname(item.path || "/index");
             }}
           >
-            <Link href={item.path}>
+            <Link href={item.path !== undefined ? item.path : ""}>
               {shouldRenderIcon ? (
                 <span style={{ display: "flex", alignItems: "center" }}>
                   {item.icon}

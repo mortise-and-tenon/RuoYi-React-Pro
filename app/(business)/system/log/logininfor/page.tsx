@@ -24,7 +24,7 @@ import {
   faToggleOff,
   faToggleOn,
   faXmark,
-  faDownload
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -109,7 +109,7 @@ export default function OperLog() {
     {
       title: "登录日期",
       dataIndex: "loginTime",
-      valueType: "datetime",
+      valueType: "dateTime",
       search: false,
       sorter: true,
     },
@@ -131,7 +131,7 @@ export default function OperLog() {
   ];
 
   //查询日志数据
-  const getLog = async (params, sorter, filter) => {
+  const getLog = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       pageNum: params.current,
       ...params,
@@ -169,7 +169,7 @@ export default function OperLog() {
   const [rowCanUnlock, setRowCanUnlock] = useState(false);
 
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: any, selectedRows: any) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
@@ -350,7 +350,6 @@ export default function OperLog() {
         columns={columns}
         request={async (params, sorter, filter) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
-          console.log(params, sorter, filter);
           const data = await getLog(params, sorter, filter);
           if (data !== undefined) {
             return Promise.resolve({
