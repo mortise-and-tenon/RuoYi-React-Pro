@@ -399,6 +399,9 @@ export default function User() {
         setSelectedRow(undefined);
       }
     },
+    getCheckboxProps: (record) => ({
+      disabled: record.userId == 1,
+    })
   };
 
   //查询用的组织id
