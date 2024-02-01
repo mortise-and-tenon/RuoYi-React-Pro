@@ -30,23 +30,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useRef, useState } from "react";
 
-export type TableListItem = {
-  operId: string;
-  title: string;
-  businessType: string;
-  operName: string;
-  operIp: string;
-  operLocation: string;
-  status: string;
-  operTime: string;
-  costTime: string;
-};
-
 export default function OperLog() {
   const { push } = useRouter();
 
   //表格列定义
-  const columns: ProColumns<TableListItem>[] = [
+  const columns: ProColumns[] = [
     {
       title: "访问编号",
       dataIndex: "infoId",
@@ -352,7 +340,7 @@ export default function OperLog() {
 
   return (
     <PageContainer title={false}>
-      <ProTable<TableListItem>
+      <ProTable
         formRef={formRef}
         rowKey={(record) => record.infoId}
         rowSelection={{

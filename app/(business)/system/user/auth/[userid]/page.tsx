@@ -7,9 +7,12 @@ import {
   ProCard,
   ProForm,
   ProFormText,
+  ProSkeleton,
 } from "@ant-design/pro-components";
 
-import { Divider, message } from "antd";
+import type { ProColumns } from "@ant-design/pro-components";
+
+import { Divider, message, Flex, Button } from "antd";
 
 import { fetchApi } from "@/app/_modules/func";
 
@@ -33,6 +36,8 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
       if (body.code == 200) {
         setUser(body.user);
         setRoles(body.roles);
+
+        setSelectedRowKeys(body.user.roles.map((item) => item.roleId));
       }
     }
   };
@@ -40,6 +45,77 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
   useEffect(() => {
     getUserData();
   }, []);
+
+  //表格列定义
+  const columns: ProColumns[] = [
+    {
+      title: "序号",
+      dataIndex: "index",
+      valueType: "indexBorder",
+      width: 48,
+    },
+    {
+      title: "角色编号",
+      dataIndex: "roleId",
+      search: false,
+    },
+    {
+      title: "角色名称",
+      dataIndex: "roleName",
+      search: false,
+    },
+    {
+      title: "权限字符",
+      dataIndex: "roleKey",
+      search: false,
+    },
+    {
+      title: "创建时间",
+      dataIndex: "createTime",
+    },
+  ];
+
+  //选中行操作
+  const [selectedRowKeys, setSelectedRowKeys] = useState<[number]>([]);
+
+  const rowSelection = {
+    onChange: (newSelectedRowKeys, selectedRows) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  //当前每页条数
+  const defualtPageSize = 10;
+
+  //提交按钮加载状态
+  const [confirmLoding, setConfirmLoading] = useState(false);
+
+  //更新用户角色
+  const updateAuth = async () => {
+    setConfirmLoading(true);
+    const queryParam = {
+      userId: user.userId,
+      roleIds: selectedRowKeys.join(","),
+    };
+
+    const body = await fetchApi(
+      `/api/system/user/authRole?${new URLSearchParams(queryParam)}`,
+      push,
+      {
+        method: "PUT",
+      }
+    );
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("授权成功");
+      } else {
+        message.error(body.msg);
+      }
+    }
+
+    setConfirmLoading(false);
+  };
 
   return (
     <PageContainer
@@ -50,27 +126,59 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
         },
       }}
     >
-      <ProCard>
-        <ProDescriptions title="基本信息" column={24}>
-          <ProDescriptions.Item span={12} label="用户昵称">
-            {user.nickName}
-          </ProDescriptions.Item>
-          <ProDescriptions.Item span={12} label="用户名称">
-            {user.userName}
-          </ProDescriptions.Item>
-        </ProDescriptions>
-      </ProCard>
-      <Divider />
-      <ProCard>
-        <ProDescriptions title="角色信息" column={24}>
-          <ProDescriptions.Item span={12} label="用户昵称">
-            123
-          </ProDescriptions.Item>
-          <ProDescriptions.Item span={12} label="用户名称">
-            321
-          </ProDescriptions.Item>
-        </ProDescriptions>
-      </ProCard>
+      {Object.keys(user).length === 0 ? (
+        <ProSkeleton type="list" />
+      ) : (
+        <>
+          <ProCard title="基本信息">
+            <ProDescriptions column={24}>
+              <ProDescriptions.Item span={12} label="用户昵称">
+                {user.nickName}
+              </ProDescriptions.Item>
+              <ProDescriptions.Item span={12} label="用户名称">
+                {user.userName}
+              </ProDescriptions.Item>
+            </ProDescriptions>
+          </ProCard>
+          <Divider />
+          <ProCard title="角色信息">
+            <ProTable
+              rowKey={(record) => record.roleId}
+              rowSelection={{
+                selectedRowKeys,
+                ...rowSelection,
+              }}
+              tableAlertRender={false}
+              columns={columns}
+              dataSource={roles}
+              pagination={{
+                pageSize: defualtPageSize,
+                showQuickJumper: true,
+                showSizeChanger: true,
+                // onChange: pageChange,
+              }}
+              search={false}
+              dateFormatter="string"
+              toolbar={{
+                actions: [],
+                settings: [],
+              }}
+            />
+          </ProCard>
+          <ProCard>
+            <Flex justify="center" gap="middle">
+              <Button href="/system/user">返回</Button>
+              <Button
+                type="primary"
+                onClick={updateAuth}
+                loading={confirmLoding}
+              >
+                提交
+              </Button>
+            </Flex>
+          </ProCard>
+        </>
+      )}
     </PageContainer>
   );
 }

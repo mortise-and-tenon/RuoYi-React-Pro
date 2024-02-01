@@ -56,18 +56,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export type TableListItem = {
-  operId: string;
-  title: string;
-  businessType: string;
-  operName: string;
-  operIp: string;
-  operLocation: string;
-  status: string;
-  operTime: string;
-  costTime: string;
-};
-
 export type OptionType = {
   label: string;
   value: string | number;
@@ -91,7 +79,7 @@ export default function User() {
   );
 
   //表格列定义
-  const columns: ProColumns<TableListItem>[] = [
+  const columns: ProColumns[] = [
     {
       title: "用户编号",
       dataIndex: "userId",
@@ -817,7 +805,7 @@ export default function User() {
           </ProCard>
         </Col>
         <Col xs={24} sm={18} md={18}>
-          <ProTable<TableListItem>
+          <ProTable
             formRef={formRef}
             rowKey={(record) => record.userId}
             rowSelection={{
