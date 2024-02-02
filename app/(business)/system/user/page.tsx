@@ -661,7 +661,7 @@ export default function User() {
   const executeModifyUser = async (values) => {
     values["userId"] = attachUserdata["userId"];
     values["userName"] = attachUserdata["userName"];
-    console.log("modify:", values);
+    
     const body = await fetchApi("/api/system/user", push, {
       method: "PUT",
       headers: {

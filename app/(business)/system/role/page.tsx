@@ -28,6 +28,8 @@ import {
   ProFormTextArea,
   ProFormTreeSelect,
   ProTable,
+  ProFormDigit,
+  ProFormCheckbox,
 } from "@ant-design/pro-components";
 import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
 import {
@@ -74,8 +76,7 @@ export type OptionType = {
 export default function Role() {
   const { push } = useRouter();
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   //控制行的状态值的恢复
   const [rowStatusMap, setRowStatusMap] = useState<{ [key: number]: boolean }>(
@@ -235,10 +236,12 @@ export default function Role() {
   const showRowModifyModal = (record?) => {
     queryRoleInfo(record);
     setShowModifyRoleModal(true);
+    queryRolePermissionData(record);
   };
 
   //是否展示修改角色权限
-  const [showModifyRolePermissionModal, setShowModifyRolePermissionModal] = useState(false);
+  const [showModifyRolePermissionModal, setShowModifyRolePermissionModal] =
+    useState(false);
 
   //重置密码表单引用
   const [pwdFormRef] = Form.useForm();
@@ -342,7 +345,7 @@ export default function Role() {
       roleId: roleId,
       status: checked ? "0" : "1",
     };
-    const body = await fetchApi(`/api/system/user/changeStatus`, push, {
+    const body = await fetchApi(`/api/system/role/changeStatus`, push, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -388,9 +391,8 @@ export default function Role() {
     }),
   };
 
-
   //确定新建角色
-  const executeAddUser = async (values) => {
+  const executeAddRole = async (values) => {
     const body = await fetchApi("/api/system/role", push, {
       method: "POST",
       headers: {
@@ -417,8 +419,6 @@ export default function Role() {
   //修改角色表单引用
   const modifyFormRef = useRef<ProFormInstance>();
 
-  
-
   //操作角色的附加数据
   const [attachRowdata, setAttachRowdata] = useState<{ [key: string]: any }>(
     {}
@@ -440,16 +440,12 @@ export default function Role() {
 
       if (body !== undefined) {
         if (body.code == 200) {
-
           modifyFormRef?.current?.setFieldsValue({
-            nickName: body.data.nickName,
-            deptId: body.data.deptId,
-            phonenumber: body.data.phonenumber,
-            email: body.data.email,
-            sex: body.data.sex,
+            roleName: body.data.roleName,
+            roleKey: body.data.roleKey,
+            roleSort: body.data.roleSort,
             status: body.data.status,
-            postIds: body.postIds,
-            roleIds: body.roleIds,
+            menuIds: body.menuIds,
             remark: body.data.remark,
           });
         }
@@ -457,10 +453,37 @@ export default function Role() {
     }
   };
 
+  //待修改角色选中的权限数据
+  const [roleSelectedPermission, setRoleSelectedPermission] = useState([]);
+
+  //修改角色框中权限树数据
+  const [rolePermissionTree,setRolePermissionTree] = useState([]);
+
+
+  //查询修改角色时权限树，并获取角色选中权限数据
+  const queryRolePermissionData = async (record) => {
+    const roleId = record !== undefined ? record.roleId : selectedRow.roleId;
+
+    const body = await fetchApi(
+      `/api/system/menu/roleMenuTreeselect/${roleId}`,
+      push
+    );
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        setRolePermissionTree(body.menus);
+
+        //绑定角色已选择的权限
+        modifyFormRef?.current?.setFieldsValue({
+          menuIds: body.checkedKeys,
+        });
+      }
+    }
+  };
+
   //确认修改角色
   const executeModifyRole = async (values) => {
     values["roleId"] = attachRowdata["roleId"];
-    values["roleName"] = attachRowdata["roleName"];
 
     const body = await fetchApi("/api/system/role", push, {
       method: "PUT",
@@ -471,6 +494,7 @@ export default function Role() {
     });
 
     if (body !== undefined) {
+      setShowModifyRoleModal(false);
       if (body.code == 200) {
         message.success(body.msg);
         //刷新列表
@@ -568,6 +592,42 @@ export default function Role() {
     }
   };
 
+  const onChangeTreeOption: GetProp<typeof Checkbox.Group, "onChange"> = (
+    checkedValues
+  ) => {
+    console.log("checked = ", checkedValues);
+    if (checkedValues.length == 0) {
+    }
+
+    checkedValues.forEach((element) => {
+      if (element === "expand") {
+      }
+      if (element === "all") {
+      }
+    });
+  };
+
+  //查询所有权限树
+  const getPermissionTree = async () => {
+    const body = await fetchApi("/api/system/menu/treeselect", push);
+    if (body !== undefined) {
+      if (body.code == 200) {
+        return body.data;
+      }
+    }
+
+    return [];
+  };
+
+  const getKeys = (data, keyArray: Array<string>) => {
+    data.forEach((element) => {
+      keyArray.push(element.id);
+      if (element.children && element.children.length > 0) {
+        getKeys(element.children, keyArray);
+      }
+    });
+  };
+
   return (
     <PageContainer title={false}>
       <ProTable
@@ -613,6 +673,7 @@ export default function Role() {
           actions: [
             <ModalForm
               key="addmodal"
+              // layout="horizontal"
               title="添加角色"
               trigger={
                 <Button icon={<PlusOutlined />} type="primary">
@@ -625,16 +686,94 @@ export default function Role() {
               }}
               submitTimeout={2000}
               onFinish={async (values) => {
-                return executeAddUser(values);
+                return executeAddRole(values);
               }}
             >
+              <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="nickName"
-                  label="用户昵称"
-                  placeholder="请输入用户昵称"
-                  rules={[{ required: true, message: "请输入用户昵称" }]}
+                  name="roleName"
+                  label="角色名称"
+                  placeholder="请输入角色名称"
+                  rules={[{ required: true, message: "请输入角色名称" }]}
                 />
+                <ProFormText
+                  width="md"
+                  name="roleKey"
+                  label="权限字符"
+                  placeholder="请输入权限字符"
+                  rules={[{ required: true, message: "请输入权限字符" }]}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormDigit
+                  fieldProps={{ precision: 0 }}
+                  width="md"
+                  name="roleSort"
+                  initialValue="0"
+                  label="角色顺序"
+                  placeholder="请输入角色顺序"
+                  rules={[{ required: true, message: "请输入角色顺序" }]}
+                />
+                <ProFormRadio.Group
+                  name="status"
+                  width="sm"
+                  label="状态"
+                  initialValue="0"
+                  options={[
+                    {
+                      label: "正常",
+                      value: "0",
+                    },
+                    {
+                      label: "停用",
+                      value: "1",
+                    },
+                  ]}
+                />
+              </ProForm.Group>
+              {/* <ProFormCheckbox.Group
+                name="selectPermission"
+                label="菜单权限"
+                onChange={onChangeTreeOption}
+                options={[
+                  {
+                    label: "全部展开",
+                    value: "expand",
+                  },
+                  {
+                    label: "全选",
+                    value: "all",
+                  },
+                ]}
+              /> */}
+              <ProFormTreeSelect
+                width="md"
+                name="menuIds"
+                label="菜单权限"
+                request={async () => {
+                  return getPermissionTree();
+                }}
+                fieldProps={{
+                  placement: "topRight",
+                  filterTreeNode: true,
+                  showSearch: true,
+                  multiple: true,
+                  treeCheckable: true,
+                  treeNodeFilterProp: "label",
+                  fieldNames: {
+                    label: "label",
+                    value: "id",
+                  },
+                }}
+              />
+              <ProFormTextArea
+                name="remark"
+                width="688px"
+                layout="horizontal"
+                label="备注"
+                placeholder="请输入内容"
+              />
             </ModalForm>,
             <ModalForm
               key="modifymodal"
@@ -665,12 +804,74 @@ export default function Role() {
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="nickName"
-                  label="用户昵称"
-                  placeholder="请输入用户昵称"
-                  rules={[{ required: true, message: "请输入用户昵称" }]}
+                  name="roleName"
+                  label="角色名称"
+                  placeholder="请输入角色名称"
+                  rules={[{ required: true, message: "请输入角色名称" }]}
+                />
+                <ProFormText
+                  width="md"
+                  name="roleKey"
+                  label="权限字符"
+                  placeholder="请输入权限字符"
+                  rules={[{ required: true, message: "请输入权限字符" }]}
                 />
               </ProForm.Group>
+              <ProForm.Group>
+                <ProFormDigit
+                  fieldProps={{ precision: 0 }}
+                  width="md"
+                  name="roleSort"
+                  initialValue="0"
+                  label="角色顺序"
+                  placeholder="请输入角色顺序"
+                  rules={[{ required: true, message: "请输入角色顺序" }]}
+                />
+                <ProFormRadio.Group
+                  name="status"
+                  width="sm"
+                  label="状态"
+                  initialValue="0"
+                  options={[
+                    {
+                      label: "正常",
+                      value: "0",
+                    },
+                    {
+                      label: "停用",
+                      value: "1",
+                    },
+                  ]}
+                />
+              </ProForm.Group>
+              <ProFormTreeSelect
+                width="md"
+                name="menuIds"
+                label="菜单权限"
+                initialValue={roleSelectedPermission}
+                request={async () => {
+                  return rolePermissionTree;
+                }}
+                fieldProps={{
+                  placement: "topRight",
+                  filterTreeNode: true,
+                  showSearch: true,
+                  multiple: true,
+                  treeCheckable: true,
+                  treeNodeFilterProp: "label",
+                  fieldNames: {
+                    label: "label",
+                    value: "id",
+                  },
+                }}
+              />
+              <ProFormTextArea
+                name="remark"
+                width="688px"
+                layout="horizontal"
+                label="备注"
+                placeholder="请输入内容"
+              />
             </ModalForm>,
 
             <Button
