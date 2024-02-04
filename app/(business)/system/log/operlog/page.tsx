@@ -234,7 +234,7 @@ export default function OperLog() {
     Modal.confirm({
       title: '系统提示',
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除日志编号为“${selectedRowKeys.join(",")}”的数据项？`,
+      content: `确定删除日志编号为“${selectedRowKeys.join(",")}”的数据项？`,
       onOk() {
         executeDeleteRow();
       },

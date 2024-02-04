@@ -189,7 +189,7 @@ export default function OperLog() {
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除访问编号为“${selectedRowKeys.join(",")}”的数据项？`,
+      content: `确定删除访问编号为“${selectedRowKeys.join(",")}”的数据项？`,
       onOk() {
         executeDeleteRow();
       },
@@ -216,7 +216,7 @@ export default function OperLog() {
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认解锁用户"${selectedRow.userName}"数据项?`,
+      content: `确定解锁用户"${selectedRow.userName}"数据项?`,
       onOk() {
         executeUnlock(selectedRow.userName);
       },

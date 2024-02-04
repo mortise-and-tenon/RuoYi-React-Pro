@@ -691,7 +691,7 @@ export default function User() {
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除用户编号为“${userId}”的数据项？`,
+      content: `确定删除用户编号为“${userId}”的数据项？`,
       onOk() {
         executeDeleteRow(userId);
       },

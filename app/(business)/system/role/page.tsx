@@ -567,7 +567,7 @@ export default function Role() {
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除角色编号为“${roleId}”的数据项？`,
+      content: `确定删除角色编号为“${roleId}”的数据项？`,
       onOk() {
         executeDeleteRow(roleId);
       },
@@ -784,21 +784,6 @@ export default function Role() {
                   ]}
                 />
               </ProForm.Group>
-              {/* <ProFormCheckbox.Group
-                name="selectPermission"
-                label="菜单权限"
-                onChange={onChangeTreeOption}
-                options={[
-                  {
-                    label: "全部展开",
-                    value: "expand",
-                  },
-                  {
-                    label: "全选",
-                    value: "all",
-                  },
-                ]}
-              /> */}
               <ProFormTreeSelect
                 width="md"
                 name="menuIds"
