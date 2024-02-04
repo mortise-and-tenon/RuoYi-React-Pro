@@ -49,6 +49,7 @@ import {
   Upload,
   Typography,
   Checkbox,
+  Select,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -63,6 +64,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { TreeSelect } from "@/node_modules/antd/es/index";
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
@@ -193,7 +195,7 @@ export default function Role() {
                     label: (
                       <a
                         onClick={() => {
-                          modifyRole(record);
+                          modifyRolePermission(record);
                         }}
                       >
                         数据权限
@@ -244,31 +246,82 @@ export default function Role() {
     useState(false);
 
   //重置密码表单引用
-  const [pwdFormRef] = Form.useForm();
+  const [scopeFormRef] = Form.useForm();
 
-  const modifyRole = (record) => {
+  //打开修改角色权限范围对话框
+  const modifyRolePermission = (record) => {
     attachRowdata["roleId"] = record.roleId;
     attachRowdata["roleName"] = record.roleName;
     setAttachRowdata(attachRowdata);
-
     setShowModifyRolePermissionModal(true);
+
+    queryRoleScope(record.roleId);
+    queryRoleDeptTree(record.roleId);
   };
 
-  //确认重置密码
-  const confirmModifyUserPwd = () => {
-    pwdFormRef.submit();
+  //查询用户相关权限范围
+  const queryRoleScope = async (roleId: number) => {
+    const body = await fetchApi(`/api/system/role/${roleId}`, push);
+    if (body !== undefined) {
+      if (body.code == 200) {
+        scopeFormRef.setFieldsValue({
+          roleName: body.data.roleName,
+          roleKey: body.data.roleKey,
+          dataScope: body.data.dataScope,
+        });
+
+        if (body.data.dataScope === "2") {
+          setShowDept(true);
+        }
+      }
+    }
   };
 
-  //取消重置密码
-  const cancelModifyUserPwd = () => {
+  //角色权限范围的部门树
+  const [roleDeptTree, setRoleDeptTree] = useState([]);
+
+  //查询角色权限范围的部门树
+  const queryRoleDeptTree = async (roleId: number) => {
+    const body = await fetchApi(`/api/system/role/deptTree/${roleId}`, push);
+    if (body !== undefined) {
+      if (body.code == 200) {
+        setRoleDeptTree(body.depts);
+        scopeFormRef.setFieldsValue({
+          deptIds: body.checkedKeys,
+        });
+      }
+    }
+  };
+
+  //是否展示部门列表
+  const [showDept, setShowDept] = useState(false);
+
+  //选择权限范围
+  const onSelectScope = (value) => {
+    setShowDept(value == 2);
+  };
+
+  //确认修改角色权限范围
+  const confirmModifyRolePermission = () => {
+    scopeFormRef.submit();
+    setShowDept(false);
+  };
+
+  //取消修改角色权限范围
+  const cancelModifyRolePermission = () => {
     setShowModifyRolePermissionModal(false);
+    setShowDept(false);
   };
 
-  //执行修改分配权限
-  const executeModifyUserPwd = async (values) => {
+  //执行修改分配权限范围
+  const executeModifyRolePermissionScope = async (values) => {
     setShowModifyRolePermissionModal(false);
     values["roleId"] = attachRowdata["roleId"];
-    const body = await fetchApi("/api/system/user/resetPwd", push, {
+    if(!values.hasOwnProperty("deptIds")){
+      values["deptIds"] = [];
+    }
+    console.log("depts:",values);
+    const body = await fetchApi("/api/system/role/dataScope", push, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -277,12 +330,12 @@ export default function Role() {
     });
     if (body != undefined) {
       if (body.code == 200) {
-        message.success(`修改${attachRowdata["roleName"]}权限成功`);
+        message.success(`修改${attachRowdata["roleName"]}权限范围成功`);
       } else {
         message.error(body.msg);
       }
     }
-    pwdFormRef.resetFields();
+    scopeFormRef.resetFields();
   };
 
   //查询用户数据
@@ -457,8 +510,7 @@ export default function Role() {
   const [roleSelectedPermission, setRoleSelectedPermission] = useState([]);
 
   //修改角色框中权限树数据
-  const [rolePermissionTree,setRolePermissionTree] = useState([]);
-
+  const [rolePermissionTree, setRolePermissionTree] = useState([]);
 
   //查询修改角色时权限树，并获取角色选中权限数据
   const queryRolePermissionData = async (record) => {
@@ -920,24 +972,78 @@ export default function Role() {
       />
 
       <Modal
-        title={`修改${attachRowdata["roleName"]}数据权限`}
+        title={`分配数据权限`}
         open={showModifyRolePermissionModal}
-        onOk={confirmModifyUserPwd}
-        onCancel={cancelModifyUserPwd}
+        onOk={confirmModifyRolePermission}
+        onCancel={cancelModifyRolePermission}
       >
         <Form
-          form={pwdFormRef}
+          layout="horizontal"
+          form={scopeFormRef}
           onFinish={async (values) => {
-            return executeModifyUserPwd(values);
+            return executeModifyRolePermissionScope(values);
           }}
         >
           <Form.Item
-            label="新密码"
-            name="password"
-            rules={[{ required: true, message: "请输入新密码" }]}
+            width="md"
+            name="roleName"
+            label="角色名称"
+            placeholder="请输入角色名称"
           >
-            <Input.Password />
+            <Input disabled />
           </Form.Item>
+          <Form.Item
+            width="md"
+            name="roleKey"
+            label="权限字符"
+            placeholder="请输入权限字符"
+          >
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item name="dataScope" label="权限范围" initialValue="1">
+            <Select
+              placeholder="选择权限范围"
+              onChange={onSelectScope}
+              options={[
+                {
+                  label: "全部数据权限",
+                  value: "1",
+                },
+                {
+                  label: "自定义数据权限",
+                  value: "2",
+                },
+                {
+                  label: "本部门数据权限",
+                  value: "3",
+                },
+                {
+                  label: "本部门及以下权限",
+                  value: "4",
+                },
+                {
+                  label: "仅本人数据权限",
+                  value: "5",
+                },
+              ]}
+            ></Select>
+          </Form.Item>
+          {showDept && (
+            <Form.Item name="deptIds" label="数据权限">
+              <TreeSelect
+                treeData={roleDeptTree}
+                allowClear
+                multiple={true}
+                showCheckedStrategy={TreeSelect.SHOW_ALL}
+                treeCheckable={true}
+                fieldNames={{
+                  label: "label",
+                  value: "id",
+                }}
+              />
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </PageContainer>
