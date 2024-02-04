@@ -686,7 +686,6 @@ export default function User() {
 
   //点击删除按钮
   const onClickDeleteRow = (record?) => {
-    console.log("xxx:", record);
     const userId =
       record != undefined ? record.userId : selectedRowKeys.join(",");
     Modal.confirm({
