@@ -20,7 +20,7 @@ export default function Home() {
     } else {
       push("/index");
     }
-  }, []);
+  });
 
   return (
     <Flex vertical className={styles.centerBody}>

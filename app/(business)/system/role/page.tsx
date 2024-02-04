@@ -82,8 +82,6 @@ export type OptionType = {
 export default function Role() {
   const { push } = useRouter();
 
-  useEffect(() => {}, []);
-
   //控制行的状态值的恢复
   const [rowStatusMap, setRowStatusMap] = useState<{ [key: number]: boolean }>(
     {}

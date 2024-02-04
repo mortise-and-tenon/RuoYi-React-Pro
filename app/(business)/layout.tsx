@@ -68,7 +68,7 @@ export default function RootLayout({
       return;
     }
     getProfile();
-  }, []);
+  });
 
   //是否展示搜索框
   const [showSearch, setShowSearch] = useState(false);

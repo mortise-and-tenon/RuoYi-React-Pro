@@ -44,7 +44,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
 
   useEffect(() => {
     getUserData();
-  }, []);
+  });
 
   //表格列定义
   const columns: ProColumns[] = [
