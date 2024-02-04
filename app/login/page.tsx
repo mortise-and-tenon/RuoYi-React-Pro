@@ -4,7 +4,7 @@ import {
   LoginFormPage,
   ProConfigProvider,
   ProFormCheckbox,
-  ProFormText
+  ProFormText,
 } from "@ant-design/pro-components";
 import { Divider, message, Spin, theme } from "antd";
 import { setCookie } from "cookies-next";
@@ -60,7 +60,7 @@ export default function Login() {
   const router = useRouter();
 
   //提交登录
-  const userLogin = async (values) => {
+  const userLogin = async (values: any) => {
     const loginData: LoginReq = {
       username: values.username,
       password: values.password,
@@ -89,7 +89,7 @@ export default function Login() {
             content: "登录成功",
           });
 
-          setCookie("token",data.token);
+          setCookie("token", data.token);
 
           router.push("/");
         } else {

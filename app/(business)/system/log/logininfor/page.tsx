@@ -10,7 +10,11 @@ import {
   ExclamationCircleFilled,
   UnlockOutlined,
 } from "@ant-design/icons";
-import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
 import {
   PageContainer,
   ProDescriptions,
@@ -18,7 +22,6 @@ import {
 } from "@ant-design/pro-components";
 import { Button, Modal, Space, Tag, message } from "antd";
 import { useRouter } from "next/navigation";
-
 import {
   faCheck,
   faToggleOff,
@@ -162,14 +165,14 @@ export default function OperLog() {
   const [rowCanDelete, setRowCanDelete] = useState(false);
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRow, setSelectedRow] = useState(undefined as any);
 
   //解锁按钮是否可用
   const [rowCanUnlock, setRowCanUnlock] = useState(false);
 
   const rowSelection = {
-    onChange: (newSelectedRowKeys: any, selectedRows: any) => {
+    onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
@@ -295,7 +298,7 @@ export default function OperLog() {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const actionRef = useRef<ProFormInstance>();
+  const actionRef = useRef<ActionType>();
   //表单对象引用
   const formRef = useRef<ProFormInstance>();
 
@@ -342,13 +345,13 @@ export default function OperLog() {
     <PageContainer title={false}>
       <ProTable
         formRef={formRef}
-        rowKey={(record) => record.infoId}
+        rowKey="infoId"
         rowSelection={{
           selectedRowKeys,
           ...rowSelection,
         }}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        request={async (params: any, sorter: any, filter: any) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
           const data = await getLog(params, sorter, filter);
           if (data !== undefined) {
@@ -424,7 +427,7 @@ export default function OperLog() {
                 <FontAwesomeIcon icon={faToggleOff} />
               ),
               tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
-              onClick: (key: string) => {
+              onClick: (key?: string | undefined) => {
                 setShowSearch(!showSearch);
               },
             },
@@ -432,7 +435,7 @@ export default function OperLog() {
               key: "refresh",
               tooltip: "刷新",
               icon: <ReloadOutlined />,
-              onClick: (key: string) => {
+              onClick: (key?: string | undefined) => {
                 if (actionRef.current) {
                   actionRef.current.reload();
                 }

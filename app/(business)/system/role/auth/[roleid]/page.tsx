@@ -16,7 +16,11 @@ import {
   CloudUploadOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
@@ -29,6 +33,7 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from "@ant-design/pro-components";
+
 import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
 import {
   Button,
@@ -138,7 +143,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
     {
       title: "创建时间",
       dataIndex: "createTime",
-      valueType: "datetime",
+      valueType: "dateTime",
       search: false,
     },
     {
@@ -221,13 +226,13 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
     {
       title: "创建时间",
       dataIndex: "createTime",
-      valueType: "datetime",
+      valueType: "dateTime",
       search: false,
     },
   ];
 
   //查询角色授权数据
-  const getRoleAllocate = async (params, sorter, filter) => {
+  const getRoleAllocate = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       roleId: roleId,
       pageNum: params.current,
@@ -258,7 +263,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
   };
 
   //查询角色未授权数据
-  const getRoleUnallocate = async (params, sorter, filter) => {
+  const getRoleUnallocate = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       roleId: roleId,
       pageNum: params.current,
@@ -350,7 +355,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
   };
 
   //执行取消用户角色授权
-  const executeRemoveRoleAuth = async (userId) => {
+  const executeRemoveRoleAuth = async (userId: any) => {
     const data = {
       roleId: roleId,
       userId: userId,
@@ -379,10 +384,10 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
   };
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setCanRemoveAuth(newSelectedRowKeys && newSelectedRowKeys.length > 0);
     },
@@ -390,11 +395,11 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
 
   //未授权用户选中行操作
   const [selectedRowKeysUnallocate, setSelectedRowKeysUnallocate] = useState<
-    []
+    React.Key[]
   >([]);
 
   const rowSelectionUnallocate = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeysUnallocate(newSelectedRowKeys);
     },
   };
@@ -457,12 +462,12 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const actionRef = useRef<ProFormInstance>();
+  const actionRef = useRef<ActionType>();
   //表单对象引用
   const formRef = useRef<ProFormInstance>();
 
   //未分配用户列表action对象引用
-  const unallocateActionRef = useRef<ProFormInstance>();
+  const unallocateActionRef = useRef<ActionType>();
 
   //当前默认条数
   const defualtPageSize = 10;
@@ -478,13 +483,13 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
     >
       <ProTable
         formRef={formRef}
-        rowKey={(record) => record.userId}
+        rowKey="userId"
         rowSelection={{
           selectedRowKeys,
           ...rowSelection,
         }}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        request={async (params: any, sorter: any, filter: any) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
           const data = await getRoleAllocate(params, sorter, filter);
           if (data !== undefined) {
@@ -516,12 +521,12 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
         actionRef={actionRef}
         toolbar={{
           actions: [
-            <Button type="primary" onClick={onClickShowModal}>
+            <Button key="allocate" type="primary" onClick={onClickShowModal}>
               添加用户
             </Button>,
 
             <Button
-              key="danger"
+              key="unallocate"
               danger
               icon={<DeleteOutlined />}
               disabled={!rowCanRemoveAuth}
@@ -539,7 +544,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
                 <FontAwesomeIcon icon={faToggleOff} />
               ),
               tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 setShowSearch(!showSearch);
               },
             },
@@ -547,7 +552,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
               key: "refresh",
               tooltip: "刷新",
               icon: <ReloadOutlined />,
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 if (actionRef.current) {
                   actionRef.current.reload();
                 }
@@ -564,13 +569,13 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
         onCancel={cancelAddUnallocate}
       >
         <ProTable
-          rowKey={(record) => record.userId}
+          rowKey="userId"
           rowSelection={{
             selectedRowKeys: selectedRowKeysUnallocate,
             ...rowSelectionUnallocate,
           }}
           columns={unAllocateColumns}
-          request={async (params, sorter, filter) => {
+          request={async (params: any, sorter: any, filter: any) => {
             // 表单搜索项会从 params 传入，传递给后端接口。
             const data = await getRoleUnallocate(params, sorter, filter);
             if (data !== undefined) {

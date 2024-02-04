@@ -16,7 +16,11 @@ import {
   CloudUploadOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
@@ -152,7 +156,7 @@ export default function User() {
     {
       title: "创建时间",
       dataIndex: "createTime",
-      valueType: "datetime",
+      valueType: "dateTime",
       search: false,
       sorter: true,
     },
@@ -244,7 +248,7 @@ export default function User() {
   const [showModifyUserModal, setShowModifyUserModal] = useState(false);
 
   //展示修改用户对话框
-  const showRowModifyModal = (record?) => {
+  const showRowModifyModal = (record?: any) => {
     queryUserInfo(record);
     setShowModifyUserModal(true);
   };
@@ -255,7 +259,7 @@ export default function User() {
   //重置密码表单引用
   const [pwdFormRef] = Form.useForm();
 
-  const modifyUserPwd = (record) => {
+  const modifyUserPwd = (record: any) => {
     attachUserdata["userId"] = record.userId;
     attachUserdata["userName"] = record.userName;
     setAttachUserdata(attachUserdata);
@@ -274,7 +278,7 @@ export default function User() {
   };
 
   //执行重置密码
-  const executeModifyUserPwd = async (values) => {
+  const executeModifyUserPwd = async (values: any) => {
     setShowModifyUserPwdModal(false);
     values["userId"] = attachUserdata["userId"];
     const body = await fetchApi("/api/system/user/resetPwd", push, {
@@ -295,7 +299,7 @@ export default function User() {
   };
 
   //查询用户数据
-  const getUser = async (params, sorter, filter) => {
+  const getUser = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       pageNum: params.current,
       ...params,
@@ -322,7 +326,7 @@ export default function User() {
     const body = await fetchApi(`/api/system/user/list?${queryParams}`, push);
 
     if (body !== undefined) {
-      body.rows.forEach((row) => {
+      body.rows.forEach((row: any) => {
         setRowStatusMap({ ...rowStatusMap, [row.userId]: row.status === "0" });
       });
     }
@@ -331,7 +335,7 @@ export default function User() {
   };
 
   //展示切换用户状态对话框
-  const showSwitchUserStatusModal = (checked: boolean, record) => {
+  const showSwitchUserStatusModal = (checked: boolean, record: any) => {
     setRowStatusMap({ ...rowStatusMap, [record.userId]: checked });
 
     Modal.confirm({
@@ -353,7 +357,7 @@ export default function User() {
   const executeSwitchStatus = async (
     checked: boolean,
     userId: string,
-    erroCallback: () => {}
+    erroCallback: () => void
   ) => {
     const modifyData = {
       userId: userId,
@@ -381,14 +385,14 @@ export default function User() {
   const [rowCanDelete, setRowCanDelete] = useState(false);
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRow, setSelectedRow] = useState(undefined as any);
 
   //修改按钮是否可用
   const [rowCanModify, setRowCanModify] = useState(false);
 
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
@@ -400,7 +404,7 @@ export default function User() {
         setSelectedRow(undefined);
       }
     },
-    getCheckboxProps: (record) => ({
+    getCheckboxProps: (record: any) => ({
       disabled: record.userId == 1,
     }),
   };
@@ -409,14 +413,16 @@ export default function User() {
   const [searchDeptId, setSearchDeptId] = useState(0);
 
   //选择组织树执行过滤
-  const selectOrgData = (selectedDeptKey, e) => {
+  const selectOrgData = (selectedDeptKey: React.Key[]) => {
     if (selectedDeptKey && selectedDeptKey.length > 0) {
-      setSearchDeptId(selectedDeptKey[0]);
+      setSearchDeptId(selectedDeptKey[0] as number);
     } else {
       setSearchDeptId(0);
     }
 
-    formRef.current.submit();
+    if (formRef.current) {
+      formRef.current.submit();
+    }
   };
 
   //用于搜索的组织选择数据
@@ -478,7 +484,7 @@ export default function User() {
   const generateOrgTree = (orgData: []) => {
     const children: Array<TreeDataNode> = new Array<TreeDataNode>();
 
-    orgData.forEach((parent) => {
+    orgData.forEach((parent: any) => {
       const hasChild = parent.children && parent.children.length > 0;
       const node: TreeDataNode = {
         title: parent.label,
@@ -496,7 +502,7 @@ export default function User() {
 
   const generateOrgChildTree = (orgData: [], parent: TreeDataNode) => {
     const children: Array<TreeDataNode> = new Array<TreeDataNode>();
-    orgData.forEach((item) => {
+    orgData.forEach((item: any) => {
       const hasChild = item.children && item.children.length > 0;
       const node: TreeDataNode = {
         title: item.label,
@@ -550,11 +556,11 @@ export default function User() {
     const body = await fetchApi("/api/system/user/", push);
 
     if (body !== undefined) {
-      body.posts.forEach((post) => {
+      body.posts.forEach((post: any) => {
         positionValue[post.postId] = post.postName;
         setPositionValue(positionValue);
       });
-      body.roles.forEach((role) => {
+      body.roles.forEach((role: any) => {
         roleValue[role.roleId] = role.roleName;
         setRoleValue(roleValue);
       });
@@ -562,7 +568,7 @@ export default function User() {
   };
 
   //确定新建用户
-  const executeAddUser = async (values) => {
+  const executeAddUser = async (values: any) => {
     const body = await fetchApi("/api/system/user", push, {
       method: "POST",
       headers: {
@@ -604,7 +610,7 @@ export default function User() {
   );
 
   //查询用户信息
-  const queryUserInfo = async (record?) => {
+  const queryUserInfo = async (record?: any) => {
     const userId = record !== undefined ? record.userId : selectedRow.userId;
     const userName =
       record !== undefined ? record.userName : selectedRow.userName;
@@ -620,7 +626,7 @@ export default function User() {
       if (body !== undefined) {
         if (body.code == 200) {
           const positionArray: Array<OptionType> = new Array<OptionType>();
-          body.posts.forEach((post) => {
+          body.posts.forEach((post: any) => {
             const option: OptionType = {
               label: post.postName,
               value: post.postId,
@@ -631,7 +637,7 @@ export default function User() {
           setModifyPositionValue(positionArray);
 
           const roeArray: Array<OptionType> = new Array<OptionType>();
-          body.roles.forEach((role) => {
+          body.roles.forEach((role: any) => {
             const option: OptionType = {
               label: role.roleName,
               value: role.roleId,
@@ -658,10 +664,10 @@ export default function User() {
   };
 
   //确认修改用户
-  const executeModifyUser = async (values) => {
+  const executeModifyUser = async (values: any) => {
     values["userId"] = attachUserdata["userId"];
     values["userName"] = attachUserdata["userName"];
-    
+
     const body = await fetchApi("/api/system/user", push, {
       method: "PUT",
       headers: {
@@ -685,7 +691,7 @@ export default function User() {
   };
 
   //点击删除按钮
-  const onClickDeleteRow = (record?) => {
+  const onClickDeleteRow = (record?: any) => {
     const userId =
       record != undefined ? record.userId : selectedRowKeys.join(",");
     Modal.confirm({
@@ -700,7 +706,7 @@ export default function User() {
   };
 
   //选中上传文件列表
-  const [fileList, setFileList] = useState([]);
+  const [fileList, setFileList] = useState<FileType[]>([]);
 
   //上传前检查
   const beforeUpload = (file: FileType) => {
@@ -727,7 +733,7 @@ export default function User() {
   const [uploading, setUploading] = useState(false);
 
   //上传处理，手动上传下不会执行
-  const handleChange: UploadProps["onChange"] = (info) => {
+  const handleChange: UploadProps["onChange"] = (info: any) => {
     if (info.file.status === "uploading") {
       setUploading(true);
       return;
@@ -752,7 +758,7 @@ export default function User() {
   };
 
   //确定删除选中的用户
-  const executeDeleteRow = async (userId) => {
+  const executeDeleteRow = async (userId: any) => {
     const body = await fetchApi(`/api/system/user/${userId}`, push, {
       method: "DELETE",
     });
@@ -822,7 +828,7 @@ export default function User() {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const actionRef = useRef<ProFormInstance>();
+  const actionRef = useRef<ActionType>();
   //表单对象引用
   const formRef = useRef<ProFormInstance>();
 
@@ -895,13 +901,13 @@ export default function User() {
         <Col xs={24} sm={18} md={18}>
           <ProTable
             formRef={formRef}
-            rowKey={(record) => record.userId}
+            rowKey="userId"
             rowSelection={{
               selectedRowKeys,
               ...rowSelection,
             }}
             columns={columns}
-            request={async (params, sorter, filter) => {
+            request={async (params: any, sorter: any, filter: any) => {
               // 表单搜索项会从 params 传入，传递给后端接口。
               const data = await getUser(params, sorter, filter);
               if (data !== undefined) {
@@ -947,9 +953,7 @@ export default function User() {
                     destroyOnClose: true,
                   }}
                   submitTimeout={2000}
-                  onFinish={async (values) => {
-                    return executeAddUser(values);
-                  }}
+                  onFinish={executeAddUser}
                 >
                   <ProForm.Group>
                     <ProFormText
@@ -1035,7 +1039,7 @@ export default function User() {
                       name="status"
                       width="sm"
                       label="状态"
-                      value="0"
+                      initialValue="0"
                       options={[
                         {
                           label: "正常",
@@ -1071,8 +1075,7 @@ export default function User() {
 
                   <ProFormTextArea
                     name="remark"
-                    width="688px"
-                    layout="horizontal"
+                    width={688}
                     label="备注"
                     placeholder="请输入内容"
                   />
@@ -1099,9 +1102,7 @@ export default function User() {
                     },
                   }}
                   submitTimeout={2000}
-                  onFinish={async (values) => {
-                    return executeModifyUser(values);
-                  }}
+                  onFinish={executeModifyUser}
                 >
                   <ProForm.Group>
                     <ProFormText
@@ -1206,8 +1207,7 @@ export default function User() {
 
                   <ProFormTextArea
                     name="remark"
-                    width="688px"
-                    layout="horizontal"
+                    width={688}
                     label="备注"
                     placeholder="请输入内容"
                   />
@@ -1248,7 +1248,7 @@ export default function User() {
                     <FontAwesomeIcon icon={faToggleOff} />
                   ),
                   tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
-                  onClick: (key: string) => {
+                  onClick: (key: string | undefined) => {
                     setShowSearch(!showSearch);
                   },
                 },
@@ -1256,7 +1256,7 @@ export default function User() {
                   key: "refresh",
                   tooltip: "刷新",
                   icon: <ReloadOutlined />,
-                  onClick: (key: string) => {
+                  onClick: (key: string | undefined) => {
                     if (actionRef.current) {
                       actionRef.current.reload();
                     }
@@ -1274,12 +1274,7 @@ export default function User() {
         onOk={confirmModifyUserPwd}
         onCancel={cancelModifyUserPwd}
       >
-        <Form
-          form={pwdFormRef}
-          onFinish={async (values) => {
-            return executeModifyUserPwd(values);
-          }}
-        >
+        <Form form={pwdFormRef} onFinish={executeModifyUserPwd}>
           <Form.Item
             label="新密码"
             name="password"
@@ -1301,7 +1296,7 @@ export default function User() {
             <Dragger
               name="avatar"
               listType="text"
-              multiple="false"
+              multiple={false}
               fileList={fileList}
               beforeUpload={beforeUpload}
               onChange={handleChange}

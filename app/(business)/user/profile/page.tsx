@@ -6,22 +6,12 @@ import {
   ProCard,
   ProDescriptions,
   ProForm,
-  ProFormText,
   ProFormRadio,
+  ProFormText,
 } from "@ant-design/pro-components";
-import {
-  Divider,
-  Upload,
-  message,
-  Flex,
-  Row,
-  Col,
-  Tabs,
-  TabItemType,
-  Space,
-} from "antd";
+import { Col, Divider, Flex, message, Row, Space, Tabs, Upload } from "antd";
 
-import type { GetProp, UploadProps, TabsProps } from "antd";
+import type { GetProp, TabsProps, UploadProps } from "antd";
 
 import { fetchApi } from "@/app/_modules/func";
 
@@ -30,15 +20,13 @@ import {
   MailOutlined,
   PhoneOutlined,
   UserOutlined,
-  LoadingOutlined,
-  PlusOutlined,
 } from "@ant-design/icons";
 
 import { faSitemap, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "@/node_modules/next/navigation";
+import { useState } from "react";
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
@@ -86,8 +74,6 @@ export default function Profile() {
         createTime: data.createTime,
       };
 
-      console.log("profile:", userData);
-
       setUser(userData);
       setImageUrl(
         data.avatar === ""
@@ -116,7 +102,7 @@ export default function Profile() {
   };
 
   //更新用户基本信息
-  const updateProfile = async (values) => {
+  const updateProfile = async (values: any) => {
     console.log("put info:", values);
     const body = await fetchApi("/api/system/user/profile", push, {
       method: "PUT",
@@ -125,12 +111,12 @@ export default function Profile() {
       },
       body: JSON.stringify(values),
     });
-    console.log("put info body：", body);
+
     return body;
   };
 
   //修改用户密码
-  const updatePassword = async (values) => {
+  const updatePassword = async (values: any) => {
     const params = {
       oldPassword: values.oldPassword,
       newPassword: values.newPassword,
@@ -147,7 +133,7 @@ export default function Profile() {
     return body;
   };
 
-  const uploadAvatar = async (options) => {
+  const uploadAvatar = async (options: any) => {
     const formData = new FormData();
     formData.append("avatarfile", options.file);
     const body = await fetchApi("/api/system/user/profile/avatar", push, {
@@ -162,18 +148,31 @@ export default function Profile() {
     }
   };
 
+  const executeUpdateProfile = async (values: any) => {
+    const body = await updateProfile(values);
+    if (body.code == 200) {
+      message.success("修改成功");
+    } else {
+      message.error(body.msg);
+    }
+  };
+
+  const executeUpdatePassword = async (values: any) => {
+    const body = await updatePassword(values);
+    if (body.code == 200) {
+      message.success("修改成功");
+    } else {
+      message.error(body.msg);
+    }
+  };
+
   //定义的基本资料的tab页
   const items: TabsProps["items"] = [
     {
       key: "1",
       label: "基本资料",
       children: (
-        <ProForm<{
-          nickName: string;
-          phonenumber: string;
-          email: string;
-          sex: string;
-        }>
+        <ProForm
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 14 }}
           layout="horizontal"
@@ -188,20 +187,8 @@ export default function Profile() {
               );
             },
           }}
-          onFinish={async (values) => {
-            const body = await updateProfile(values);
-            if (body.code == 200) {
-              message.success("修改成功");
-            } else {
-              message.error(body.msg);
-            }
-          }}
-          params={{}}
-          request={async () => {
-            const data = await getProfile();
-            console.log("user:", data);
-            return data;
-          }}
+          onFinish={executeUpdateProfile}
+          request={getProfile}
         >
           <ProFormText
             width="md"
@@ -265,14 +252,7 @@ export default function Profile() {
               );
             },
           }}
-          onFinish={async (values) => {
-            const body = await updatePassword(values);
-            if (body.code == 200) {
-              message.success("修改成功");
-            } else {
-              message.error(body.msg);
-            }
-          }}
+          onFinish={executeUpdatePassword}
           params={{}}
         >
           <ProFormText.Password

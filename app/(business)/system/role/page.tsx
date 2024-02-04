@@ -16,7 +16,11 @@ import {
   CloudUploadOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
@@ -235,7 +239,7 @@ export default function Role() {
   const [showModifyRoleModal, setShowModifyRoleModal] = useState(false);
 
   //展示修改用户对话框
-  const showRowModifyModal = (record?) => {
+  const showRowModifyModal = (record?: any) => {
     queryRoleInfo(record);
     setShowModifyRoleModal(true);
     queryRolePermissionData(record);
@@ -249,7 +253,7 @@ export default function Role() {
   const [scopeFormRef] = Form.useForm();
 
   //打开修改角色权限范围对话框
-  const modifyRolePermission = (record) => {
+  const modifyRolePermission = (record: any) => {
     attachRowdata["roleId"] = record.roleId;
     attachRowdata["roleName"] = record.roleName;
     setAttachRowdata(attachRowdata);
@@ -297,7 +301,7 @@ export default function Role() {
   const [showDept, setShowDept] = useState(false);
 
   //选择权限范围
-  const onSelectScope = (value) => {
+  const onSelectScope = (value: number) => {
     setShowDept(value == 2);
   };
 
@@ -314,13 +318,13 @@ export default function Role() {
   };
 
   //执行修改分配权限范围
-  const executeModifyRolePermissionScope = async (values) => {
+  const executeModifyRolePermissionScope = async (values: any) => {
     setShowModifyRolePermissionModal(false);
     values["roleId"] = attachRowdata["roleId"];
-    if(!values.hasOwnProperty("deptIds")){
+    if (!values.hasOwnProperty("deptIds")) {
       values["deptIds"] = [];
     }
-    console.log("depts:",values);
+    console.log("depts:", values);
     const body = await fetchApi("/api/system/role/dataScope", push, {
       method: "PUT",
       headers: {
@@ -339,7 +343,7 @@ export default function Role() {
   };
 
   //查询用户数据
-  const getList = async (params, sorter, filter) => {
+  const getList = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       pageNum: params.current,
       ...params,
@@ -361,7 +365,7 @@ export default function Role() {
     const body = await fetchApi(`/api/system/role/list?${queryParams}`, push);
 
     if (body !== undefined) {
-      body.rows.forEach((row) => {
+      body.rows.forEach((row: any) => {
         setRowStatusMap({ ...rowStatusMap, [row.roleId]: row.status === "0" });
       });
     }
@@ -370,7 +374,7 @@ export default function Role() {
   };
 
   //展示切换角色状态对话框
-  const showSwitchRoleStatusModal = (checked: boolean, record) => {
+  const showSwitchRoleStatusModal = (checked: boolean, record: any) => {
     setRowStatusMap({ ...rowStatusMap, [record.roleId]: checked });
 
     Modal.confirm({
@@ -392,7 +396,7 @@ export default function Role() {
   const executeSwitchStatus = async (
     checked: boolean,
     roleId: string,
-    erroCallback: () => {}
+    erroCallback: () => void
   ) => {
     const modifyData = {
       roleId: roleId,
@@ -420,14 +424,14 @@ export default function Role() {
   const [rowCanDelete, setRowCanDelete] = useState(false);
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRow, setSelectedRow] = useState(undefined as any);
 
   //修改按钮是否可用
   const [rowCanModify, setRowCanModify] = useState(false);
 
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
@@ -439,13 +443,13 @@ export default function Role() {
         setSelectedRow(undefined);
       }
     },
-    getCheckboxProps: (record) => ({
+    getCheckboxProps: (record: any) => ({
       disabled: record.roleId == 1,
     }),
   };
 
   //确定新建角色
-  const executeAddRole = async (values) => {
+  const executeAddRole = async (values: any) => {
     const body = await fetchApi("/api/system/role", push, {
       method: "POST",
       headers: {
@@ -478,7 +482,7 @@ export default function Role() {
   );
 
   //查询用户信息
-  const queryRoleInfo = async (record?) => {
+  const queryRoleInfo = async (record?: any) => {
     const roleId = record !== undefined ? record.roleId : selectedRow.roleId;
     const roleName =
       record !== undefined ? record.roleName : selectedRow.roleName;
@@ -513,7 +517,7 @@ export default function Role() {
   const [rolePermissionTree, setRolePermissionTree] = useState([]);
 
   //查询修改角色时权限树，并获取角色选中权限数据
-  const queryRolePermissionData = async (record) => {
+  const queryRolePermissionData = async (record?: any) => {
     const roleId = record !== undefined ? record.roleId : selectedRow.roleId;
 
     const body = await fetchApi(
@@ -534,7 +538,7 @@ export default function Role() {
   };
 
   //确认修改角色
-  const executeModifyRole = async (values) => {
+  const executeModifyRole = async (values: any) => {
     values["roleId"] = attachRowdata["roleId"];
 
     const body = await fetchApi("/api/system/role", push, {
@@ -561,7 +565,7 @@ export default function Role() {
   };
 
   //点击删除按钮
-  const onClickDeleteRow = (record?) => {
+  const onClickDeleteRow = (record?: any) => {
     const roleId =
       record != undefined ? record.roleId : selectedRowKeys.join(",");
     Modal.confirm({
@@ -576,7 +580,7 @@ export default function Role() {
   };
 
   //确定删除选中的角色
-  const executeDeleteRow = async (roleId) => {
+  const executeDeleteRow = async (roleId: any) => {
     const body = await fetchApi(`/api/system/role/${roleId}`, push, {
       method: "DELETE",
     });
@@ -601,7 +605,7 @@ export default function Role() {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const actionRef = useRef<ProFormInstance>();
+  const actionRef = useRef<ActionType>();
   //表单对象引用
   const formRef = useRef<ProFormInstance>();
 
@@ -644,21 +648,6 @@ export default function Role() {
     }
   };
 
-  const onChangeTreeOption: GetProp<typeof Checkbox.Group, "onChange"> = (
-    checkedValues
-  ) => {
-    console.log("checked = ", checkedValues);
-    if (checkedValues.length == 0) {
-    }
-
-    checkedValues.forEach((element) => {
-      if (element === "expand") {
-      }
-      if (element === "all") {
-      }
-    });
-  };
-
   //查询所有权限树
   const getPermissionTree = async () => {
     const body = await fetchApi("/api/system/menu/treeselect", push);
@@ -671,26 +660,17 @@ export default function Role() {
     return [];
   };
 
-  const getKeys = (data, keyArray: Array<string>) => {
-    data.forEach((element) => {
-      keyArray.push(element.id);
-      if (element.children && element.children.length > 0) {
-        getKeys(element.children, keyArray);
-      }
-    });
-  };
-
   return (
     <PageContainer title={false}>
       <ProTable
         formRef={formRef}
-        rowKey={(record) => record.roleId}
+        rowKey="roleId"
         rowSelection={{
           selectedRowKeys,
           ...rowSelection,
         }}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        request={async (params: any, sorter: any, filter: any) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
           const data = await getList(params, sorter, filter);
           if (data !== undefined) {
@@ -737,9 +717,7 @@ export default function Role() {
                 destroyOnClose: true,
               }}
               submitTimeout={2000}
-              onFinish={async (values) => {
-                return executeAddRole(values);
-              }}
+              onFinish={executeAddRole}
             >
               <ProForm.Group>
                 <ProFormText
@@ -806,8 +784,7 @@ export default function Role() {
               />
               <ProFormTextArea
                 name="remark"
-                width="688px"
-                layout="horizontal"
+                width={688}
                 label="备注"
                 placeholder="请输入内容"
               />
@@ -834,9 +811,7 @@ export default function Role() {
                 },
               }}
               submitTimeout={2000}
-              onFinish={async (values) => {
-                return executeModifyRole(values);
-              }}
+              onFinish={executeModifyRole}
             >
               <ProForm.Group>
                 <ProFormText
@@ -904,8 +879,7 @@ export default function Role() {
               />
               <ProFormTextArea
                 name="remark"
-                width="688px"
-                layout="horizontal"
+                width={688}
                 label="备注"
                 placeholder="请输入内容"
               />
@@ -938,7 +912,7 @@ export default function Role() {
                 <FontAwesomeIcon icon={faToggleOff} />
               ),
               tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 setShowSearch(!showSearch);
               },
             },
@@ -946,7 +920,7 @@ export default function Role() {
               key: "refresh",
               tooltip: "刷新",
               icon: <ReloadOutlined />,
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 if (actionRef.current) {
                   actionRef.current.reload();
                 }
@@ -965,23 +939,17 @@ export default function Role() {
         <Form
           layout="horizontal"
           form={scopeFormRef}
-          onFinish={async (values) => {
-            return executeModifyRolePermissionScope(values);
-          }}
+          onFinish={executeModifyRolePermissionScope}
         >
           <Form.Item
-            width="md"
             name="roleName"
             label="角色名称"
-            placeholder="请输入角色名称"
           >
             <Input disabled />
           </Form.Item>
           <Form.Item
-            width="md"
             name="roleKey"
             label="权限字符"
-            placeholder="请输入权限字符"
           >
             <Input disabled />
           </Form.Item>

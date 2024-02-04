@@ -23,7 +23,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
   const { push } = useRouter();
 
   //用户信息
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState<any>({});
   //角色信息
   const [roles, setRoles] = useState([]);
 
@@ -37,7 +37,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
         setUser(body.user);
         setRoles(body.roles);
 
-        setSelectedRowKeys(body.user.roles.map((item) => item.roleId));
+        setSelectedRowKeys(body.user.roles.map((item: any) => item.roleId));
       }
     }
   };
@@ -76,10 +76,10 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
   ];
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[number]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
     },
   };
@@ -143,7 +143,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
           <Divider />
           <ProCard title="角色信息">
             <ProTable
-              rowKey={(record) => record.roleId}
+              rowKey="roleId"
               rowSelection={{
                 selectedRowKeys,
                 ...rowSelection,

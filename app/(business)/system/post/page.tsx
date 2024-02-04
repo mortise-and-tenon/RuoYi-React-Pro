@@ -16,7 +16,11 @@ import {
   CloudUploadOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
@@ -64,7 +68,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 //查询表格数据API
 const queryAPI = "/api/system/post/list";
@@ -144,7 +148,7 @@ export default function Post() {
     {
       title: "创建时间",
       dataIndex: "createTime",
-      valueType: "datetime",
+      valueType: "dateTime",
       search: false,
     },
     {
@@ -174,7 +178,7 @@ export default function Post() {
   ];
 
   //0.查询表格数据
-  const queryTableData = async (params, sorter, filter) => {
+  const queryTableData = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       pageNum: params.current,
       ...params,
@@ -201,7 +205,7 @@ export default function Post() {
   //1.新建
 
   //确定新建数据
-  const executeAddData = async (values) => {
+  const executeAddData = async (values: any) => {
     const body = await fetchApi(newAPI, push, {
       method: "POST",
       headers: {
@@ -231,7 +235,7 @@ export default function Post() {
   const [isShowModifyDataModal, setIsShowModifyDataModal] = useState(false);
 
   //展示修改对话框
-  const onClickShowRowModifyModal = (record?) => {
+  const onClickShowRowModifyModal = (record?: any) => {
     queryRowData(record);
     setIsShowModifyDataModal(true);
   };
@@ -245,7 +249,7 @@ export default function Post() {
   }>({});
 
   //查询并加载待修改数据的详细信息
-  const queryRowData = async (record?) => {
+  const queryRowData = async (record?: any) => {
     const postId = record !== undefined ? record.postId : selectedRow.postId;
 
     operatRowData["postId"] = postId;
@@ -271,7 +275,7 @@ export default function Post() {
   };
 
   //确认修改数据
-  const executeModifyData = async (values) => {
+  const executeModifyData = async (values: any) => {
     values["postId"] = operatRowData["postId"];
 
     const body = await fetchApi(modifyAPI, push, {
@@ -289,7 +293,7 @@ export default function Post() {
         if (actionTableRef.current) {
           actionTableRef.current.reload();
         }
-        setIsShowModifyDataModal(false)
+        setIsShowModifyDataModal(false);
         return true;
       }
       message.error(body.msg);
@@ -300,7 +304,7 @@ export default function Post() {
   //3.删除
 
   //点击删除按钮，展示删除确认框
-  const onClickDeleteRow = (record?) => {
+  const onClickDeleteRow = (record?: any) => {
     const postId =
       record != undefined ? record.postId : selectedRowKeys.join(",");
     Modal.confirm({
@@ -315,7 +319,7 @@ export default function Post() {
   };
 
   //确定删除选中的数据
-  const executeDeleteRow = async (postId) => {
+  const executeDeleteRow = async (postId: any) => {
     const body = await fetchApi(`${deleteAPI}/${postId}`, push, {
       method: "DELETE",
     });
@@ -371,7 +375,7 @@ export default function Post() {
   //5.选择行
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRow, setSelectedRow] = useState(undefined as any);
 
   //修改按钮是否可用，选中行时才可用
@@ -382,7 +386,7 @@ export default function Post() {
 
   //ProTable rowSelection
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
 
@@ -404,7 +408,7 @@ export default function Post() {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const actionTableRef = useRef<ProFormInstance>();
+  const actionTableRef = useRef<ActionType>();
   //搜索表单对象引用
   const searchTableFormRef = useRef<ProFormInstance>();
   //当前页数和每页条数
@@ -420,13 +424,13 @@ export default function Post() {
     <PageContainer title={false}>
       <ProTable
         formRef={searchTableFormRef}
-        rowKey={(record) => record.postId}
+        rowKey="postId"
         rowSelection={{
           selectedRowKeys,
           ...rowSelection,
         }}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        request={async (params: any, sorter: any, filter: any) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
           const data = await queryTableData(params, sorter, filter);
           if (data !== undefined) {
@@ -472,9 +476,7 @@ export default function Post() {
                 destroyOnClose: true,
               }}
               submitTimeout={2000}
-              onFinish={async (values) => {
-                return executeAddData(values);
-              }}
+              onFinish={executeAddData}
             >
               <ProForm.Group>
                 <ProFormText
@@ -521,8 +523,7 @@ export default function Post() {
               </ProForm.Group>
               <ProFormTextArea
                 name="remark"
-                width="688px"
-                layout="horizontal"
+                width={688}
                 label="备注"
                 placeholder="请输入内容"
               />
@@ -549,9 +550,7 @@ export default function Post() {
                 },
               }}
               submitTimeout={2000}
-              onFinish={async (values) => {
-                return executeModifyData(values);
-              }}
+              onFinish={executeModifyData}
             >
               <ProForm.Group>
                 <ProFormText
@@ -598,8 +597,7 @@ export default function Post() {
               </ProForm.Group>
               <ProFormTextArea
                 name="remark"
-                width="688px"
-                layout="horizontal"
+                width={688}
                 label="备注"
                 placeholder="请输入内容"
               />
@@ -632,7 +630,7 @@ export default function Post() {
                 <FontAwesomeIcon icon={faToggleOff} />
               ),
               tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 setShowSearch(!showSearch);
               },
             },
@@ -640,7 +638,7 @@ export default function Post() {
               key: "refresh",
               tooltip: "刷新",
               icon: <ReloadOutlined />,
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 if (actionTableRef.current) {
                   actionTableRef.current.reload();
                 }

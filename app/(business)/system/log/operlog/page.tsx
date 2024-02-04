@@ -9,7 +9,11 @@ import {
   ReloadOutlined,
   ExclamationCircleFilled,
 } from "@ant-design/icons";
-import type { ProColumns, ProFormInstance } from "@ant-design/pro-components";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
 import {
   PageContainer,
   ProDescriptions,
@@ -23,7 +27,7 @@ import {
   faToggleOff,
   faToggleOn,
   faXmark,
-  faDownload
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -144,7 +148,7 @@ export default function OperLog() {
     {
       title: "操作日期",
       dataIndex: "operTime",
-      valueType: "datetime",
+      valueType: "dateTime",
       search: false,
       sorter: true,
     },
@@ -190,7 +194,7 @@ export default function OperLog() {
   ];
 
   //查询日志数据
-  const getLog = async (params, sorter, filter) => {
+  const getLog = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       pageNum: params.current,
       ...params,
@@ -200,13 +204,13 @@ export default function OperLog() {
 
     const queryParams = new URLSearchParams(searchParams);
 
-    Object.keys(sorter).forEach((key)=>{
-        queryParams.append("orderByColumn",key);
-        if(sorter[key] === "ascend"){
-          queryParams.append("isAsc","ascending");
-        }else {
-          queryParams.append("isAsc","descending");
-        }
+    Object.keys(sorter).forEach((key) => {
+      queryParams.append("orderByColumn", key);
+      if (sorter[key] === "ascend") {
+        queryParams.append("isAsc", "ascending");
+      } else {
+        queryParams.append("isAsc", "descending");
+      }
     });
 
     const body = await fetchApi(
@@ -221,9 +225,9 @@ export default function OperLog() {
   const [rowCanDelete, setRowCanDelete] = useState(false);
 
   //选中行操作
-  const [selectedRowKeys, setSelectedRowKeys] = useState<[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const rowSelection = {
-    onChange: (newSelectedRowKeys, selectedRows) => {
+    onChange: (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
       setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
     },
@@ -232,28 +236,26 @@ export default function OperLog() {
   //点击删除按钮
   const onClickDeleteRow = () => {
     Modal.confirm({
-      title: '系统提示',
+      title: "系统提示",
       icon: <ExclamationCircleFilled />,
       content: `确定删除日志编号为“${selectedRowKeys.join(",")}”的数据项？`,
       onOk() {
         executeDeleteRow();
       },
-      onCancel() {
-      },
+      onCancel() {},
     });
   };
 
   //点击清空按钮
   const onClickClear = () => {
     Modal.confirm({
-      title: '系统提示',
+      title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: '是否确认清空所有操作日志数据项？',
+      content: "是否确认清空所有操作日志数据项？",
       onOk() {
         executeClear();
       },
-      onCancel() {
-      },
+      onCancel() {},
     });
   };
 
@@ -269,7 +271,7 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("删除成功");
-        
+
         //删除按钮变回不可点击
         setRowCanDelete(false);
         //选中的数据恢复为空
@@ -286,7 +288,6 @@ export default function OperLog() {
 
   //确定清空日志数据
   const executeClear = async () => {
-
     const body = await fetchApi("/api/monitor/operlog/clean", push, {
       method: "DELETE",
     });
@@ -298,8 +299,8 @@ export default function OperLog() {
         setSelectedRowKeys([]);
         //刷新列表
         if (actionRef.current) {
-            actionRef.current.reload();
-          }
+          actionRef.current.reload();
+        }
       } else {
         message.error(body.msg);
       }
@@ -317,7 +318,7 @@ export default function OperLog() {
   const [selectedRow, setSelectedRow] = useState(undefined as any);
 
   //展示行详情
-  function showRowModal(record) {
+  function showRowModal(record: any) {
     setIsModalOpen(true);
     setSelectedRow(record);
   }
@@ -325,7 +326,7 @@ export default function OperLog() {
   //搜索栏显示状态
   const [showSearch, setShowSearch] = useState(true);
   //action对象引用
-  const actionRef = useRef<ProFormInstance>();
+  const actionRef = useRef<ActionType>();
   //表单对象引用
   const formRef = useRef<ProFormInstance>();
 
@@ -372,13 +373,13 @@ export default function OperLog() {
     <PageContainer title={false}>
       <ProTable
         formRef={formRef}
-        rowKey={(record) => record.operId}
+        rowKey="operId"
         rowSelection={{
           selectedRowKeys,
           ...rowSelection,
         }}
         columns={columns}
-        request={async (params, sorter, filter) => {
+        request={async (params:any, sorter:any, filter:any) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
           console.log(params, sorter, filter);
           const data = await getLog(params, sorter, filter);
@@ -447,7 +448,7 @@ export default function OperLog() {
                 <FontAwesomeIcon icon={faToggleOff} />
               ),
               tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 setShowSearch(!showSearch);
               },
             },
@@ -455,7 +456,7 @@ export default function OperLog() {
               key: "refresh",
               tooltip: "刷新",
               icon: <ReloadOutlined />,
-              onClick: (key: string) => {
+              onClick: (key: string | undefined) => {
                 if (actionRef.current) {
                   actionRef.current.reload();
                 }
@@ -464,7 +465,6 @@ export default function OperLog() {
           ],
         }}
       />
-      
 
       {selectedRow !== undefined && (
         <Modal

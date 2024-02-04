@@ -1,6 +1,6 @@
 import { getCookie } from "cookies-next";
 
-export async function fetchApi(url: string, push, options?: RequestInit) {
+export async function fetchApi(url: string, push: any, options?: RequestInit) {
   const token = getCookie("token");
   const authHeader = {
     Authorization: "Bearer " + token,
@@ -36,7 +36,7 @@ export async function fetchApi(url: string, push, options?: RequestInit) {
 
 export async function fetchFile(
   url: string,
-  push,
+  push: any,
   options: RequestInit,
   fileName: string
 ) {
