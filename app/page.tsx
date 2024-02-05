@@ -16,7 +16,7 @@ export default function Home() {
     if (token === "") {
       push("/login");
     } else {
-      push("/index");
+      push("/home");
     }
   }, []);
 

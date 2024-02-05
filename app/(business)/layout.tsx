@@ -147,7 +147,7 @@ export default function RootLayout({
     const rootChildren: Array<RouteInfo> = new Array<RouteInfo>();
 
     const indexRoute: RouteInfo = {
-      path: "/index",
+      path: "/home",
       name: "首页",
       icon: <HomeOutlined />,
     };
