@@ -525,7 +525,7 @@ export default function Dict() {
             </ModalForm>,
             <ModalForm
               key="modifymodal"
-              title="修改岗位"
+              title="修改字典类型"
               formRef={modifyFormRef}
               trigger={
                 <Button
