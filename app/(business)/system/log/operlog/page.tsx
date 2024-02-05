@@ -146,14 +146,14 @@ export default function OperLog() {
       order: 6,
     },
     {
-      title: "操作日期",
+      title: "操作时间",
       dataIndex: "operTime",
       valueType: "dateTime",
       search: false,
       sorter: true,
     },
     {
-      title: "操作日期",
+      title: "操作时间",
       dataIndex: "operTimeRange",
       valueType: "dateRange",
       hideInTable: true,

@@ -98,11 +98,13 @@ export default function Post() {
     {
       title: "岗位编码",
       dataIndex: "postCode",
+      ellipsis: true,
       order: 3,
     },
     {
       title: "岗位名称",
       dataIndex: "postName",
+      ellipsis: true,
       sorter: true,
       order: 2,
     },
@@ -149,6 +151,7 @@ export default function Post() {
       title: "创建时间",
       dataIndex: "createTime",
       valueType: "dateTime",
+      sorter: true,
       search: false,
     },
     {

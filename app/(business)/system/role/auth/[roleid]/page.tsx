@@ -521,7 +521,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
         actionRef={actionRef}
         toolbar={{
           actions: [
-            <Button key="allocate" type="primary" onClick={onClickShowModal}>
+            <Button icon={<PlusOutlined />} key="allocate" type="primary" onClick={onClickShowModal}>
               添加用户
             </Button>,
 

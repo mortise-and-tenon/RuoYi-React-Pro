@@ -50,7 +50,6 @@ const beforeUpload = (file: FileType) => {
 };
 
 export default function Profile() {
-  const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>();
 
   const { push } = useRouter();
@@ -89,13 +88,11 @@ export default function Profile() {
 
   const handleChange: UploadProps["onChange"] = (info) => {
     if (info.file.status === "uploading") {
-      setLoading(true);
       return;
     }
     if (info.file.status === "done") {
       // Get this url from response in real world.
       getBase64(info.file.originFileObj as FileType, (url) => {
-        setLoading(false);
         setImageUrl(url);
       });
     }
@@ -103,7 +100,6 @@ export default function Profile() {
 
   //更新用户基本信息
   const updateProfile = async (values: any) => {
-    console.log("put info:", values);
     const body = await fetchApi("/api/system/user/profile", push, {
       method: "PUT",
       headers: {
@@ -121,7 +117,6 @@ export default function Profile() {
       oldPassword: values.oldPassword,
       newPassword: values.newPassword,
     };
-    console.log("put pwd2:", new URLSearchParams(params));
     const body = await fetchApi(
       `/api/system/user/profile/updatePwd?${new URLSearchParams(params)}`,
       push,
@@ -310,6 +305,7 @@ export default function Profile() {
             <div>
               <Upload
                 name="avatarfile"
+                accept=".jpg,.jpeg,.png"
                 listType="picture-circle"
                 className="avatar-uploader"
                 showUploadList={false}
@@ -396,7 +392,7 @@ export default function Profile() {
               label={
                 <>
                   <CalendarOutlined />
-                  创建日期
+                  创建时间
                 </>
               }
             >

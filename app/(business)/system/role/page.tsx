@@ -98,11 +98,15 @@ export default function Role() {
     {
       title: "角色名称",
       dataIndex: "roleName",
+      ellipsis: true,
+      sorter: true,
       order: 4,
     },
     {
       title: "权限字符",
       dataIndex: "roleKey",
+      ellipsis: true,
+      sorter: true,
       order: 3,
     },
     {
@@ -694,7 +698,7 @@ export default function Role() {
             ? {
                 defaultCollapsed: false,
                 searchText: "搜索",
-              }
+            }
             : false
         }
         dateFormatter="string"
@@ -703,7 +707,6 @@ export default function Role() {
           actions: [
             <ModalForm
               key="addmodal"
-              // layout="horizontal"
               title="添加角色"
               trigger={
                 <Button icon={<PlusOutlined />} type="primary">
@@ -939,16 +942,10 @@ export default function Role() {
           form={scopeFormRef}
           onFinish={executeModifyRolePermissionScope}
         >
-          <Form.Item
-            name="roleName"
-            label="角色名称"
-          >
+          <Form.Item name="roleName" label="角色名称">
             <Input disabled />
           </Form.Item>
-          <Form.Item
-            name="roleKey"
-            label="权限字符"
-          >
+          <Form.Item name="roleKey" label="权限字符">
             <Input disabled />
           </Form.Item>
 

@@ -102,11 +102,15 @@ export default function User() {
     {
       title: "用户名称",
       dataIndex: "userName",
+      ellipsis: true,
+      sorter: true,
       order: 4,
     },
     {
       title: "用户昵称",
       dataIndex: "nickName",
+      ellipsis: true,
+      sorter: true,
       search: false,
     },
     {
@@ -1294,7 +1298,8 @@ export default function User() {
         <Flex justify="center">
           <div>
             <Dragger
-              name="avatar"
+              name="file"
+              accept=".xls,.xlsx"
               listType="text"
               multiple={false}
               fileList={fileList}
