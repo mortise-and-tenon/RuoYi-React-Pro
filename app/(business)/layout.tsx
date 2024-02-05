@@ -228,14 +228,6 @@ export default function RootLayout({
   const pathName = usePathname();
   const [pathname, setPathname] = useState(pathName);
 
-  //侧边菜单样式
-  const settings: ProSettings | undefined = {
-    layout: "mix",
-    splitMenus: false,
-    defaultCollapsed: false,
-    breakpoint: false,
-  };
-
   return (
     <ProLayout
       title="MorTnon RouYi"
@@ -243,6 +235,10 @@ export default function RootLayout({
       menu={{
         request: getRoutes,
       }}
+      layout="mix"
+      splitMenus={false}
+      defaultCollapsed={false}
+      breakpoint={false}
       onMenuHeaderClick={(e) => console.log(e)}
       menuItemRender={(item, dom) => {
         let shouldRenderIcon =
@@ -394,7 +390,6 @@ export default function RootLayout({
           </div>
         );
       }}
-      {...settings}
     >
       <Modal
         title={

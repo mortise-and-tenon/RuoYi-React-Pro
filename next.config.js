@@ -6,11 +6,11 @@ const nextConfig = {
       fallback: [
         {
           source: "/api/system/user",
-          destination: `http://localhost:8080/system/user/`,
+          destination: `${process.env.BACKEND_URL}/system/user/`,
         },
         {
           source: "/api/:path*",
-          destination: `http://localhost:8080/:path*`,
+          destination: `${process.env.BACKEND_URL}/:path*`,
         },
       ],
     };
@@ -18,7 +18,6 @@ const nextConfig = {
   images: {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    domains: ["img.shields.io"],
     remotePatterns: [
       {
         protocol: "https",
