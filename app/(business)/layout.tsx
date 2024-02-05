@@ -232,6 +232,8 @@ export default function RootLayout({
   const settings: ProSettings | undefined = {
     layout: "mix",
     splitMenus: false,
+    defaultCollapsed: false,
+    breakpoint: false,
   };
 
   return (
