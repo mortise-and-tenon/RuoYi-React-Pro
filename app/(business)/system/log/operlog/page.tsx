@@ -272,6 +272,8 @@ export default function OperLog() {
       if (body.code == 200) {
         message.success("删除成功");
 
+        //修改按钮变回不可点击
+        setRowCanModify(false);
         //删除按钮变回不可点击
         setRowCanDelete(false);
         //选中的数据恢复为空
@@ -379,7 +381,7 @@ export default function OperLog() {
           ...rowSelection,
         }}
         columns={columns}
-        request={async (params:any, sorter:any, filter:any) => {
+        request={async (params: any, sorter: any, filter: any) => {
           // 表单搜索项会从 params 传入，传递给后端接口。
           console.log(params, sorter, filter);
           const data = await getLog(params, sorter, filter);
