@@ -38,6 +38,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useRef, useState } from "react";
 
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { height } from "@fortawesome/free-solid-svg-icons/fa0";
+
 //查询表格数据API
 const queryAPI = "/api/system/notice/list";
 //新建数据API
@@ -252,7 +256,7 @@ export default function Notice() {
             noticeTitle: body.data.noticeTitle,
             noticeType: body.data.noticeType,
             status: body.data.status,
-            noticeContent: body.data.noticeContent,
+            noticeContent:body.data.noticeContent,
           });
         }
       }
@@ -474,12 +478,15 @@ export default function Notice() {
                   ]}
                 />
               </ProForm.Group>
-              <ProFormTextArea
-                name="noticeContent"
-                width={688}
-                label="内容"
-                placeholder="请输入内容"
-              />
+              <ProForm.Group>
+              <ProForm.Item name="noticeContent" style={{ width: 688, height: 240 }} label="内容">
+                  <ReactQuill
+                    theme="snow"
+                    placeholder="请输入内容"
+                    style={{height:160}}
+                  />
+                </ProForm.Item>
+              </ProForm.Group>
             </ModalForm>,
             <ModalForm
               key="modifymodal"
@@ -543,12 +550,15 @@ export default function Notice() {
                   ]}
                 />
               </ProForm.Group>
-              <ProFormTextArea
-                name="noticeContent"
-                width={688}
-                label="内容"
-                placeholder="请输入内容"
-              />
+              <ProForm.Group>
+              <ProForm.Item name="noticeContent" style={{ width: 688, height: 240 }} label="内容">
+                  <ReactQuill
+                    theme="snow"
+                    placeholder="请输入内容"
+                    style={{height:160}}
+                  />
+                </ProForm.Item>
+              </ProForm.Group>
             </ModalForm>,
 
             <Button
