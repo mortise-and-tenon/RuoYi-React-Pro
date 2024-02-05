@@ -2,72 +2,40 @@
 
 import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
-  CaretDownOutlined,
-  CheckOutlined,
-  CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
-  ProCard,
   ProForm,
   ProFormRadio,
-  ProFormSelect,
   ProFormText,
   ProFormTextArea,
-  ProFormTreeSelect,
   ProTable,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
-import {
-  Button,
-  Col,
-  Flex,
-  Input,
-  message,
-  Modal,
-  Row,
-  Space,
-  Spin,
-  Switch,
-  Tree,
-  Dropdown,
-  Form,
-  Upload,
-  Typography,
-  Checkbox,
-  Tag,
-} from "antd";
+import { Button, Modal, Space, Tag, message } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
+  faCheck,
   faDownload,
   faPenToSquare,
+  faRotate,
   faToggleOff,
   faToggleOn,
-  faUpload,
-  faUsers,
-  faCheck,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 //查询表格数据API
 const queryAPI = "/api/system/dict/type/list";
@@ -83,6 +51,8 @@ const deleteAPI = "/api/system/dict/type";
 const exportAPI = "/api/system/dict/type/export";
 //导出文件前缀名
 const exportFilePrefix = "dict";
+//刷新缓存
+const refreshAPI = "/api/system/dict/type/refreshCache";
 
 export default function Dict() {
   const { push } = useRouter();
@@ -436,6 +406,24 @@ export default function Dict() {
     setPageSize(pageSize);
   };
 
+  //刷新缓存
+  const refreshCache = async () => {
+    const body = await fetchApi(refreshAPI, push, {
+      method: "DELETE",
+    });
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("刷新成功");
+        if (actionTableRef.current) {
+          actionTableRef.current.reload();
+        }
+      } else {
+        message.error(body.msg);
+      }
+    }
+  };
+
   return (
     <PageContainer title={false}>
       <ProTable
@@ -617,6 +605,14 @@ export default function Dict() {
               onClick={exportTable}
             >
               导出
+            </Button>,
+            <Button
+              key="refresh"
+              type="primary"
+              icon={<FontAwesomeIcon icon={faRotate} />}
+              onClick={refreshCache}
+            >
+              刷新缓存
             </Button>,
           ],
           settings: [
