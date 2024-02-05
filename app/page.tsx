@@ -1,8 +1,6 @@
 "use client";
 
-
 import { Flex, Spin } from "antd";
-
 
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
@@ -20,7 +18,7 @@ export default function Home() {
     } else {
       push("/index");
     }
-  });
+  }, []);
 
   return (
     <Flex vertical className={styles.centerBody}>

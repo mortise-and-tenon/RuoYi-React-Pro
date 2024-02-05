@@ -57,7 +57,7 @@ export default function Login() {
 
   useEffect(() => {
     getCaptcha();
-  });
+  }, []);
 
   const router = useRouter();
 
@@ -135,7 +135,11 @@ export default function Login() {
           backgroundImageUrl="/bg.jpg"
           logo="https://static.dongfangzan.cn/img/mortnon.svg"
           title={
-            (<span style={{ color: "rgba(255,255,255,1)" }}>MorTnon RuoYi</span>) as any
+            (
+              <span style={{ color: "rgba(255,255,255,1)" }}>
+                MorTnon RuoYi
+              </span>
+            ) as any
           }
           containerStyle={{
             backgroundColor: "rgba(0,0,0,0)",
