@@ -141,33 +141,56 @@ export default function Dept() {
       title: "操作",
       key: "option",
       search: false,
-      render: (_, record) => [
-        <Button
-          key="modifyBtn"
-          type="link"
-          icon={<FontAwesomeIcon icon={faPenToSquare} />}
-          onClick={() => onClickShowRowModifyModal(record)}
-        >
-          修改
-        </Button>,
-        <Button
-          key="newBtn"
-          type="link"
-          icon={<PlusOutlined />}
-          onClick={() => onClickAdd(record)}
-        >
-          新建
-        </Button>,
-        <Button
-          key="deleteBtn"
-          type="link"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => onClickDeleteRow(record)}
-        >
-          删除
-        </Button>,
-      ],
+      render: (_, record) => {
+        if (record.deptId == 100) {
+          return [
+            <Button
+              key="modifyBtn"
+              type="link"
+              icon={<FontAwesomeIcon icon={faPenToSquare} />}
+              onClick={() => onClickShowRowModifyModal(record)}
+            >
+              修改
+            </Button>,
+            <Button
+              key="newBtn"
+              type="link"
+              icon={<PlusOutlined />}
+              onClick={() => onClickAdd(record)}
+            >
+              新建
+            </Button>
+          ];
+        } else {
+          return [
+            <Button
+              key="modifyBtn"
+              type="link"
+              icon={<FontAwesomeIcon icon={faPenToSquare} />}
+              onClick={() => onClickShowRowModifyModal(record)}
+            >
+              修改
+            </Button>,
+            <Button
+              key="newBtn"
+              type="link"
+              icon={<PlusOutlined />}
+              onClick={() => onClickAdd(record)}
+            >
+              新建
+            </Button>,
+            <Button
+              key="deleteBtn"
+              type="link"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => onClickDeleteRow(record)}
+            >
+              删除
+            </Button>,
+          ];
+        }
+      },
     },
   ];
 
