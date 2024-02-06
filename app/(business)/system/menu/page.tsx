@@ -267,17 +267,17 @@ export default function Menu() {
   const [showAddModal, setShowAddModal] = useState(false);
 
   //新建表单是否带有父节点id
-  const [rowParentId, setRowParentId] = useState(100);
+  const [rowParentId, setRowParentId] = useState(0);
 
-  //点击新建，如果从行点击新建，给定父组织
+  //点击新建，如果从行点击新建，给定父节点
   const onClickAdd = (record?: any) => {
-    setRowParentId(record.deptId);
+    setRowParentId(record.menuId);
     setShowAddModal(true);
   };
 
   const cancelAddModal = () => {
     setShowAddModal(false);
-    setRowParentId(100);
+    setRowParentId(0);
   };
 
   //确定新建数据
@@ -327,15 +327,15 @@ export default function Menu() {
 
   //查询并加载待修改数据的详细信息
   const queryRowData = async (record: any) => {
-    const deptId = record.deptId;
+    const menuId = record.menuId;
 
-    operatRowData["deptId"] = deptId;
+    operatRowData["menuId"] = menuId;
     operatRowData["ancestors"] = record.ancestors;
 
     setOperateRowData(operatRowData);
 
-    if (deptId !== undefined) {
-      const body = await fetchApi(`${queryDetailAPI}/${deptId}`, push);
+    if (menuId !== undefined) {
+      const body = await fetchApi(`${queryDetailAPI}/${menuId}`, push);
 
       if (body !== undefined) {
         if (body.code == 200) {
@@ -356,8 +356,7 @@ export default function Menu() {
 
   //确认修改数据
   const executeModifyData = async (values: any) => {
-    values["deptId"] = operatRowData["deptId"];
-    values["ancestors"] = operatRowData["ancestors"];
+    values["menuId"] = operatRowData["menuId"];
 
     const body = await fetchApi(modifyAPI, push, {
       method: "PUT",
@@ -395,6 +394,7 @@ export default function Menu() {
 
   //处理行的展开/折叠逻辑
   const handleExpand = (expanded: boolean, record: any) => {
+    console.log("has keys:", expandKeys);
     let keys = [...expandKeys];
 
     if (expanded) {
@@ -402,6 +402,7 @@ export default function Menu() {
     } else {
       keys = keys.filter((key: number) => key !== record.menuId);
     }
+    console.log("now keys:", keys);
     setExpandKeys(keys);
   };
 
@@ -416,7 +417,7 @@ export default function Menu() {
   //搜索表单对象引用
   const searchTableFormRef = useRef<ProFormInstance>();
 
-  const getDeptList = async () => {
+  const getMenuList = async () => {
     const body = await fetchApi(queryAPI, push);
     if (body !== undefined) {
       const firstLevel = getFirstLevel(body.data);
@@ -425,7 +426,17 @@ export default function Menu() {
         getChildren(body.data, first);
       });
 
-      return firstLevel;
+      const root = {
+        menuId: 0,
+        menuName: "根目录",
+        children: [],
+      };
+
+      firstLevel.forEach((first: any) => {
+        root.children.push(first);
+      });
+
+      return [root];
     }
   };
 
@@ -460,11 +471,22 @@ export default function Menu() {
     }
   };
 
+  const [isCatalog, setIsCatalog] = useState(true);
+  const [isMenu, setIsMenu] = useState(false);
+  const [isButton, setIsButton] = useState(false);
+
+  const onChangeType = (e: any) => {
+    const type = e.target.value;
+    setIsCatalog(type === "C");
+    setIsMenu(type === "M");
+    setIsButton(type === "B");
+  };
+
   return (
     <PageContainer title={false}>
       <ProTable
         formRef={searchTableFormRef}
-        rowKey="deptId"
+        rowKey="menuId"
         columns={columns}
         expandable={{
           expandedRowKeys: expandKeys,
@@ -522,29 +544,62 @@ export default function Menu() {
                   width="md"
                   name="parentId"
                   initialValue={rowParentId}
-                  label="上级部门"
-                  placeholder="请选择上级部门"
-                  rules={[{ required: true, message: "请选择上级部门" }]}
-                  request={getDeptList}
+                  label="上级菜单"
+                  placeholder="请选择上级菜单"
+                  rules={[{ required: true, message: "请选择上级菜单" }]}
+                  request={getMenuList}
                   fieldProps={{
                     filterTreeNode: true,
                     showSearch: true,
                     treeNodeFilterProp: "label",
                     fieldNames: {
-                      label: "deptName",
-                      value: "deptId",
+                      label: "menuName",
+                      value: "menuId",
                     },
                   }}
                 />
-                <ProFormText
-                  width="md"
-                  name="deptName"
-                  label="部门名称"
-                  placeholder="请输入部门名称"
-                  rules={[{ required: true, message: "请输入部门名称" }]}
-                />
               </ProForm.Group>
               <ProForm.Group>
+                <ProFormRadio.Group
+                  name="menuType"
+                  width="sm"
+                  label="类型"
+                  initialValue="C"
+                  onChange={onChangeType}
+                  options={[
+                    {
+                      label: "目录",
+                      value: "C",
+                    },
+                    {
+                      label: "菜单",
+                      value: "M",
+                    },
+                    {
+                      label: "按钮",
+                      value: "B",
+                    },
+                  ]}
+                />
+              </ProForm.Group>
+              {(isCatalog || isMenu) && (
+                <ProForm.Group>
+                  <ProFormText
+                    width="md"
+                    name="icon"
+                    label="菜单图标"
+                    placeholder="请输入菜单图标"
+                  />
+                </ProForm.Group>
+              )}
+              <ProForm.Group>
+                <ProFormText
+                  width="md"
+                  name="menuName"
+                  label="菜单名称"
+                  placeholder="请输入菜单名称"
+                  rules={[{ required: true, message: "请输入菜单名称" }]}
+                />
                 <ProFormDigit
                   fieldProps={{ precision: 0 }}
                   width="md"
@@ -554,10 +609,67 @@ export default function Menu() {
                   placeholder="请输入排序"
                   rules={[{ required: true, message: "请输入排序" }]}
                 />
+              </ProForm.Group>
+              {(isCatalog || isMenu) && (
+                <ProForm.Group>
+                  <ProFormText
+                    width="md"
+                    name="path"
+                    label="路由地址"
+                    placeholder="请输入路由地址"
+                    rules={[{ required: true, message: "请输入路由地址" }]}
+                  />
+                  <ProFormRadio.Group
+                    name="isFrame"
+                    width="sm"
+                    label="是否外链"
+                    initialValue="1"
+                    options={[
+                      {
+                        label: "是",
+                        value: "0",
+                      },
+                      {
+                        label: "否",
+                        value: "1",
+                      },
+                    ]}
+                  />
+                </ProForm.Group>
+              )}
+
+              {isMenu && (
+                <ProForm.Group>
+                  <ProFormText
+                    width="md"
+                    name="perms"
+                    label="权限字符"
+                    placeholder="请输入权限字符"
+                  />
+                </ProForm.Group>
+              )}
+
+              <ProForm.Group>
+                <ProFormRadio.Group
+                  name="visible"
+                  width="sm"
+                  label="显示状态"
+                  initialValue="0"
+                  options={[
+                    {
+                      label: "显示",
+                      value: "0",
+                    },
+                    {
+                      label: "隐藏",
+                      value: "1",
+                    },
+                  ]}
+                />
                 <ProFormRadio.Group
                   name="status"
                   width="sm"
-                  label="状态"
+                  label="菜单状态"
                   initialValue="0"
                   options={[
                     {
@@ -569,35 +681,6 @@ export default function Menu() {
                       value: "1",
                     },
                   ]}
-                />
-              </ProForm.Group>
-              <ProForm.Group>
-                <ProFormText
-                  width="md"
-                  name="leader"
-                  label="负责人"
-                  placeholder="请输入负责人"
-                />
-                <ProFormText
-                  width="md"
-                  name="phone"
-                  label="联系电话"
-                  placeholder="请输入联系电话"
-                  rules={[
-                    {
-                      pattern: /^1\d{10}$/,
-                      message: "请输入正确的手机号码",
-                    },
-                  ]}
-                />
-              </ProForm.Group>
-              <ProForm.Group>
-                <ProFormText
-                  width="md"
-                  name="email"
-                  label="联系邮箱"
-                  placeholder="请输入联系邮箱"
-                  rules={[{ type: "email", message: "请输入正确的邮箱地址" }]}
                 />
               </ProForm.Group>
             </ModalForm>,
@@ -654,17 +737,17 @@ export default function Menu() {
           <ProFormTreeSelect
             width="md"
             name="parentId"
-            label="上级部门"
-            placeholder="请选择上级部门"
-            rules={[{ required: true, message: "请选择上级部门" }]}
-            request={getDeptList}
+            label="上级菜单"
+            placeholder="请选择上级菜单"
+            rules={[{ required: true, message: "请选择上级菜单" }]}
+            request={getMenuList}
             fieldProps={{
               filterTreeNode: true,
               showSearch: true,
               treeNodeFilterProp: "label",
               fieldNames: {
-                label: "deptName",
-                value: "deptId",
+                label: "menuName",
+                value: "menuId",
               },
             }}
           />
