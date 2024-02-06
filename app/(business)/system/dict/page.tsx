@@ -165,7 +165,7 @@ export default function Dict() {
   ];
 
   //0.查询表格数据
-  const queryTableData = async (params, sorter, filter) => {
+  const queryTableData = async (params: any, sorter: any, filter: any) => {
     const searchParams = {
       pageNum: params.current,
       ...params,
