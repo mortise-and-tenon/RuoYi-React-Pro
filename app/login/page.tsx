@@ -158,7 +158,7 @@ export default function Login() {
 
     if (username !== undefined && password !== undefined) {
       if (loginFormRef) {
-        loginFormRef.current.setFieldsValue({
+        loginFormRef.current?.setFieldsValue({
           username: decrypt(username),
           password: decrypt(password),
           autoLogin: true,
