@@ -7,18 +7,26 @@ import {
   ProFormText,
 } from "@ant-design/pro-components";
 import { Divider, message, Spin, theme } from "antd";
-import { setCookie } from "cookies-next";
+import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
+
+import type { ProFormInstance } from "@ant-design/pro-components";
 
 import Image from "next/image";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { LoginReq } from "../_modules/definies";
+import { encrypt, decrypt } from "../_modules/func";
 
 type Captcha = {
   img: string;
   uuid: string;
 };
+
+//cookies 记住的用户名 key
+const cookie_username_key = "mortnon_username";
+//cookies 记住的密码 key
+const cookie_password_key = "mortnon_password";
 
 export default function Login() {
   //验证码数据
@@ -57,6 +65,7 @@ export default function Login() {
 
   useEffect(() => {
     getCaptcha();
+    readUserNamePassword();
   }, []);
 
   const router = useRouter();
@@ -70,6 +79,9 @@ export default function Login() {
       uuid: captcha.uuid,
     };
 
+    //是否记住密码
+    const autoLogin = values.autoLogin;
+
     try {
       const response = await fetch("/api/login", {
         method: "POST",
@@ -80,18 +92,22 @@ export default function Login() {
         credentials: "include",
       });
 
+      //获得响应
       if (response.ok) {
         const data = await response.json();
 
-        console.log("resp:", data);
-
+        //登录成功
         if (data.code == 200) {
-          message.open({
-            type: "success",
-            content: "登录成功",
-          });
+          message.success("登录成功");
 
           setCookie("token", data.token);
+
+          //记住密码
+          if (autoLogin) {
+            rememberUserNamePassword(values.username, values.password);
+          } else {
+            removeUserNamePassword();
+          }
 
           router.push("/");
         } else {
@@ -121,6 +137,36 @@ export default function Login() {
     }
   };
 
+  //记住用户名密码到cookie
+  const rememberUserNamePassword = (username: string, password: string) => {
+    setCookie(cookie_username_key, encrypt(username));
+    setCookie(cookie_password_key, encrypt(password));
+  };
+
+  //移除cookie中的用户名和密码
+  const removeUserNamePassword = () => {
+    deleteCookie(cookie_username_key);
+    deleteCookie(cookie_password_key);
+  };
+
+  const loginFormRef = useRef<ProFormInstance>();
+
+  //读取cookie中用户名密码，并填写到表单中
+  const readUserNamePassword = () => {
+    const username = getCookie(cookie_username_key);
+    const password = getCookie(cookie_password_key);
+
+    if (username !== undefined && password !== undefined) {
+      if (loginFormRef) {
+        loginFormRef.current.setFieldsValue({
+          username: decrypt(username),
+          password: decrypt(password),
+          autoLogin: true,
+        });
+      }
+    }
+  };
+
   const { token } = theme.useToken();
 
   return (
@@ -132,21 +178,16 @@ export default function Login() {
         }}
       >
         <LoginFormPage
-          backgroundImageUrl="/bg.jpg"
+          formRef={loginFormRef}
+          backgroundImageUrl="/bg3.jpg"
           logo="https://static.dongfangzan.cn/img/mortnon.svg"
-          title={
-            (
-              <span style={{ color: "rgba(255,255,255,1)" }}>
-                MorTnon RuoYi
-              </span>
-            ) as any
-          }
+          title={(<span>MorTnon 若依后台管理</span>) as any}
           containerStyle={{
             backgroundColor: "rgba(0,0,0,0)",
             backdropFilter: "blur(4px)",
           }}
           subTitle={
-            <span style={{ color: "rgba(255,255,255,.8)" }}>
+            <span style={{ color: "rgba(255,255,255,1)" }}>
               MorTnon，高质量的快速开发框架
             </span>
           }
@@ -165,9 +206,7 @@ export default function Login() {
           }
           onFinish={userLogin}
         >
-          <Divider style={{ color: "rgba(255,255,255,1)" }}>
-            账号密码登录
-          </Divider>
+          <Divider>账号密码登录</Divider>
           <>
             <ProFormText
               name="username"
@@ -182,11 +221,11 @@ export default function Login() {
                   />
                 ),
               }}
-              placeholder={"用户名: admin"}
+              placeholder={"用户名"}
               rules={[
                 {
                   required: true,
-                  message: "请输入用户名!",
+                  message: "用户名不能为空",
                 },
               ]}
             />
@@ -203,11 +242,11 @@ export default function Login() {
                   />
                 ),
               }}
-              placeholder={"密码: admin123"}
+              placeholder={"密码"}
               rules={[
                 {
                   required: true,
-                  message: "请输入密码！",
+                  message: "密码不能为空",
                 },
               ]}
             />
@@ -236,7 +275,7 @@ export default function Login() {
                   rules={[
                     {
                       required: true,
-                      message: "请输入验证码!",
+                      message: "验证码不能为空",
                     },
                   ]}
                 />
@@ -265,7 +304,7 @@ export default function Login() {
             }}
           >
             <ProFormCheckbox noStyle name="autoLogin">
-              自动登录
+              记住密码
             </ProFormCheckbox>
           </div>
         </LoginFormPage>
