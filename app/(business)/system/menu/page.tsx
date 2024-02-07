@@ -440,7 +440,7 @@ export default function Menu() {
       };
 
       firstLevel.forEach((first: any) => {
-        root.children.push(first);
+        root.children.push(first as never);
       });
 
       return [root];

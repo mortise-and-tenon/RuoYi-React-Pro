@@ -271,6 +271,7 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("删除成功");
+        
         //删除按钮变回不可点击
         setRowCanDelete(false);
         //选中的数据恢复为空
