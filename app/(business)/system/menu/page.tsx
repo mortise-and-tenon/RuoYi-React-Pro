@@ -433,7 +433,7 @@ export default function Menu() {
         getChildren(body.data, first);
       });
 
-      const root = {
+      const root: any = {
         menuId: 0,
         menuName: "根目录",
         children: [],
@@ -445,6 +445,8 @@ export default function Menu() {
 
       return [root];
     }
+
+    return [];
   };
 
   //点击删除按钮
@@ -585,7 +587,9 @@ export default function Menu() {
                   width="md"
                   label="类型"
                   initialValue="M"
-                  onChange={onChangeType}
+                  fieldProps={{
+                    onChange:(e: any) => onChangeType(e)
+                  }}
                   options={[
                     {
                       label: "目录",
@@ -783,7 +787,9 @@ export default function Menu() {
             name="menuType"
             width="md"
             label="类型"
-            onChange={onChangeType}
+            fieldProps={{
+              onChange:(e: any) => onChangeType(e)
+            }}
             options={[
               {
                 label: "目录",
