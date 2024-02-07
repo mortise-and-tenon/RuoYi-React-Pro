@@ -38,9 +38,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useRef, useState } from "react";
 
-import ReactQuill from "react-quill";
+import dynamic from "next/dynamic";
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import "react-quill/dist/quill.snow.css";
-import { height } from "@fortawesome/free-solid-svg-icons/fa0";
+
 
 //查询表格数据API
 const queryAPI = "/api/system/notice/list";
