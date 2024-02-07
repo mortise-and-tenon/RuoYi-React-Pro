@@ -43,7 +43,7 @@ import {
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { RouteInfo, UserInfo } from "../_modules/definies";
+import { RouteInfo, UserInfo,IconMap } from "../_modules/definies";
 import "./styles.css";
 
 import { fetchApi } from "../_modules/func";
@@ -113,33 +113,7 @@ export default function RootLayout({
     }
   };
 
-  //图标映射
-  const IconMap = {
-    system: <FontAwesomeIcon icon={faGear} />,
-    monitor: <MonitorOutlined />,
-    tool: <ToolOutlined />,
-    guide: <FontAwesomeIcon icon={faLocationArrow} />,
-    user: <UserOutlined />,
-    peoples: <FontAwesomeIcon icon={faUsers} />,
-    treetable: <FontAwesomeIcon icon={faList} />,
-    tree: <FontAwesomeIcon icon={faSitemap} />,
-    post: <FontAwesomeIcon icon={faAddressCard} />,
-    dict: <FontAwesomeIcon icon={faBookAtlas} />,
-    edit: <EditOutlined />,
-    message: <MessageOutlined />,
-    log: <BookOutlined />,
-    online: <FontAwesomeIcon icon={faChalkboardUser} />,
-    job: <FontAwesomeIcon icon={faThumbtack} />,
-    druid: <FontAwesomeIcon icon={faFileWaveform} />,
-    server: <FontAwesomeIcon icon={faDesktop} />,
-    redis: <FontAwesomeIcon icon={faDatabase} />,
-    redislist: <FontAwesomeIcon icon={faMemory} />,
-    build: <FontAwesomeIcon icon={faTableCells} />,
-    code: <CodeOutlined />,
-    swagger: <ApiOutlined />,
-    form: <FontAwesomeIcon icon={faRectangleList} />,
-    logininfor: <FontAwesomeIcon icon={faReceipt} />,
-  };
+  
 
   //获取菜单
   const getRoutes = async () => {

@@ -70,6 +70,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { IconMap } from "@/app/_modules/definies";
 
 //查询表格数据API
 const queryAPI = "/api/system/menu/list";
@@ -110,11 +111,7 @@ export default function Menu() {
     {
       title: "权限标识",
       dataIndex: "perms",
-      search: false,
-    },
-    {
-      title: "组件路径",
-      dataIndex: "component",
+      ellipsis: true,
       search: false,
     },
     {
@@ -260,6 +257,10 @@ export default function Menu() {
         getChildren(data, item);
       }
     }
+
+    if (parentNode.children.length == 0) {
+      delete parentNode.children;
+    }
   };
 
   //1.新建
@@ -330,7 +331,6 @@ export default function Menu() {
     const menuId = record.menuId;
 
     operatRowData["menuId"] = menuId;
-    operatRowData["ancestors"] = record.ancestors;
 
     setOperateRowData(operatRowData);
 
@@ -342,13 +342,20 @@ export default function Menu() {
           modifyFormRef?.current?.setFieldsValue({
             //需要加载到修改表单中的数据
             parentId: body.data.parentId,
-            deptName: body.data.deptName,
+            menuName: body.data.menuName,
             orderNum: body.data.orderNum,
-            leader: body.data.leader,
-            phone: body.data.phone,
-            email: body.data.email,
+            path: body.data.path,
+            isFrame: body.data.isFrame,
+            menuType: body.data.menuType,
+            perms: body.data.perms,
+            icon: body.data.icon,
+            visible: body.data.visible,
             status: body.data.status,
           });
+
+          setIsCatalog(body.data.menuType === "M");
+          setIsMenu(body.data.menuType === "C");
+          setIsButton(body.data.menuType === "F");
         }
       }
     }
@@ -477,9 +484,22 @@ export default function Menu() {
 
   const onChangeType = (e: any) => {
     const type = e.target.value;
-    setIsCatalog(type === "C");
-    setIsMenu(type === "M");
-    setIsButton(type === "B");
+    setIsCatalog(type === "M");
+    setIsMenu(type === "C");
+    setIsButton(type === "F");
+  };
+
+  const IconData = () => {
+    const iconData = { ...IconMap };
+    Object.keys(iconData).forEach((key) => {
+      iconData[key] = (
+        <>
+          <span style={{ marginRight: 8 }}>{iconData[key]}</span>
+          {key}
+        </>
+      );
+    });
+    return iconData;
   };
 
   return (
@@ -562,33 +582,38 @@ export default function Menu() {
               <ProForm.Group>
                 <ProFormRadio.Group
                   name="menuType"
-                  width="sm"
+                  width="md"
                   label="类型"
-                  initialValue="C"
+                  initialValue="M"
                   onChange={onChangeType}
                   options={[
                     {
                       label: "目录",
-                      value: "C",
-                    },
-                    {
-                      label: "菜单",
                       value: "M",
                     },
                     {
+                      label: "菜单",
+                      value: "C",
+                    },
+                    {
                       label: "按钮",
-                      value: "B",
+                      value: "F",
                     },
                   ]}
                 />
               </ProForm.Group>
               {(isCatalog || isMenu) && (
                 <ProForm.Group>
-                  <ProFormText
+                  <ProFormSelect
                     width="md"
                     name="icon"
                     label="菜单图标"
-                    placeholder="请输入菜单图标"
+                    fieldProps={{
+                      showSearch,
+                    }}
+                    valueEnum={IconData}
+                    placeholder="请选择菜单图标"
+                    rules={[{ required: true, message: "请选择菜单图标" }]}
                   />
                 </ProForm.Group>
               )}
@@ -604,7 +629,7 @@ export default function Menu() {
                   fieldProps={{ precision: 0 }}
                   width="md"
                   name="orderNum"
-                  initialValue="0"
+                  initialValue="1"
                   label="排序"
                   placeholder="请输入排序"
                   rules={[{ required: true, message: "请输入排序" }]}
@@ -621,7 +646,7 @@ export default function Menu() {
                   />
                   <ProFormRadio.Group
                     name="isFrame"
-                    width="sm"
+                    width="md"
                     label="是否外链"
                     initialValue="1"
                     options={[
@@ -652,7 +677,7 @@ export default function Menu() {
               <ProForm.Group>
                 <ProFormRadio.Group
                   name="visible"
-                  width="sm"
+                  width="md"
                   label="显示状态"
                   initialValue="0"
                   options={[
@@ -668,7 +693,7 @@ export default function Menu() {
                 />
                 <ProFormRadio.Group
                   name="status"
-                  width="sm"
+                  width="md"
                   label="菜单状态"
                   initialValue="0"
                   options={[
@@ -737,6 +762,7 @@ export default function Menu() {
           <ProFormTreeSelect
             width="md"
             name="parentId"
+            initialValue={rowParentId}
             label="上级菜单"
             placeholder="请选择上级菜单"
             rules={[{ required: true, message: "请选择上级菜单" }]}
@@ -751,28 +777,122 @@ export default function Menu() {
               },
             }}
           />
-          <ProFormText
-            width="md"
-            name="deptName"
-            label="部门名称"
-            placeholder="请输入部门名称"
-            rules={[{ required: true, message: "请输入部门名称" }]}
-          />
         </ProForm.Group>
         <ProForm.Group>
+          <ProFormRadio.Group
+            name="menuType"
+            width="md"
+            label="类型"
+            onChange={onChangeType}
+            options={[
+              {
+                label: "目录",
+                value: "M",
+              },
+              {
+                label: "菜单",
+                value: "C",
+              },
+              {
+                label: "按钮",
+                value: "F",
+              },
+            ]}
+          />
+        </ProForm.Group>
+        {(isCatalog || isMenu) && (
+          <ProForm.Group>
+            <ProFormSelect
+              width="md"
+              name="icon"
+              label="菜单图标"
+              fieldProps={{
+                showSearch,
+              }}
+              valueEnum={IconData}
+              placeholder="请选择菜单图标"
+              rules={[{ required: true, message: "请选择菜单图标" }]}
+            />
+          </ProForm.Group>
+        )}
+        <ProForm.Group>
+          <ProFormText
+            width="md"
+            name="menuName"
+            label="菜单名称"
+            placeholder="请输入菜单名称"
+            rules={[{ required: true, message: "请输入菜单名称" }]}
+          />
           <ProFormDigit
             fieldProps={{ precision: 0 }}
             width="md"
             name="orderNum"
-            initialValue="0"
+            initialValue="1"
             label="排序"
             placeholder="请输入排序"
             rules={[{ required: true, message: "请输入排序" }]}
           />
+        </ProForm.Group>
+        {(isCatalog || isMenu) && (
+          <ProForm.Group>
+            <ProFormText
+              width="md"
+              name="path"
+              label="路由地址"
+              placeholder="请输入路由地址"
+              rules={[{ required: true, message: "请输入路由地址" }]}
+            />
+            <ProFormRadio.Group
+              name="isFrame"
+              width="md"
+              label="是否外链"
+              initialValue="1"
+              options={[
+                {
+                  label: "是",
+                  value: "0",
+                },
+                {
+                  label: "否",
+                  value: "1",
+                },
+              ]}
+            />
+          </ProForm.Group>
+        )}
+
+        {isMenu && (
+          <ProForm.Group>
+            <ProFormText
+              width="md"
+              name="perms"
+              label="权限字符"
+              placeholder="请输入权限字符"
+            />
+          </ProForm.Group>
+        )}
+
+        <ProForm.Group>
+          <ProFormRadio.Group
+            name="visible"
+            width="md"
+            label="显示状态"
+            initialValue="0"
+            options={[
+              {
+                label: "显示",
+                value: "0",
+              },
+              {
+                label: "隐藏",
+                value: "1",
+              },
+            ]}
+          />
           <ProFormRadio.Group
             name="status"
-            width="sm"
-            label="状态"
+            width="md"
+            label="菜单状态"
             initialValue="0"
             options={[
               {
@@ -784,35 +904,6 @@ export default function Menu() {
                 value: "1",
               },
             ]}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="leader"
-            label="负责人"
-            placeholder="请输入负责人"
-          />
-          <ProFormText
-            width="md"
-            name="phone"
-            label="联系电话"
-            placeholder="请输入联系电话"
-            rules={[
-              {
-                pattern: /^1\d{10}$/,
-                message: "请输入正确的手机号码",
-              },
-            ]}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            name="email"
-            label="联系邮箱"
-            placeholder="请输入联系邮箱"
-            rules={[{ type: "email", message: "请输入正确的邮箱地址" }]}
           />
         </ProForm.Group>
       </ModalForm>

@@ -262,6 +262,10 @@ export default function Dept() {
         getChildren(data, item);
       }
     }
+
+    if (parentNode.children.length == 0) {
+        delete parentNode.children;
+      }
   };
 
   //1.新建
