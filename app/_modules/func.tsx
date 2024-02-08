@@ -105,3 +105,30 @@ export function decrypt(content: string) {
   encryptor.setPrivateKey(privateKey);
   return encryptor.decrypt(content);
 }
+
+//获取当前浏览器是否深色模式
+export function displayModeIsDark() {
+  if (typeof window !== 'undefined') {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  return false;
+}
+
+//动态获取浏览器是否深色模式
+export function watchDarkModeChange(callback: (value: boolean) => void) {
+  if (typeof window !== 'undefined') {
+    const darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const onChange = (e: any) => {
+      callback(e.matches);
+    };
+
+    darkModeQuery.addEventListener("change", onChange);
+
+    return () => {
+      darkModeQuery.removeEventListener("change", onChange);
+    };
+  }
+
+  return () => {};
+}

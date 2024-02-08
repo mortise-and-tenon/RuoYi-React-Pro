@@ -6,7 +6,8 @@ import {
   ProFormCheckbox,
   ProFormText,
 } from "@ant-design/pro-components";
-import { Divider, message, Spin, theme } from "antd";
+import { Divider, message, Spin, theme, ConfigProvider } from "antd";
+import type { ConfigProviderProps } from "antd";
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 
@@ -16,7 +17,12 @@ import Image from "next/image";
 
 import { useEffect, useState, useRef } from "react";
 import { LoginReq } from "../_modules/definies";
-import { encrypt, decrypt } from "../_modules/func";
+import {
+  encrypt,
+  decrypt,
+  displayModeIsDark,
+  watchDarkModeChange,
+} from "../_modules/func";
 
 type Captcha = {
   img: string;
@@ -27,6 +33,11 @@ type Captcha = {
 const cookie_username_key = "mortnon_username";
 //cookies 记住的密码 key
 const cookie_password_key = "mortnon_password";
+
+//浅色背景图
+const backgroudLight = "/bg3.jpg";
+//深色前景图
+const backgroundDark = "/bg-dark.jpg";
 
 export default function Login() {
   //验证码数据
@@ -63,9 +74,21 @@ export default function Login() {
     }
   };
 
+  //深色模式
+  const [isDark, setIsDark] = useState(displayModeIsDark());
+  //背景图片
+  const [background, setBackground] = useState(isDark ? backgroundDark : backgroudLight);
+
   useEffect(() => {
     getCaptcha();
     readUserNamePassword();
+    const unsubscribe = watchDarkModeChange((matches: boolean) => {
+      setIsDark(matches);
+      setBackground(matches ? backgroundDark : backgroudLight);
+    });
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const router = useRouter();
@@ -170,7 +193,7 @@ export default function Login() {
   const { token } = theme.useToken();
 
   return (
-    <ProConfigProvider>
+    <ProConfigProvider dark={isDark}>
       <div
         style={{
           backgroundColor: "white",
@@ -179,7 +202,7 @@ export default function Login() {
       >
         <LoginFormPage
           formRef={loginFormRef}
-          backgroundImageUrl="/bg3.jpg"
+          backgroundImageUrl={background}
           logo="https://static.dongfangzan.cn/img/mortnon.svg"
           title={(<span>MorTnon 若依后台管理</span>) as any}
           containerStyle={{

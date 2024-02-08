@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   //代理重定向到后台服务
   async rewrites() {

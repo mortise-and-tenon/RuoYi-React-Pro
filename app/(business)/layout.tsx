@@ -18,7 +18,7 @@ import {
   ExclamationCircleFilled,
 } from "@ant-design/icons";
 import type { ProSettings } from "@ant-design/pro-components";
-import { ProLayout } from "@ant-design/pro-components";
+import { ProLayout, ProConfigProvider } from "@ant-design/pro-components";
 import { deleteCookie, getCookie } from "cookies-next";
 import { Dropdown, Input, MenuProps, Tooltip, Modal } from "antd";
 import Link from "next/link";
@@ -43,10 +43,10 @@ import {
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { RouteInfo, UserInfo,IconMap } from "../_modules/definies";
+import { RouteInfo, UserInfo, IconMap } from "../_modules/definies";
 import "./styles.css";
 
-import { fetchApi } from "../_modules/func";
+import { displayModeIsDark, fetchApi, watchDarkModeChange } from "../_modules/func";
 
 export default function RootLayout({
   children,
@@ -59,6 +59,9 @@ export default function RootLayout({
     push("/login");
   };
 
+  //深色模式
+  const [isDark, setIsDark] = useState(displayModeIsDark());
+
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
     const token = getCookie("token");
@@ -68,6 +71,14 @@ export default function RootLayout({
       return;
     }
     getProfile();
+
+    const unsubscribe = watchDarkModeChange((matches: boolean) => {
+      setIsDark(matches);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   //是否展示搜索框
@@ -112,8 +123,6 @@ export default function RootLayout({
       setUserInfo(userInfo);
     }
   };
-
-  
 
   //获取菜单
   const getRoutes = async () => {
@@ -203,27 +212,45 @@ export default function RootLayout({
   const [pathname, setPathname] = useState(pathName);
 
   return (
-    <ProLayout
-      title="MorTnon RouYi"
-      logo="https://static.dongfangzan.cn/img/mortnon.svg"
-      menu={{
-        request: getRoutes,
-      }}
-      layout="mix"
-      splitMenus={false}
-      defaultCollapsed={false}
-      breakpoint={false}
-      onMenuHeaderClick={(e) => console.log(e)}
-      menuItemRender={(item, dom) => {
-        let shouldRenderIcon =
-          item.pro_layout_parentKeys && item.pro_layout_parentKeys.length > 0;
-        return (
-          <div
-            onClick={() => {
-              setPathname(item.path || "/index");
-            }}
-          >
-            <Link href={item.path !== undefined ? item.path : ""}>
+    <ProConfigProvider dark={isDark}>
+      <ProLayout
+        title="MorTnon RouYi"
+        logo="https://static.dongfangzan.cn/img/mortnon.svg"
+        menu={{
+          request: getRoutes,
+        }}
+        layout="mix"
+        splitMenus={false}
+        defaultCollapsed={false}
+        breakpoint={false}
+        onMenuHeaderClick={(e) => console.log(e)}
+        menuItemRender={(item, dom) => {
+          let shouldRenderIcon =
+            item.pro_layout_parentKeys && item.pro_layout_parentKeys.length > 0;
+          return (
+            <div
+              onClick={() => {
+                setPathname(item.path || "/index");
+              }}
+            >
+              <Link href={item.path !== undefined ? item.path : ""}>
+                {shouldRenderIcon ? (
+                  <span style={{ display: "flex", alignItems: "center" }}>
+                    {item.icon}
+                    <span style={{ marginLeft: "8px" }}>{dom}</span>
+                  </span>
+                ) : (
+                  dom
+                )}
+              </Link>
+            </div>
+          );
+        }}
+        subMenuItemRender={(item, dom) => {
+          let shouldRenderIcon =
+            item.pro_layout_parentKeys && item.pro_layout_parentKeys.length > 0;
+          return (
+            <>
               {shouldRenderIcon ? (
                 <span style={{ display: "flex", alignItems: "center" }}>
                   {item.icon}
@@ -232,153 +259,137 @@ export default function RootLayout({
               ) : (
                 dom
               )}
-            </Link>
-          </div>
-        );
-      }}
-      subMenuItemRender={(item, dom) => {
-        let shouldRenderIcon =
-          item.pro_layout_parentKeys && item.pro_layout_parentKeys.length > 0;
-        return (
-          <>
-            {shouldRenderIcon ? (
-              <span style={{ display: "flex", alignItems: "center" }}>
-                {item.icon}
-                <span style={{ marginLeft: "8px" }}>{dom}</span>
-              </span>
-            ) : (
-              dom
-            )}
-          </>
-        );
-      }}
-      location={{
-        pathname,
-      }}
-      avatarProps={{
-        src: `${userInfo.avatar}`,
-        size: "small",
-        title: `${userInfo.nickName}`,
-        render: (props, dom) => {
-          return (
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: "profile",
-                    icon: <UserOutlined />,
-                    label: "个人中心",
-                  },
-                  {
-                    type: "divider",
-                  },
-                  {
-                    key: "logout",
-                    icon: <LogoutOutlined />,
-                    label: "退出登录",
-                  },
-                ],
-                onClick: onActionClick,
-              }}
-            >
-              {dom}
-            </Dropdown>
+            </>
           );
-        },
-      }}
-      actionsRender={(props) => {
-        if (props.isMobile) return [];
-        return [
-          props.layout !== "side" ? (
+        }}
+        location={{
+          pathname,
+        }}
+        avatarProps={{
+          src: `${userInfo.avatar}`,
+          size: "small",
+          title: `${userInfo.nickName}`,
+          render: (props, dom) => {
+            return (
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "profile",
+                      icon: <UserOutlined />,
+                      label: "个人中心",
+                    },
+                    {
+                      type: "divider",
+                    },
+                    {
+                      key: "logout",
+                      icon: <LogoutOutlined />,
+                      label: "退出登录",
+                    },
+                  ],
+                  onClick: onActionClick,
+                }}
+              >
+                {dom}
+              </Dropdown>
+            );
+          },
+        }}
+        actionsRender={(props) => {
+          if (props.isMobile) return [];
+          return [
+            props.layout !== "side" ? (
+              <div
+                key="SearchOutlined"
+                aria-hidden
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                onMouseDown={(e) => {
+                  console.log("search click");
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
+                <SearchOutlined
+                  style={{
+                    color: "var(--ant-primary-color)",
+                  }}
+                  onClick={() => setShowSearch(!showSearch)}
+                />
+                {showSearch && (
+                  <Input
+                    style={{
+                      borderRadius: 4,
+                      marginInlineEnd: 12,
+                      backgroundColor: "rgba(0,0,0,0.03)",
+                    }}
+                    prefix={
+                      <SearchOutlined
+                        style={{
+                          color: "rgba(0, 0, 0, 0.15)",
+                        }}
+                      />
+                    }
+                    placeholder="搜索"
+                    variant="borderless"
+                  />
+                )}
+              </div>
+            ) : undefined,
+            <Link
+              style={{ padding: "0 6px" }}
+              key="github"
+              href="https://github.com/mortise-and-tenon/RuoYi-React-Pro"
+              target="_blank"
+            >
+              <Tooltip title="Github 源码仓库">
+                <GithubOutlined style={{ color: "gray" }} />
+              </Tooltip>
+            </Link>,
+            <Link
+              style={{ padding: "0 6px" }}
+              key="question"
+              href="https://doc.ruoyi.vip/ruoyi-vue/"
+              target="_blank"
+            >
+              <Tooltip title="RuoYi 文档">
+                <QuestionCircleFilled style={{ color: "gray" }} />
+              </Tooltip>
+            </Link>,
+          ];
+        }}
+        menuFooterRender={(props) => {
+          if (props?.collapsed) return undefined;
+          return (
             <div
-              key="SearchOutlined"
-              aria-hidden
               style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-              onMouseDown={(e) => {
-                console.log("search click");
-                e.stopPropagation();
-                e.preventDefault();
+                textAlign: "center",
+                paddingBlockStart: 12,
               }}
             >
-              <SearchOutlined
-                style={{
-                  color: "var(--ant-primary-color)",
-                }}
-                onClick={() => setShowSearch(!showSearch)}
-              />
-              {showSearch && (
-                <Input
-                  style={{
-                    borderRadius: 4,
-                    marginInlineEnd: 12,
-                    backgroundColor: "rgba(0,0,0,0.03)",
-                  }}
-                  prefix={
-                    <SearchOutlined
-                      style={{
-                        color: "rgba(0, 0, 0, 0.15)",
-                      }}
-                    />
-                  }
-                  placeholder="搜索"
-                  variant="borderless"
-                />
-              )}
+              <div>©{new Date().getFullYear()} Mortnon.</div>
             </div>
-          ) : undefined,
-          <Link
-            style={{ padding: "0 6px" }}
-            key="github"
-            href="https://github.com/mortise-and-tenon/RuoYi-React-Pro"
-            target="_blank"
-          >
-            <Tooltip title="Github 源码仓库">
-              <GithubOutlined style={{ color: "gray" }} />
-            </Tooltip>
-          </Link>,
-          <Link
-            style={{ padding: "0 6px" }}
-            key="question"
-            href="https://doc.ruoyi.vip/ruoyi-vue/"
-            target="_blank"
-          >
-            <Tooltip title="RuoYi 文档">
-              <QuestionCircleFilled style={{ color: "gray" }} />
-            </Tooltip>
-          </Link>,
-        ];
-      }}
-      menuFooterRender={(props) => {
-        if (props?.collapsed) return undefined;
-        return (
-          <div
-            style={{
-              textAlign: "center",
-              paddingBlockStart: 12,
-            }}
-          >
-            <div>©{new Date().getFullYear()} Mortnon.</div>
-          </div>
-        );
-      }}
-    >
-      <Modal
-        title={
-          <>
-            <ExclamationCircleFilled style={{ color: "#faad14" }} /> 提示
-          </>
-        }
-        open={isLogoutShow}
-        onOk={logout}
-        onCancel={() => setIsLogoutShow(false)}
-        confirmLoading={confirmLoading}
+          );
+        }}
       >
-        确定注销并退出系统吗？
-      </Modal>
-      {children}
-    </ProLayout>
+        <Modal
+          title={
+            <>
+              <ExclamationCircleFilled style={{ color: "#faad14" }} /> 提示
+            </>
+          }
+          open={isLogoutShow}
+          onOk={logout}
+          onCancel={() => setIsLogoutShow(false)}
+          confirmLoading={confirmLoading}
+        >
+          确定注销并退出系统吗？
+        </Modal>
+        {children}
+      </ProLayout>
+    </ProConfigProvider>
   );
 }
