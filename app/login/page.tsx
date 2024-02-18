@@ -75,13 +75,15 @@ export default function Login() {
   };
 
   //深色模式
-  const [isDark, setIsDark] = useState(displayModeIsDark());
+  const [isDark, setIsDark] = useState(false);
   //背景图片
-  const [background, setBackground] = useState(isDark ? backgroundDark : backgroudLight);
+  const [background, setBackground] = useState(backgroudLight);
 
   useEffect(() => {
     getCaptcha();
     readUserNamePassword();
+    setIsDark(displayModeIsDark());
+    setBackground(displayModeIsDark() ? backgroundDark : backgroudLight);
     const unsubscribe = watchDarkModeChange((matches: boolean) => {
       setIsDark(matches);
       setBackground(matches ? backgroundDark : backgroudLight);

@@ -60,7 +60,7 @@ export default function RootLayout({
   };
 
   //深色模式
-  const [isDark, setIsDark] = useState(displayModeIsDark());
+  const [isDark, setIsDark] = useState(false);
 
   //检查登录状态，失效跳转到登录页
   useEffect(() => {
@@ -72,6 +72,7 @@ export default function RootLayout({
     }
     getProfile();
 
+    setIsDark(displayModeIsDark());
     const unsubscribe = watchDarkModeChange((matches: boolean) => {
       setIsDark(matches);
     });
