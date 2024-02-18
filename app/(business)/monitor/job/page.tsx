@@ -67,6 +67,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import './styles.scss';
+
+import { ReQuartzCron, ReUnixCron } from '@sbzen/re-cron';
+
 import { useEffect, useMemo, useRef, useState } from "react";
 
 //查询表格数据API
@@ -497,6 +501,8 @@ export default function Job() {
     setPageSize(pageSize);
   };
 
+  const [isCronShow, setIsCronShow] = useState(false);
+
   return (
     <PageContainer title={false}>
       <ProTable
@@ -542,7 +548,12 @@ export default function Job() {
           actions: [
             <ModalForm
               key="addmodal"
-              title="添加岗位"
+              layout="horizontal"
+              // // labelCol={{ span: 4 }}
+              // labelCol={{ flex: '100px' }}
+              // labelAlign="right"
+              // wrapperCol={{ span: 14 }}
+              title="添加任务"
               trigger={
                 <Button icon={<PlusOutlined />} type="primary">
                   新建
@@ -558,10 +569,88 @@ export default function Job() {
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="nickName"
-                  label="用户昵称"
-                  placeholder="请输入用户昵称"
-                  rules={[{ required: true, message: "请输入用户昵称" }]}
+                  name="jobName"
+                  label="任务名称"
+                  placeholder="请输入任务名称"
+                  rules={[{ required: true, message: "请输入任务名称" }]}
+                />
+                <ProFormSelect
+                  width="md"
+                  name="jobGroup"
+                  label="任务分组"
+                  valueEnum={{
+                    default: {
+                      text: "默认",
+                      status: "default",
+                    },
+                    system: {
+                      text: "系统",
+                      status: "system",
+                    },
+                  }}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormText
+                  width="lg"
+                  name="invokeTarget"
+                  label="调用方法"
+                  placeholder="请输入调用方法的字符串"
+                  rules={[
+                    { required: true, message: "请输入调用方法的字符串" },
+                  ]}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <Space.Compact>
+                  <ProFormText
+                    width="lg"
+                    name="cronExpression"
+                    label="Cron表达式"
+                    placeholder="请输入Cron表达式"
+                    rules={[{ required: true, message: "请输入Cron表达式" }]}
+                  />
+                  <Button onClick={() => setIsCronShow(true)}>
+                    生成表达式
+                  </Button>
+                </Space.Compact>
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormRadio.Group
+                  width="md"
+                  name="misfirePolicy"
+                  label="执行策略"
+                  initialValue="1"
+                  options={[
+                    {
+                      label: "立即执行",
+                      value: "1",
+                    },
+                    {
+                      label: "执行一次",
+                      value: "2",
+                    },
+                    {
+                      label: "放弃执行",
+                      value: "3",
+                    },
+                  ]}
+                />
+                <ProFormRadio.Group
+                  name="concurrent"
+                  width="md"
+                  label="是否并发"
+                  initialValue="0"
+                  options={[
+                    {
+                      label: "允许",
+                      value: "0",
+                    },
+                    {
+                      label: "禁止",
+                      value: "1",
+                    },
+                  ]}
                 />
               </ProForm.Group>
             </ModalForm>,
@@ -644,6 +733,7 @@ export default function Job() {
           ],
         }}
       />
+      <Modal open={isCronShow}><ReUnixCron cssClassPrefix="my-"/></Modal>
     </PageContainer>
   );
 }

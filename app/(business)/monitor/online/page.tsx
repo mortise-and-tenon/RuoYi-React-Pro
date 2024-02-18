@@ -1,73 +1,24 @@
 "use client";
 
-import { fetchApi, fetchFile } from "@/app/_modules/func";
+import { fetchApi } from "@/app/_modules/func";
 import {
-  CaretDownOutlined,
-  CheckOutlined,
-  CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
-  PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
-import {
-  ModalForm,
-  PageContainer,
-  ProCard,
-  ProForm,
-  ProFormRadio,
-  ProFormSelect,
-  ProFormText,
-  ProFormTextArea,
-  ProFormTreeSelect,
-  ProTable,
-} from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
-import {
-  Button,
-  Col,
-  Flex,
-  Input,
-  message,
-  Modal,
-  Row,
-  Space,
-  Spin,
-  Switch,
-  Tree,
-  Dropdown,
-  Form,
-  Upload,
-  Typography,
-  Checkbox,
-  Tag,
-} from "antd";
+import { PageContainer, ProTable } from "@ant-design/pro-components";
+import { Button, Modal, message } from "antd";
 import { useRouter } from "next/navigation";
 
-import {
-  faDownload,
-  faPenToSquare,
-  faToggleOff,
-  faToggleOn,
-  faUpload,
-  faUsers,
-  faCheck,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 //查询表格数据API
 const queryAPI = "/api/monitor/online/list";

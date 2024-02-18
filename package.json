@@ -16,6 +16,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@sbzen/re-cron": "^2.0.5",
     "antd": "^5.13.1",
     "cookies-next": "^4.1.0",
     "jsencrypt": "^3.3.2",
@@ -23,7 +24,8 @@
     "react": "^18",
     "react-dom": "^18",
     "react-quill": "^2.0.0",
-    "react-spinners": "^0.13.8"
+    "react-spinners": "^0.13.8",
+    "sass": "^1.71.0"
   },
   "devDependencies": {
     "@types/node": "^20",
