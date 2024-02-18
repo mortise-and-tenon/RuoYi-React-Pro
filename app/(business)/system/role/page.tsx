@@ -100,9 +100,10 @@ export default function Role() {
       order: 3,
     },
     {
-      title: "显示顺序",
+      title: "角色排序",
       dataIndex: "roleSort",
       search: false,
+      sorter: true,
     },
     {
       title: "状态",
@@ -740,9 +741,9 @@ export default function Role() {
                   width="md"
                   name="roleSort"
                   initialValue="0"
-                  label="角色顺序"
-                  placeholder="请输入角色顺序"
-                  rules={[{ required: true, message: "请输入角色顺序" }]}
+                  label="角色排序"
+                  placeholder="请输入角色排序"
+                  rules={[{ required: true, message: "请输入角色排序" }]}
                 />
                 <ProFormRadio.Group
                   name="status"
@@ -834,9 +835,9 @@ export default function Role() {
                   width="md"
                   name="roleSort"
                   initialValue="0"
-                  label="角色顺序"
-                  placeholder="请输入角色顺序"
-                  rules={[{ required: true, message: "请输入角色顺序" }]}
+                  label="角色排序"
+                  placeholder="请输入角色排序"
+                  rules={[{ required: true, message: "请输入角色排序" }]}
                 />
                 <ProFormRadio.Group
                   name="status"

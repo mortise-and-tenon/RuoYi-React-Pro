@@ -85,6 +85,7 @@ export default function Post() {
       title: "岗位排序",
       dataIndex: "postSort",
       search: false,
+      sorter: true,
     },
     {
       title: "状态",
@@ -481,9 +482,9 @@ export default function Post() {
                   width="md"
                   name="postSort"
                   initialValue="0"
-                  label="岗位顺序"
-                  placeholder="请输入岗位顺序序"
-                  rules={[{ required: true, message: "请输入岗位顺序" }]}
+                  label="岗位排序"
+                  placeholder="请输入岗位排序"
+                  rules={[{ required: true, message: "请输入岗位排序" }]}
                 />
                 <ProFormRadio.Group
                   name="status"
@@ -555,9 +556,9 @@ export default function Post() {
                   width="md"
                   name="postSort"
                   initialValue="0"
-                  label="岗位顺序"
-                  placeholder="请输入岗位顺序序"
-                  rules={[{ required: true, message: "请输入岗位顺序" }]}
+                  label="岗位排序"
+                  placeholder="请输入岗位排序"
+                  rules={[{ required: true, message: "请输入岗位排序" }]}
                 />
                 <ProFormRadio.Group
                   name="status"

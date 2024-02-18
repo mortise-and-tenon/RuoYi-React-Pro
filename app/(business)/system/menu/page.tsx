@@ -64,11 +64,6 @@ export default function Menu() {
       order: 2,
     },
     {
-      title: "排序",
-      dataIndex: "orderNum",
-      search: false,
-    },
-    {
       title: "图标",
       dataIndex: "icon",
       search: false,

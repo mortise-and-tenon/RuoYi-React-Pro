@@ -2,98 +2,209 @@
 
 import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
+  CaretDownOutlined,
+  CheckOutlined,
+  CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
+  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
+  SearchOutlined,
+  KeyOutlined,
+  LoadingOutlined,
+  CloudUploadOutlined,
+  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
-  ActionType,
   ProColumns,
   ProFormInstance,
+  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
+  ProCard,
   ProForm,
   ProFormRadio,
+  ProFormSelect,
   ProFormText,
   ProFormTextArea,
+  ProFormTreeSelect,
   ProTable,
+  ProFormDigit,
 } from "@ant-design/pro-components";
-import { Button, message, Modal, Space, Tag } from "antd";
+import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
+import {
+  Button,
+  Col,
+  Flex,
+  Input,
+  message,
+  Modal,
+  Row,
+  Space,
+  Spin,
+  Switch,
+  Tree,
+  Dropdown,
+  Form,
+  Upload,
+  Typography,
+  Checkbox,
+  Tag,
+} from "antd";
 import { useRouter } from "next/navigation";
 
 import {
-  faCheck,
   faDownload,
   faPenToSquare,
-  faRotate,
   faToggleOff,
   faToggleOn,
+  faUpload,
+  faUsers,
+  faCheck,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+//查询类型详情
+const queryTypeAPI = "/api/system/dict/type";
+//查询所有类型列表
+const queryTypeListAPI = "/api/system/dict/type/optionselect";
 //查询表格数据API
-const queryAPI = "/api/system/dict/type/list";
+const queryAPI = "/api/system/dict/data/list";
 //新建数据API
-const newAPI = "/api/system/dict/type";
+const newAPI = "/api/system/dict/data";
 //修改数据API
-const modifyAPI = "/api/system/dict/type";
+const modifyAPI = "/api/system/dict/data";
 //查询详情数据API
-const queryDetailAPI = "/api/system/dict/type";
+const queryDetailAPI = "/api/system/dict/data";
 //删除API
-const deleteAPI = "/api/system/dict/type";
+const deleteAPI = "/api/system/dict/data";
 //导出API
-const exportAPI = "/api/system/dict/type/export";
+const exportAPI = "/api/system/dict/data/export";
 //导出文件前缀名
-const exportFilePrefix = "dict";
-//刷新缓存
-const refreshAPI = "/api/system/dict/type/refreshCache";
+const exportFilePrefix = "data";
 
-export default function Dict() {
+export default function DictData({ params }: { params: { dictid: string } }) {
   const { push } = useRouter();
+
+  const [defaultType, setDefaultType] = useState("");
+
+  //获取对应的字典类型的值
+  const getTypeData = async () => {
+    const resp = await fetchApi(`${queryTypeAPI}/${params.dictid}`, push);
+    if (resp != undefined) {
+      if (searchTableFormRef.current) {
+        searchTableFormRef.current.setFieldsValue({
+          dictType: resp.data.dictType,
+        });
+      }
+
+      setDefaultType(resp.data.dictType);
+      return resp.data.dictType;
+    }
+
+    return "";
+  };
+
+  //查询字典类型列表
+  const getTypeList = async () => {
+    const dataArray: Array<any> = new Array<any>();
+    const resp = await fetchApi(queryTypeListAPI, push);
+    if (resp != undefined) {
+      resp.data.forEach((item: any) => {
+        const type = {
+          label: item.dictName,
+          value: item.dictType,
+        };
+        dataArray.push(type);
+      });
+    }
+
+    return dataArray;
+  };
 
   //表格列定义
   const columns: ProColumns[] = [
     {
-      title: "字典编号",
-      dataIndex: "dictId",
+      title: "字典名称",
+      dataIndex: "dictType",
+      valueType: "select",
+      fieldProps: {
+        allowClear: false,
+      },
+      request: getTypeList,
+      hideInTable: true,
+      order: 3,
+    },
+    {
+      title: "数据编码",
+      dataIndex: "dictCode",
       search: false,
     },
     {
-      title: "字典名称",
+      title: "数据标签",
       fieldProps: {
-        placeholder: "请输入字典名称",
+        placeholder: "请输入数据标签",
       },
-      dataIndex: "dictName",
-      ellipsis: true,
-      sorter: true,
-      order: 4,
+      dataIndex: "dictLabel",
+      order: 2,
+      render: (_, record) => {
+        const isTag = record.listClass === "";
+        let tagColor = "default";
+        if (record.listClass === "") {
+          return _;
+        } else {
+          switch (record.listClass) {
+            case "default":
+              tagColor = "processing";
+              break;
+            case "primary":
+              tagColor = "processing";
+              break;
+            case "success":
+              tagColor = "success";
+              break;
+            case "info":
+              tagColor = "default";
+              break;
+            case "warning":
+              tagColor = "warning";
+              break;
+            case "danger":
+              tagColor = "error";
+              break;
+            default:
+              tagColor = "processing";
+              break;
+          }
+          return (
+            <Space>
+              <Tag color={tagColor}>{_}</Tag>
+            </Space>
+          );
+        }
+      },
     },
     {
-      title: "字典类型",
-      fieldProps: {
-        placeholder: "请输入字典类型",
-      },
-      dataIndex: "dictType",
-      ellipsis: true,
-      order: 3,
-      render: (_, record) => {
-        return (
-          <a onClick={() => push(`/system/dict-data/index/${record.dictId}`)}>
-            {record.dictType}
-          </a>
-        );
-      },
+      title: "数据键值",
+      dataIndex: "dictValue",
+      search: false,
+    },
+    {
+      title: "数据排序",
+      dataIndex: "dictSort",
+      sorter: true,
+      search: false,
     },
     {
       title: "状态",
       fieldProps: {
-        placeholder: "请选择字典状态",
+        placeholder: "请选择数据状态",
       },
       dataIndex: "status",
       valueType: "select",
@@ -125,12 +236,11 @@ export default function Dict() {
           status: "1",
         },
       },
-      order: 2,
+      order: 1,
     },
     {
       title: "备注",
       dataIndex: "remark",
-      ellipsis: true,
       search: false,
     },
     {
@@ -138,24 +248,6 @@ export default function Dict() {
       dataIndex: "createTime",
       valueType: "dateTime",
       search: false,
-    },
-    {
-      title: "创建时间",
-      fieldProps: {
-        placeholder: ["开始日期", "结束日期"],
-      },
-      dataIndex: "createTimeRange",
-      valueType: "dateRange",
-      hideInTable: true,
-      order: 1,
-      search: {
-        transform: (value) => {
-          return {
-            "params[beginTime]": `${value[0]} 00:00:00`,
-            "params[endTime]": `${value[1]} 23:59:59`,
-          };
-        },
-      },
     },
     {
       title: "操作",
@@ -193,6 +285,12 @@ export default function Dict() {
     delete searchParams.current;
 
     const queryParams = new URLSearchParams(searchParams);
+
+    //如果没有带上默认的字典类型，查询绑定上
+    if (!("dictType" in searchParams)) {
+      const defaultType = await getTypeData();
+      queryParams.append("dictType", defaultType);
+    }
 
     Object.keys(sorter).forEach((key) => {
       queryParams.append("orderByColumn", key);
@@ -256,22 +354,27 @@ export default function Dict() {
 
   //查询并加载待修改数据的详细信息
   const queryRowData = async (record?: any) => {
-    const dictId = record !== undefined ? record.dictId : selectedRow.dictId;
+    const dictCode =
+      record !== undefined ? record.dictCode : selectedRow.dictCode;
 
-    operatRowData["dictId"] = dictId;
+    operatRowData["dictCode"] = dictCode;
 
     setOperateRowData(operatRowData);
 
-    if (dictId !== undefined) {
-      const body = await fetchApi(`${queryDetailAPI}/${dictId}`, push);
+    if (dictCode !== undefined) {
+      const body = await fetchApi(`${queryDetailAPI}/${dictCode}`, push);
 
       if (body !== undefined) {
         if (body.code == 200) {
           modifyFormRef?.current?.setFieldsValue({
             //需要加载到修改表单中的数据
-            dictName: body.data.dictName,
             dictType: body.data.dictType,
+            dictLabel: body.data.dictLabel,
+            dictValue: body.data.dictValue,
+            dictSort: body.data.dictSort,
             status: body.data.status,
+            listClass: body.data.listClass,
+            cssClass: body.data.cssClass,
             remark: body.data.remark,
           });
         }
@@ -281,7 +384,7 @@ export default function Dict() {
 
   //确认修改数据
   const executeModifyData = async (values: any) => {
-    values["dictId"] = operatRowData["dictId"];
+    values["dictCode"] = operatRowData["dictCode"];
 
     const body = await fetchApi(modifyAPI, push, {
       method: "PUT",
@@ -310,22 +413,22 @@ export default function Dict() {
 
   //点击删除按钮，展示删除确认框
   const onClickDeleteRow = (record?: any) => {
-    const dictId =
-      record != undefined ? record.dictId : selectedRowKeys.join(",");
+    const dictCode =
+      record != undefined ? record.dictCode : selectedRowKeys.join(",");
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `是否确认删除字典编号为“${dictId}”的数据项？`,
+      content: `确定删除字典编码为“${dictCode}”的数据项？`,
       onOk() {
-        executeDeleteRow(dictId);
+        executeDeleteRow(dictCode);
       },
       onCancel() {},
     });
   };
 
   //确定删除选中的数据
-  const executeDeleteRow = async (dictId: any) => {
-    const body = await fetchApi(`${deleteAPI}/${dictId}`, push, {
+  const executeDeleteRow = async (dictCode: any) => {
+    const body = await fetchApi(`${deleteAPI}/${dictCode}`, push, {
       method: "DELETE",
     });
     if (body !== undefined) {
@@ -427,29 +530,18 @@ export default function Dict() {
     setPageSize(pageSize);
   };
 
-  //刷新缓存
-  const refreshCache = async () => {
-    const body = await fetchApi(refreshAPI, push, {
-      method: "DELETE",
-    });
-
-    if (body !== undefined) {
-      if (body.code == 200) {
-        message.success("刷新成功");
-        if (actionTableRef.current) {
-          actionTableRef.current.reload();
-        }
-      } else {
-        message.error(body.msg);
-      }
-    }
-  };
-
   return (
-    <PageContainer title={false}>
+    <PageContainer
+      header={{
+        title: "字典数据",
+        onBack(e) {
+          push("/system/dict");
+        },
+      }}
+    >
       <ProTable
         formRef={searchTableFormRef}
-        rowKey="dictId"
+        rowKey="dictCode"
         rowSelection={{
           selectedRowKeys,
           ...rowSelection,
@@ -490,7 +582,7 @@ export default function Dict() {
           actions: [
             <ModalForm
               key="addmodal"
-              title="添加字典类型"
+              title="添加字典数据"
               trigger={
                 <Button icon={<PlusOutlined />} type="primary">
                   新建
@@ -506,23 +598,39 @@ export default function Dict() {
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="dictName"
-                  label="字典名称"
-                  placeholder="请输入字典名称"
-                  rules={[{ required: true, message: "请输入字典名称" }]}
+                  name="dictType"
+                  label="字典类型"
+                  initialValue={defaultType}
+                  disabled
                 />
               </ProForm.Group>
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="dictType"
-                  label="字典类型"
-                  placeholder="请输入字典类型"
-                  rules={[{ required: true, message: "请输入字典类型" }]}
+                  name="dictLabel"
+                  label="数据标签"
+                  rules={[{ required: true, message: "请输入数据标签" }]}
+                />
+                <ProFormText
+                  width="md"
+                  name="dictValue"
+                  label="数据键值"
+                  rules={[{ required: true, message: "请输入数据键值" }]}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormDigit
+                  fieldProps={{ precision: 0 }}
+                  width="md"
+                  name="dictSort"
+                  initialValue="0"
+                  label="数据排序"
+                  placeholder="请输入数据排序"
+                  rules={[{ required: true, message: "请输入数据排序" }]}
                 />
                 <ProFormRadio.Group
+                  width="md"
                   name="status"
-                  width="sm"
                   label="状态"
                   initialValue="0"
                   options={[
@@ -537,6 +645,40 @@ export default function Dict() {
                   ]}
                 />
               </ProForm.Group>
+              <ProForm.Group>
+                <ProFormSelect
+                  width="md"
+                  name="listClass"
+                  label="回显样式"
+                  valueEnum={{
+                    default: {
+                      text: "默认（default）",
+                      status: "default",
+                    },
+                    primary: {
+                      text: "主要（primary）",
+                      status: "primary",
+                    },
+                    success: {
+                      text: "成功（成功）",
+                      status: "success",
+                    },
+                    info: {
+                      text: "信息（info）",
+                      status: "info",
+                    },
+                    warning: {
+                      text: "警告（warning）",
+                      status: "warning",
+                    },
+                    danger: {
+                      text: "危险（danger）",
+                      status: "danger",
+                    },
+                  }}
+                />
+                <ProFormText width="md" name="cssClass" label="样式属性" />
+              </ProForm.Group>
               <ProFormTextArea
                 name="remark"
                 width={688}
@@ -546,7 +688,7 @@ export default function Dict() {
             </ModalForm>,
             <ModalForm
               key="modifymodal"
-              title="修改字典类型"
+              title="修改岗位"
               formRef={modifyFormRef}
               trigger={
                 <Button
@@ -571,23 +713,38 @@ export default function Dict() {
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="dictName"
-                  label="字典名称"
-                  placeholder="请输入字典名称"
-                  rules={[{ required: true, message: "请输入字典名称" }]}
+                  name="dictType"
+                  label="字典类型"
+                  disabled
                 />
               </ProForm.Group>
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="dictType"
-                  label="字典类型"
-                  placeholder="请输入字典类型"
-                  rules={[{ required: true, message: "请输入字典类型" }]}
+                  name="dictLabel"
+                  label="字典标签"
+                  rules={[{ required: true, message: "请输入字典标签" }]}
+                />
+                <ProFormText
+                  width="md"
+                  name="dictValue"
+                  label="字典键值"
+                  rules={[{ required: true, message: "请输入字典键值" }]}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormDigit
+                  fieldProps={{ precision: 0 }}
+                  width="md"
+                  name="dictSort"
+                  initialValue="0"
+                  label="显示排序"
+                  placeholder="请输入显示排序"
+                  rules={[{ required: true, message: "请输入显示排序" }]}
                 />
                 <ProFormRadio.Group
+                  width="md"
                   name="status"
-                  width="sm"
                   label="状态"
                   initialValue="0"
                   options={[
@@ -601,6 +758,40 @@ export default function Dict() {
                     },
                   ]}
                 />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormSelect
+                  width="md"
+                  name="listClass"
+                  label="回显样式"
+                  valueEnum={{
+                    default: {
+                      text: "默认（default）",
+                      status: "default",
+                    },
+                    primary: {
+                      text: "主要（primary）",
+                      status: "primary",
+                    },
+                    success: {
+                      text: "成功（成功）",
+                      status: "success",
+                    },
+                    info: {
+                      text: "信息（info）",
+                      status: "info",
+                    },
+                    warning: {
+                      text: "警告（warning）",
+                      status: "warning",
+                    },
+                    danger: {
+                      text: "危险（danger）",
+                      status: "danger",
+                    },
+                  }}
+                />
+                <ProFormText width="md" name="cssClass" label="样式属性" />
               </ProForm.Group>
               <ProFormTextArea
                 name="remark"
@@ -626,14 +817,6 @@ export default function Dict() {
               onClick={exportTable}
             >
               导出
-            </Button>,
-            <Button
-              key="refresh"
-              type="primary"
-              icon={<FontAwesomeIcon icon={faRotate} />}
-              onClick={refreshCache}
-            >
-              刷新缓存
             </Button>,
           ],
           settings: [
