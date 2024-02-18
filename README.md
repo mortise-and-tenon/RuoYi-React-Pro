@@ -5,17 +5,14 @@
 
 本项目为 RuoYi 前后端分离版本的前端适配项目。原作者的 RuoYi 前端项目使用 Vue 开发，本项目使用 React 开发，并引入了 Antd 和 Antd ProComponents，具有更高的美观度。
 
-### 进展
+### 使用框架
 
-- 登录页面
-  - TODO：记住密码
-- 主页
-  - 菜单展示
-  - TODO：搜索
-  - 个人中心页面：个人信息展示、基本资料修改、密码修改
-  - 退出登录
-- 操作日志：展示、搜索、删除、清空、导出
-- 登录日志：展示、搜索、删除、清空、解锁、导出
+- Next.js：主体框架
+- Ant Design：组件
+- Ant Design ProComponents：高级封装组件
+- Font Awesome：图标库
+- cookies-next：cookies 操作
+- jsencrypt：加解密
 
 ## 项目创建来源
 

@@ -1,3 +1,649 @@
-export default function Job(){
-    return <div>job</div>
+"use client";
+
+import { fetchApi, fetchFile } from "@/app/_modules/func";
+import {
+  CaretDownOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  ExclamationCircleFilled,
+  EyeOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  KeyOutlined,
+  LoadingOutlined,
+  CloudUploadOutlined,
+  FileAddOutlined,
+} from "@ant-design/icons";
+import type {
+  ProColumns,
+  ProFormInstance,
+  ActionType,
+} from "@ant-design/pro-components";
+import {
+  ModalForm,
+  PageContainer,
+  ProCard,
+  ProForm,
+  ProFormRadio,
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+  ProFormTreeSelect,
+  ProTable,
+} from "@ant-design/pro-components";
+import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
+import {
+  Button,
+  Col,
+  Flex,
+  Input,
+  message,
+  Modal,
+  Row,
+  Space,
+  Spin,
+  Switch,
+  Tree,
+  Dropdown,
+  Form,
+  Upload,
+  Typography,
+  Checkbox,
+  Tag,
+} from "antd";
+import { useRouter } from "next/navigation";
+
+import {
+  faDownload,
+  faPenToSquare,
+  faToggleOff,
+  faToggleOn,
+  faUpload,
+  faUsers,
+  faCheck,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+//查询表格数据API
+const queryAPI = "/api/monitor/job/list";
+//新建数据API
+const newAPI = "/api/monitor/job";
+//修改数据API
+const modifyAPI = "/api/monitor/job";
+//查询详情数据API
+const queryDetailAPI = "/api/monitor/job";
+//删除API
+const deleteAPI = "/api/monitor/job";
+//导出API
+const exportAPI = "/api/monitor/job/export";
+//导出文件前缀名
+const exportFilePrefix = "job";
+//变更任务状态API
+const changeJobStatusAPI = "/api/monitor/job/changeStatus";
+
+export default function Job() {
+  const { push } = useRouter();
+
+  //表格列定义
+  const columns: ProColumns[] = [
+    {
+      title: "任务编号",
+      dataIndex: "jobId",
+      search: false,
+    },
+    {
+      title: "任务名称",
+      fieldProps: {
+        placeholder: "请输入任务名称",
+      },
+      dataIndex: "jobName",
+      ellipsis: true,
+      order: 3,
+    },
+    {
+      title: "任务组名",
+      dataIndex: "jobGroup",
+      valueType: "select",
+      valueEnum: {
+        DEFAULT: {
+          text: "默认",
+          status: "DEFAULT",
+        },
+        SYSTEM: {
+          text: "系统",
+          status: "SYSTEM",
+        },
+      },
+      sorter: true,
+      order: 2,
+    },
+    {
+      title: "调用目标字符串",
+      dataIndex: "invokeTarget",
+      search: false,
+    },
+    {
+      title: "Cron执行表达式",
+      dataIndex: "cronExpression",
+      search: false,
+    },
+    {
+      title: "状态",
+      fieldProps: {
+        placeholder: "请选择任务状态",
+      },
+      dataIndex: "status",
+      valueType: "select",
+      order: 2,
+      valueEnum: {
+        0: {
+          text: "正常",
+          status: "0",
+        },
+        1: {
+          text: "停用",
+          status: "1",
+        },
+      },
+      render: (text, record) => {
+        return (
+          <Space>
+            <Switch
+              checkedChildren={<CheckOutlined />}
+              unCheckedChildren={<CloseOutlined />}
+              defaultChecked={record.status === "0"}
+              checked={rowStatusMap[record.jobId]}
+              onChange={(checked, event) => {
+                showSwitchJobStatusModal(checked, record);
+              }}
+            />
+          </Space>
+        );
+      },
+    },
+    {
+      title: "创建时间",
+      dataIndex: "createTime",
+      valueType: "dateTime",
+      search: false,
+    },
+    {
+      title: "操作",
+      key: "option",
+      search: false,
+      render: (_, record) => [
+        <Button
+          key="modifyBtn"
+          type="link"
+          icon={<FontAwesomeIcon icon={faPenToSquare} />}
+          onClick={() => onClickShowRowModifyModal(record)}
+        >
+          修改
+        </Button>,
+        <Button
+          key="deleteBtn"
+          type="link"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => onClickDeleteRow(record)}
+        >
+          删除
+        </Button>,
+      ],
+    },
+  ];
+
+  //0.查询表格数据
+  const queryTableData = async (params: any, sorter: any, filter: any) => {
+    const searchParams = {
+      pageNum: params.current,
+      ...params,
+    };
+
+    delete searchParams.current;
+
+    const queryParams = new URLSearchParams(searchParams);
+
+    Object.keys(sorter).forEach((key) => {
+      queryParams.append("orderByColumn", key);
+      if (sorter[key] === "ascend") {
+        queryParams.append("isAsc", "ascending");
+      } else {
+        queryParams.append("isAsc", "descending");
+      }
+    });
+
+    const body = await fetchApi(`${queryAPI}?${queryParams}`, push);
+
+    if (body !== undefined) {
+      body.rows.forEach((row: any) => {
+        setRowStatusMap({ ...rowStatusMap, [row.userId]: row.status === "0" });
+      });
+    }
+
+    return body;
+  };
+
+  //1.新建
+
+  //确定新建数据
+  const executeAddData = async (values: any) => {
+    const body = await fetchApi(newAPI, push, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+
+    if (body != undefined) {
+      if (body.code == 200) {
+        message.success(body.msg);
+        if (actionTableRef.current) {
+          actionTableRef.current.reload();
+        }
+        return true;
+      }
+
+      message.error(body.msg);
+      return false;
+    }
+    return false;
+  };
+
+  //2.修改
+
+  //控制行的状态值的恢复
+  const [rowStatusMap, setRowStatusMap] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+
+  //展示切换任务状态对话框
+  const showSwitchJobStatusModal = (checked: boolean, record: any) => {
+    setRowStatusMap({ ...rowStatusMap, [record.jobId]: checked });
+
+    Modal.confirm({
+      title: "系统提示",
+      icon: <ExclamationCircleFilled />,
+      content: `确认要${checked ? "启用" : "停用"}"${record.jobName}"任务吗？`,
+      onOk() {
+        executeSwitchStatus(checked, record.jobId, () => {
+          setRowStatusMap({ ...rowStatusMap, [record.jobId]: !checked });
+        });
+      },
+      onCancel() {
+        setRowStatusMap({ ...rowStatusMap, [record.jobId]: !checked });
+      },
+    });
+  };
+
+  //确认变更用户状态
+  const executeSwitchStatus = async (
+    checked: boolean,
+    jobId: string,
+    erroCallback: () => void
+  ) => {
+    const modifyData = {
+      jobId: jobId,
+      status: checked ? "0" : "1",
+    };
+    const body = await fetchApi(changeJobStatusAPI, push, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(modifyData),
+    });
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success(body.msg);
+      } else {
+        message.error(body.msg);
+        erroCallback();
+      }
+    }
+  };
+
+  //是否展示修改对话框
+  const [isShowModifyDataModal, setIsShowModifyDataModal] = useState(false);
+
+  //展示修改对话框
+  const onClickShowRowModifyModal = (record?: any) => {
+    queryRowData(record);
+    setIsShowModifyDataModal(true);
+  };
+
+  //修改数据表单引用
+  const modifyFormRef = useRef<ProFormInstance>();
+
+  //操作当前数据的附加数据
+  const [operatRowData, setOperateRowData] = useState<{
+    [key: string]: any;
+  }>({});
+
+  //查询并加载待修改数据的详细信息
+  const queryRowData = async (record?: any) => {
+    const jobId = record !== undefined ? record.jobId : selectedRow.jobId;
+
+    operatRowData["jobId"] = jobId;
+
+    setOperateRowData(operatRowData);
+
+    if (jobId !== undefined) {
+      const body = await fetchApi(`${queryDetailAPI}/${jobId}`, push);
+
+      if (body !== undefined) {
+        if (body.code == 200) {
+          modifyFormRef?.current?.setFieldsValue({
+            //需要加载到修改表单中的数据
+            postId: body.data.postId,
+          });
+        }
+      }
+    }
+  };
+
+  //确认修改数据
+  const executeModifyData = async (values: any) => {
+    values["jobId"] = operatRowData["jobId"];
+
+    const body = await fetchApi(modifyAPI, push, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success(body.msg);
+        //刷新列表
+        if (actionTableRef.current) {
+          actionTableRef.current.reload();
+        }
+        setIsShowModifyDataModal(false);
+        return true;
+      }
+      message.error(body.msg);
+      return false;
+    }
+  };
+
+  //3.删除
+
+  //点击删除按钮，展示删除确认框
+  const onClickDeleteRow = (record?: any) => {
+    const jobId =
+      record != undefined ? record.jobId : selectedRowKeys.join(",");
+    Modal.confirm({
+      title: "系统提示",
+      icon: <ExclamationCircleFilled />,
+      content: `确定删除任务编号为“${jobId}”的数据项？`,
+      onOk() {
+        executeDeleteRow(jobId);
+      },
+      onCancel() {},
+    });
+  };
+
+  //确定删除选中的数据
+  const executeDeleteRow = async (jobId: any) => {
+    const body = await fetchApi(`${deleteAPI}/${jobId}`, push, {
+      method: "DELETE",
+    });
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("删除成功");
+
+        //修改按钮变回不可点击
+        setRowCanModify(false);
+        //删除按钮变回不可点击
+        setRowCanDelete(false);
+        //选中行数据重置为空
+        setSelectedRowKeys([]);
+        //刷新列表
+        if (actionTableRef.current) {
+          actionTableRef.current.reload();
+        }
+      } else {
+        message.error(body.msg);
+      }
+    }
+  };
+
+  //4.导出
+
+  //导出表格数据
+  const exportTable = async () => {
+    if (searchTableFormRef.current) {
+      const formData = new FormData();
+
+      const data = {
+        pageNum: page,
+        pageSize: pageSize,
+        ...searchTableFormRef.current.getFieldsValue(),
+      };
+
+      Object.keys(data).forEach((key) => {
+        if (data[key] !== undefined) {
+          formData.append(key, data[key]);
+        }
+      });
+
+      await fetchFile(
+        exportAPI,
+        push,
+        {
+          method: "POST",
+          body: formData,
+        },
+        `${exportFilePrefix}_${new Date().getTime()}.xlsx`
+      );
+    }
+  };
+
+  //5.选择行
+
+  //选中行操作
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRow, setSelectedRow] = useState(undefined as any);
+
+  //修改按钮是否可用，选中行时才可用
+  const [rowCanModify, setRowCanModify] = useState(false);
+
+  //删除按钮是否可用，选中行时才可用
+  const [rowCanDelete, setRowCanDelete] = useState(false);
+
+  //ProTable rowSelection
+  const rowSelection = {
+    onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+      setRowCanDelete(newSelectedRowKeys && newSelectedRowKeys.length > 0);
+
+      if (newSelectedRowKeys && newSelectedRowKeys.length == 1) {
+        setSelectedRow(selectedRows[0]);
+        setRowCanModify(true);
+      } else {
+        setRowCanModify(false);
+        setSelectedRow(undefined);
+      }
+    },
+
+    //复选框的额外禁用判断
+    // getCheckboxProps: (record) => ({
+    //   disabled: record.userId == 1,
+    // }),
+  };
+
+  //搜索栏显示状态
+  const [showSearch, setShowSearch] = useState(true);
+  //action对象引用
+  const actionTableRef = useRef<ActionType>();
+  //搜索表单对象引用
+  const searchTableFormRef = useRef<ProFormInstance>();
+  //当前页数和每页条数
+  const [page, setPage] = useState(1);
+  const defualtPageSize = 10;
+  const [pageSize, setPageSize] = useState(defualtPageSize);
+  const pageChange = (page: number, pageSize: number) => {
+    setPage(page);
+    setPageSize(pageSize);
+  };
+
+  return (
+    <PageContainer title={false}>
+      <ProTable
+        formRef={searchTableFormRef}
+        rowKey="jobId"
+        rowSelection={{
+          selectedRowKeys,
+          ...rowSelection,
+        }}
+        columns={columns}
+        request={async (params: any, sorter: any, filter: any) => {
+          // 表单搜索项会从 params 传入，传递给后端接口。
+          const data = await queryTableData(params, sorter, filter);
+          if (data !== undefined) {
+            return Promise.resolve({
+              data: data.rows,
+              success: true,
+              total: data.total,
+            });
+          }
+          return Promise.resolve({
+            data: [],
+            success: true,
+          });
+        }}
+        pagination={{
+          pageSize: defualtPageSize,
+          showQuickJumper: true,
+          showSizeChanger: true,
+          onChange: pageChange,
+        }}
+        search={
+          showSearch
+            ? {
+                defaultCollapsed: false,
+                searchText: "搜索",
+              }
+            : false
+        }
+        dateFormatter="string"
+        actionRef={actionTableRef}
+        toolbar={{
+          actions: [
+            <ModalForm
+              key="addmodal"
+              title="添加岗位"
+              trigger={
+                <Button icon={<PlusOutlined />} type="primary">
+                  新建
+                </Button>
+              }
+              autoFocusFirstInput
+              modalProps={{
+                destroyOnClose: true,
+              }}
+              submitTimeout={2000}
+              onFinish={executeAddData}
+            >
+              <ProForm.Group>
+                <ProFormText
+                  width="md"
+                  name="nickName"
+                  label="用户昵称"
+                  placeholder="请输入用户昵称"
+                  rules={[{ required: true, message: "请输入用户昵称" }]}
+                />
+              </ProForm.Group>
+            </ModalForm>,
+            <ModalForm
+              key="modifymodal"
+              title="修改岗位"
+              formRef={modifyFormRef}
+              trigger={
+                <Button
+                  icon={<FontAwesomeIcon icon={faPenToSquare} />}
+                  disabled={!rowCanModify}
+                  onClick={() => onClickShowRowModifyModal()}
+                >
+                  修改
+                </Button>
+              }
+              open={isShowModifyDataModal}
+              autoFocusFirstInput
+              modalProps={{
+                destroyOnClose: true,
+                onCancel: () => {
+                  setIsShowModifyDataModal(false);
+                },
+              }}
+              submitTimeout={2000}
+              onFinish={executeModifyData}
+            >
+              <ProForm.Group>
+                <ProFormText
+                  width="md"
+                  name="nickName"
+                  label="用户昵称"
+                  placeholder="请输入用户昵称"
+                  rules={[{ required: true, message: "请输入用户昵称" }]}
+                />
+              </ProForm.Group>
+            </ModalForm>,
+
+            <Button
+              key="danger"
+              danger
+              icon={<DeleteOutlined />}
+              disabled={!rowCanDelete}
+              onClick={() => onClickDeleteRow()}
+            >
+              删除
+            </Button>,
+            <Button
+              key="export"
+              type="primary"
+              icon={<FontAwesomeIcon icon={faDownload} />}
+              onClick={exportTable}
+            >
+              导出
+            </Button>,
+          ],
+          settings: [
+            {
+              key: "switch",
+              icon: showSearch ? (
+                <FontAwesomeIcon icon={faToggleOn} />
+              ) : (
+                <FontAwesomeIcon icon={faToggleOff} />
+              ),
+              tooltip: showSearch ? "隐藏搜索栏" : "显示搜索栏",
+              onClick: (key: string | undefined) => {
+                setShowSearch(!showSearch);
+              },
+            },
+            {
+              key: "refresh",
+              tooltip: "刷新",
+              icon: <ReloadOutlined />,
+              onClick: (key: string | undefined) => {
+                if (actionTableRef.current) {
+                  actionTableRef.current.reload();
+                }
+              },
+            },
+          ],
+        }}
+      />
+    </PageContainer>
+  );
 }
