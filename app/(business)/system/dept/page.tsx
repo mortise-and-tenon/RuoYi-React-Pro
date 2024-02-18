@@ -1,75 +1,41 @@
 "use client";
 
-import { fetchApi, fetchFile } from "@/app/_modules/func";
+import { fetchApi } from "@/app/_modules/func";
 import {
-  CaretDownOutlined,
-  CheckOutlined,
-  CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
-  ProCard,
   ProForm,
+  ProFormDigit,
   ProFormRadio,
-  ProFormSelect,
   ProFormText,
-  ProFormTextArea,
   ProFormTreeSelect,
   ProTable,
-  ProFormDigit,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
-import {
-  Button,
-  Col,
-  Flex,
-  Input,
-  message,
-  Modal,
-  Row,
-  Space,
-  Spin,
-  Switch,
-  Tree,
-  Dropdown,
-  Form,
-  Upload,
-  Typography,
-  Checkbox,
-  Tag,
-} from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
-  faDownload,
+  faArrowsUpDown,
+  faCheck,
   faPenToSquare,
   faToggleOff,
   faToggleOn,
-  faUpload,
-  faUsers,
-  faCheck,
   faXmark,
-  faArrowsUpDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 //查询表格数据API
 const queryAPI = "/api/system/dept/list";
@@ -89,6 +55,9 @@ export default function Dept() {
   const columns: ProColumns[] = [
     {
       title: "部门名称",
+      fieldProps: {
+        placeholder: "请输入部门名称",
+      },
       dataIndex: "deptName",
       order: 2,
     },
@@ -99,6 +68,9 @@ export default function Dept() {
     },
     {
       title: "状态",
+      fieldProps: {
+        placeholder: "请选择部门状态",
+      },
       dataIndex: "status",
       valueType: "select",
       render: (_, record) => {
@@ -159,7 +131,7 @@ export default function Dept() {
               onClick={() => onClickAdd(record)}
             >
               新建
-            </Button>
+            </Button>,
           ];
         } else {
           return [
@@ -264,8 +236,8 @@ export default function Dept() {
     }
 
     if (parentNode.children.length == 0) {
-        delete parentNode.children;
-      }
+      delete parentNode.children;
+    }
   };
 
   //1.新建

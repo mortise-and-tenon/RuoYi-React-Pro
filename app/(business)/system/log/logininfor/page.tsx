@@ -45,12 +45,18 @@ export default function OperLog() {
     },
     {
       title: "用户名称",
+      fieldProps: {
+        placeholder: "请输入用户名称",
+      },
       dataIndex: "userName",
       order: 3,
       sorter: true,
     },
     {
       title: "登录地址",
+      fieldProps: {
+        placeholder: "请输入登录地址",
+      },
       dataIndex: "ipaddr",
       order: 4,
     },
@@ -72,6 +78,9 @@ export default function OperLog() {
     },
     {
       title: "登录状态",
+      fieldProps: {
+        placeholder: "请选择登录状态",
+      },
       dataIndex: "status",
       valueType: "select",
       order: 2,
@@ -118,6 +127,9 @@ export default function OperLog() {
     },
     {
       title: "操作时间",
+      fieldProps: {
+        placeholder: ["开始日期", "结束日期"],
+      },
       dataIndex: "loginTimeRange",
       valueType: "dateRange",
       hideInTable: true,

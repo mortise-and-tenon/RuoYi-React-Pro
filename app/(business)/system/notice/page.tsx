@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchApi, fetchFile } from "@/app/_modules/func";
+import { fetchApi } from "@/app/_modules/func";
 import {
   DeleteOutlined,
   ExclamationCircleFilled,
@@ -17,19 +17,16 @@ import {
   PageContainer,
   ProForm,
   ProFormRadio,
-  ProFormText,
-  ProFormTextArea,
-  ProTable,
   ProFormSelect,
+  ProFormText,
+  ProTable,
 } from "@ant-design/pro-components";
-import { Button, Modal, Space, Tag, message } from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
   faCheck,
-  faDownload,
   faPenToSquare,
-  faRotate,
   faToggleOff,
   faToggleOn,
   faXmark,
@@ -39,9 +36,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRef, useState } from "react";
 
 import dynamic from "next/dynamic";
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import "react-quill/dist/quill.snow.css";
-
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 //查询表格数据API
 const queryAPI = "/api/system/notice/list";
@@ -66,6 +62,9 @@ export default function Notice() {
     },
     {
       title: "公告标题",
+      fieldProps: {
+        placeholder: "请输入公告标题",
+      },
       dataIndex: "noticeTitle",
       ellipsis: true,
       sorter: true,
@@ -73,6 +72,9 @@ export default function Notice() {
     },
     {
       title: "公告类型",
+      fieldProps: {
+        placeholder: "请选择公告类型",
+      },
       dataIndex: "noticeType",
       valueType: "select",
       render: (_, record) => {
@@ -132,6 +134,9 @@ export default function Notice() {
     },
     {
       title: "创建者",
+      fieldProps: {
+        placeholder: "请输入创建者",
+      },
       dataIndex: "createBy",
       order: 2,
     },
@@ -257,7 +262,7 @@ export default function Notice() {
             noticeTitle: body.data.noticeTitle,
             noticeType: body.data.noticeType,
             status: body.data.status,
-            noticeContent:body.data.noticeContent,
+            noticeContent: body.data.noticeContent,
           });
         }
       }
@@ -480,11 +485,15 @@ export default function Notice() {
                 />
               </ProForm.Group>
               <ProForm.Group>
-              <ProForm.Item name="noticeContent" style={{ width: 688, height: 240 }} label="内容">
+                <ProForm.Item
+                  name="noticeContent"
+                  style={{ width: 688, height: 240 }}
+                  label="内容"
+                >
                   <ReactQuill
                     theme="snow"
                     placeholder="请输入内容"
-                    style={{height:160}}
+                    style={{ height: 160 }}
                   />
                 </ProForm.Item>
               </ProForm.Group>
@@ -552,11 +561,15 @@ export default function Notice() {
                 />
               </ProForm.Group>
               <ProForm.Group>
-              <ProForm.Item name="noticeContent" style={{ width: 688, height: 240 }} label="内容">
+                <ProForm.Item
+                  name="noticeContent"
+                  style={{ width: 688, height: 240 }}
+                  label="内容"
+                >
                   <ReactQuill
                     theme="snow"
                     placeholder="请输入内容"
-                    style={{height:160}}
+                    style={{ height: 160 }}
                   />
                 </ProForm.Item>
               </ProForm.Group>

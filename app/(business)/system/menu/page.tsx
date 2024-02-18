@@ -1,76 +1,43 @@
 "use client";
 
-import { fetchApi, fetchFile } from "@/app/_modules/func";
+import { fetchApi } from "@/app/_modules/func";
 import {
-  CaretDownOutlined,
-  CheckOutlined,
-  CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
-  ProCard,
   ProForm,
+  ProFormDigit,
   ProFormRadio,
   ProFormSelect,
   ProFormText,
-  ProFormTextArea,
   ProFormTreeSelect,
   ProTable,
-  ProFormDigit,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
-import {
-  Button,
-  Col,
-  Flex,
-  Input,
-  message,
-  Modal,
-  Row,
-  Space,
-  Spin,
-  Switch,
-  Tree,
-  Dropdown,
-  Form,
-  Upload,
-  Typography,
-  Checkbox,
-  Tag,
-} from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
-  faDownload,
+  faArrowsUpDown,
+  faCheck,
   faPenToSquare,
   faToggleOff,
   faToggleOn,
-  faUpload,
-  faUsers,
-  faCheck,
   faXmark,
-  faArrowsUpDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
 import { IconMap } from "@/app/_modules/definies";
+import { useRef, useState } from "react";
 
 //查询表格数据API
 const queryAPI = "/api/system/menu/list";
@@ -90,6 +57,9 @@ export default function Menu() {
   const columns: ProColumns[] = [
     {
       title: "菜单名称",
+      fieldProps: {
+        placeholder: "请输入菜单名称",
+      },
       dataIndex: "menuName",
       order: 2,
     },
@@ -116,6 +86,9 @@ export default function Menu() {
     },
     {
       title: "状态",
+      fieldProps: {
+        placeholder: "请选择菜单状态",
+      },
       dataIndex: "status",
       valueType: "select",
       render: (_, record) => {
@@ -588,7 +561,7 @@ export default function Menu() {
                   label="类型"
                   initialValue="M"
                   fieldProps={{
-                    onChange:(e: any) => onChangeType(e)
+                    onChange: (e: any) => onChangeType(e),
                   }}
                   options={[
                     {
@@ -788,7 +761,7 @@ export default function Menu() {
             width="md"
             label="类型"
             fieldProps={{
-              onChange:(e: any) => onChangeType(e)
+              onChange: (e: any) => onChangeType(e),
             }}
             options={[
               {

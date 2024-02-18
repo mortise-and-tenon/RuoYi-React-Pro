@@ -4,30 +4,29 @@ import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
   ClearOutlined,
   DeleteOutlined,
-  EyeOutlined,
-  ImportOutlined,
-  ReloadOutlined,
   ExclamationCircleFilled,
+  EyeOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   PageContainer,
   ProDescriptions,
   ProTable,
 } from "@ant-design/pro-components";
-import { Button, Modal, Space, Tag, message } from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
   faCheck,
+  faDownload,
   faToggleOff,
   faToggleOn,
   faXmark,
-  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -45,11 +44,17 @@ export default function OperLog() {
     },
     {
       title: "系统模块",
+      fieldProps: {
+        placeholder: "请输入系统模块",
+      },
       dataIndex: "title",
       order: 9,
     },
     {
       title: "操作类型",
+      fieldProps: {
+        placeholder: "请选择操作类型",
+      },
       dataIndex: "businessType",
       order: 7,
       valueEnum: {
@@ -97,12 +102,18 @@ export default function OperLog() {
     },
     {
       title: "操作人员",
+      fieldProps: {
+        placeholder: "请输入操作人员",
+      },
       dataIndex: "operName",
       sorter: true,
       order: 8,
     },
     {
       title: "操作地址",
+      fieldProps: {
+        placeholder: "请输入操作地址",
+      },
       dataIndex: "operIp",
       order: 10,
     },
@@ -113,6 +124,9 @@ export default function OperLog() {
     },
     {
       title: "操作状态",
+      fieldProps: {
+        placeholder: "请选择操作状态",
+      },
       dataIndex: "status",
       valueType: "select",
       render: (_, record) => {
@@ -154,6 +168,9 @@ export default function OperLog() {
     },
     {
       title: "操作时间",
+      fieldProps: {
+        placeholder: ["开始日期", "结束日期"],
+      },
       dataIndex: "operTimeRange",
       valueType: "dateRange",
       hideInTable: true,
@@ -271,7 +288,7 @@ export default function OperLog() {
     if (body !== undefined) {
       if (body.code == 200) {
         message.success("删除成功");
-        
+
         //删除按钮变回不可点击
         setRowCanDelete(false);
         //选中的数据恢复为空

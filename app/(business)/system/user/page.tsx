@@ -7,19 +7,17 @@ import {
   CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
+  FileAddOutlined,
+  KeyOutlined,
+  LoadingOutlined,
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
@@ -33,11 +31,14 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
+import type { GetProp, TreeDataNode, UploadProps } from "antd";
 import {
   Button,
+  Checkbox,
   Col,
+  Dropdown,
   Flex,
+  Form,
   Input,
   message,
   Modal,
@@ -46,11 +47,8 @@ import {
   Spin,
   Switch,
   Tree,
-  Dropdown,
-  Form,
-  Upload,
   Typography,
-  Checkbox,
+  Upload,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -101,6 +99,9 @@ export default function User() {
     },
     {
       title: "用户名称",
+      fieldProps: {
+        placeholder: "请输入用户名称",
+      },
       dataIndex: "userName",
       ellipsis: true,
       sorter: true,
@@ -122,11 +123,17 @@ export default function User() {
 
     {
       title: "手机号",
+      fieldProps: {
+        placeholder: "请输入手机号",
+      },
       dataIndex: "phonenumber",
       order: 3,
     },
     {
       title: "状态",
+      fieldProps: {
+        placeholder: "请选择用户状态",
+      },
       dataIndex: "status",
       valueType: "select",
       order: 2,
@@ -166,6 +173,9 @@ export default function User() {
     },
     {
       title: "创建时间",
+      fieldProps: {
+        placeholder: ["开始日期", "结束日期"],
+      },
       dataIndex: "createTimeRange",
       valueType: "dateRange",
       hideInTable: true,

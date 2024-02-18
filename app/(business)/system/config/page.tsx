@@ -21,7 +21,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from "@ant-design/pro-components";
-import { Button, Modal, Space, Tag, message } from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
@@ -66,6 +66,9 @@ export default function Config() {
     },
     {
       title: "参数名称",
+      fieldProps: {
+        placeholder: "请输入参数名称",
+      },
       dataIndex: "configName",
       ellipsis: true,
       sorter: true,
@@ -73,6 +76,9 @@ export default function Config() {
     },
     {
       title: "参数键名",
+      fieldProps: {
+        placeholder: "请输入参数键名",
+      },
       dataIndex: "configKey",
       ellipsis: true,
       order: 3,
@@ -85,6 +91,9 @@ export default function Config() {
     },
     {
       title: "系统内置",
+      fieldProps: {
+        placeholder: "请选择是否系统内置",
+      },
       dataIndex: "configType",
       valueType: "select",
       render: (_, record) => {
@@ -131,6 +140,9 @@ export default function Config() {
     },
     {
       title: "创建时间",
+      fieldProps: {
+        placeholder: ["开始日期", "结束日期"],
+      },
       dataIndex: "createTimeRange",
       valueType: "dateRange",
       hideInTable: true,

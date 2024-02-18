@@ -21,7 +21,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from "@ant-design/pro-components";
-import { Button, Modal, Space, Tag, message } from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
@@ -66,6 +66,9 @@ export default function Dict() {
     },
     {
       title: "字典名称",
+      fieldProps: {
+        placeholder: "请输入字典名称",
+      },
       dataIndex: "dictName",
       ellipsis: true,
       sorter: true,
@@ -73,12 +76,18 @@ export default function Dict() {
     },
     {
       title: "字典类型",
+      fieldProps: {
+        placeholder: "请输入字典类型",
+      },
       dataIndex: "dictType",
       ellipsis: true,
       order: 3,
     },
     {
       title: "状态",
+      fieldProps: {
+        placeholder: "请选择字典状态",
+      },
       dataIndex: "status",
       valueType: "select",
       render: (_, record) => {
@@ -125,6 +134,9 @@ export default function Dict() {
     },
     {
       title: "创建时间",
+      fieldProps: {
+        placeholder: ["开始日期", "结束日期"],
+      },
       dataIndex: "createTimeRange",
       valueType: "dateRange",
       hideInTable: true,

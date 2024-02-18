@@ -7,53 +7,38 @@ import {
   CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
+  KeyOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
-  ProCard,
   ProForm,
+  ProFormDigit,
   ProFormRadio,
-  ProFormSelect,
   ProFormText,
   ProFormTextArea,
   ProFormTreeSelect,
   ProTable,
-  ProFormDigit,
-  ProFormCheckbox,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
+import type { GetProp, UploadProps } from "antd";
 import {
   Button,
-  Col,
-  Flex,
+  Dropdown,
+  Form,
   Input,
   message,
   Modal,
-  Row,
-  Space,
-  Spin,
-  Switch,
-  Tree,
-  Dropdown,
-  Form,
-  Upload,
-  Typography,
-  Checkbox,
   Select,
+  Space,
+  Switch,
+  Upload,
 } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -62,13 +47,12 @@ import {
   faPenToSquare,
   faToggleOff,
   faToggleOn,
-  faUpload,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
 import { TreeSelect } from "@/node_modules/antd/es/index";
+import { useRef, useState } from "react";
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
@@ -97,6 +81,9 @@ export default function Role() {
     },
     {
       title: "角色名称",
+      fieldProps: {
+        placeholder: "请输入角色名称",
+      },
       dataIndex: "roleName",
       ellipsis: true,
       sorter: true,
@@ -104,6 +91,9 @@ export default function Role() {
     },
     {
       title: "权限字符",
+      fieldProps: {
+        placeholder: "请输入权限字符",
+      },
       dataIndex: "roleKey",
       ellipsis: true,
       sorter: true,
@@ -116,6 +106,9 @@ export default function Role() {
     },
     {
       title: "状态",
+      fieldProps: {
+        placeholder: "请选择角色状态",
+      },
       dataIndex: "status",
       valueType: "select",
       order: 2,
@@ -155,6 +148,9 @@ export default function Role() {
     },
     {
       title: "创建时间",
+      fieldProps: {
+        placeholder: ["开始日期", "结束日期"],
+      },
       dataIndex: "createTimeRange",
       valueType: "dateRange",
       hideInTable: true,
@@ -700,7 +696,7 @@ export default function Role() {
             ? {
                 defaultCollapsed: false,
                 searchText: "搜索",
-            }
+              }
             : false
         }
         dateFormatter="string"
