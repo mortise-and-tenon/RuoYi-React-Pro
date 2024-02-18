@@ -6,7 +6,8 @@ import {
   ProFormCheckbox,
   ProFormText,
 } from "@ant-design/pro-components";
-import { Divider, message, Spin, theme } from "antd";
+import { Divider, message, Spin, theme,ConfigProvider } from "antd";
+import type {ConfigProviderProps} from "antd";
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +18,15 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { LoginReq } from "../_modules/definies";
 import { encrypt, decrypt } from "../_modules/func";
+
+import enUS from 'antd/locale/en_US';
+import zhCN from 'antd/locale/zh_CN';
+
+type Locale = ConfigProviderProps['locale'];
+
+import useTranslation from 'next-translate/useTranslation'
+
+import setLanguage from 'next-translate/setLanguage'
 
 type Captcha = {
   img: string;
@@ -66,6 +76,7 @@ export default function Login() {
   useEffect(() => {
     getCaptcha();
     readUserNamePassword();
+    setLanguage('en');
   }, []);
 
   const router = useRouter();
@@ -169,8 +180,12 @@ export default function Login() {
 
   const { token } = theme.useToken();
 
+  const [locale, setLocal] = useState<Locale>(enUS);
+
+  const { t, lang } = useTranslation('login');
+
   return (
-    <ProConfigProvider>
+    <ConfigProvider locale={locale}>
       <div
         style={{
           backgroundColor: "white",
@@ -181,7 +196,7 @@ export default function Login() {
           formRef={loginFormRef}
           backgroundImageUrl="/bg3.jpg"
           logo="https://static.dongfangzan.cn/img/mortnon.svg"
-          title={(<span>MorTnon 若依后台管理</span>) as any}
+          title={(<span>{t("title")}</span>) as any}
           containerStyle={{
             backgroundColor: "rgba(0,0,0,0)",
             backdropFilter: "blur(4px)",
@@ -309,6 +324,6 @@ export default function Login() {
           </div>
         </LoginFormPage>
       </div>
-    </ProConfigProvider>
+    </ConfigProvider>
   );
 }
