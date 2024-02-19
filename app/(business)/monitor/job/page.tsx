@@ -16,6 +16,8 @@ import {
   CloudUploadOutlined,
   FileAddOutlined,
   ClockCircleOutlined,
+  ScheduleOutlined,
+  PlayCircleOutlined,
 } from "@ant-design/icons";
 import type {
   ProColumns,
@@ -33,6 +35,7 @@ import {
   ProFormTextArea,
   ProFormTreeSelect,
   ProTable,
+  ProDescriptions,
 } from "@ant-design/pro-components";
 import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
 import {
@@ -92,6 +95,8 @@ const exportAPI = "/api/monitor/job/export";
 const exportFilePrefix = "job";
 //变更任务状态API
 const changeJobStatusAPI = "/api/monitor/job/changeStatus";
+//执行任务API
+const runAPI = "/api/monitor/job/run";
 
 export default function Job() {
   const { push } = useRouter();
@@ -195,6 +200,51 @@ export default function Job() {
         >
           删除
         </Button>,
+        <Dropdown
+          key="moreDrop"
+          menu={{
+            items: [
+              {
+                key: "1",
+                label: (
+                  <a
+                    onClick={() => {
+                      showRunOnceModal(record);
+                    }}
+                  >
+                    执行一次
+                  </a>
+                ),
+                icon: <PlayCircleOutlined />,
+              },
+              {
+                key: "2",
+                label: <a onClick={() => showRowModal(record)}>任务详情</a>,
+                icon: <EyeOutlined />,
+              },
+              {
+                key: "3",
+                label: (
+                  <a
+                    onClick={() =>
+                      push(`/monitor/job-log/index/${record.jobId}`)
+                    }
+                  >
+                    调度日志
+                  </a>
+                ),
+                icon: <ScheduleOutlined />,
+              },
+            ],
+          }}
+        >
+          <a onClick={(e) => e.preventDefault()}>
+            <Space>
+              更多
+              <CaretDownOutlined />
+            </Space>
+          </a>
+        </Dropdown>,
       ],
     },
   ];
@@ -286,7 +336,7 @@ export default function Job() {
     });
   };
 
-  //确认变更用户状态
+  //确认变更任务状态
   const executeSwitchStatus = async (
     checked: boolean,
     jobId: string,
@@ -527,6 +577,7 @@ export default function Job() {
     setIsCronShow(true);
   };
 
+  //回写Cron数据
   const getCronData = () => {
     setIsCronShow(false);
     if (isNew) {
@@ -541,6 +592,57 @@ export default function Job() {
     //重置Cron数据
     setCronValue("");
     setModalKey((preKey) => preKey + 1);
+  };
+
+  //执行任务一次
+  const showRunOnceModal = (record: any) => {
+    Modal.confirm({
+      title: "系统提示",
+      icon: <ExclamationCircleFilled />,
+      content: `确定要立即执行一次任务“${record.jobName}”吗？`,
+      onOk() {
+        executeJob(record);
+      },
+      onCancel() {},
+    });
+  };
+
+  //执行任务
+  const executeJob = async (record: any) => {
+    const runData = {
+      jobId: record.jobId,
+      jobGroup: record.jobGroup,
+    };
+
+    const body = await fetchApi(runAPI, push, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(runData),
+    });
+
+    if (body !== undefined) {
+      if (body.code == 200) {
+        message.success("执行成功");
+      } else {
+        message.error(body.msg);
+      }
+    }
+  };
+
+  //是否展示任务详情框
+  const [isShowDetail, setIsShowDetail] = useState(false);
+
+  //展示行详情框
+  const showRowModal = async (record: any) => {
+    const jobId = record.jobId;
+    if (jobId !== undefined) {
+      const body = await fetchApi(`${queryDetailAPI}/${jobId}`, push);
+      setSelectedRow(body.data);
+    }
+
+    setIsShowDetail(true);
   };
 
   return (
@@ -899,6 +1001,103 @@ export default function Job() {
           />
         </div>
       </Modal>
+      {selectedRow !== undefined && (
+        <Modal
+          title="任务详情"
+          footer={<Button onClick={() => setIsShowDetail(false)}>关闭</Button>}
+          open={isShowDetail}
+          onCancel={() => setIsShowDetail(false)}
+        >
+          <ProDescriptions column={2}>
+            <ProDescriptions.Item label="任务编号">
+              {selectedRow.jobId}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item
+              label="任务分组"
+              valueEnum={{
+                DEFAULT: {
+                  text: "默认",
+                  status: "DEFAULT",
+                },
+                SYSTEM: {
+                  text: "系统",
+                  status: "SYSTEM",
+                },
+              }}
+            >
+              {selectedRow.jobGroup}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item label="任务名称">
+              {selectedRow.jobName}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item label="创建时间">
+              {selectedRow.createTime}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item label="Cron表达式">
+              {selectedRow.cronExpression}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item label="下次执行时间">
+              {selectedRow.nextValidTime}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+          <ProDescriptions column={1}>
+            <ProDescriptions.Item label="调用目标方法">
+              {selectedRow.invokeTarget}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+          <ProDescriptions column={2}>
+            <ProDescriptions.Item
+              label="任务状态"
+              valueEnum={{
+                0: {
+                  text: "正常",
+                  status: "0",
+                },
+                1: {
+                  text: "暂停",
+                  status: "1",
+                },
+              }}
+            >
+              {selectedRow.status}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item
+              label="是否并发"
+              valueEnum={{
+                0: {
+                  text: "允许",
+                  status: "0",
+                },
+                1: {
+                  text: "禁止",
+                  status: "1",
+                },
+              }}
+            >
+              {selectedRow.concurrent}
+            </ProDescriptions.Item>
+            <ProDescriptions.Item
+              label="执行策略"
+              valueEnum={{
+                1: {
+                  text: "立即执行",
+                  status: "1",
+                },
+                2: {
+                  text: "执行一次",
+                  status: "2",
+                },
+                3: {
+                  text: "放弃执行",
+                  status: "3",
+                },
+              }}
+            >
+              {selectedRow.misfirePolicy}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+        </Modal>
+      )}
     </PageContainer>
   );
 }
