@@ -15,6 +15,7 @@ import {
   LoadingOutlined,
   CloudUploadOutlined,
   FileAddOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import type {
   ProColumns,
@@ -67,11 +68,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import './styles.scss';
+import "./styles.scss";
 
-import { ReQuartzCron, ReUnixCron } from '@sbzen/re-cron';
+import { ReQuartzCron, ReUnixCron, CronLocalization } from "@sbzen/re-cron";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Divider } from "@/node_modules/antd/es/index";
+import { MortnonCronLocalization } from "@/app/_modules/definies";
 
 //查询表格数据API
 const queryAPI = "/api/monitor/job/list";
@@ -171,12 +174,6 @@ export default function Job() {
       },
     },
     {
-      title: "创建时间",
-      dataIndex: "createTime",
-      valueType: "dateTime",
-      search: false,
-    },
-    {
       title: "操作",
       key: "option",
       search: false,
@@ -234,6 +231,9 @@ export default function Job() {
   };
 
   //1.新建
+
+  //新建对话框表单引用
+  const addFormRef = useRef<ProFormInstance>();
 
   //确定新建数据
   const executeAddData = async (values: any) => {
@@ -346,8 +346,16 @@ export default function Job() {
         if (body.code == 200) {
           modifyFormRef?.current?.setFieldsValue({
             //需要加载到修改表单中的数据
-            postId: body.data.postId,
+            jobName: body.data.jobName,
+            jobGroup: body.data.jobGroup,
+            invokeTarget: body.data.invokeTarget,
+            cronExpression: body.data.cronExpression,
+            status: body.data.status,
+            misfirePolicy: body.data.misfirePolicy,
+            concurrent: body.data.concurrent,
           });
+
+          setCronValue(body.data.cronExpression);
         }
       }
     }
@@ -501,7 +509,39 @@ export default function Job() {
     setPageSize(pageSize);
   };
 
+  //是否展示Cron表达式生成框
   const [isCronShow, setIsCronShow] = useState(false);
+
+  //Cron表达式值
+  const [cronValue, setCronValue] = useState("");
+
+  //当前是新建还是修改触发的Cron生成框
+  const [isNew, setIsNew] = useState(true);
+
+  //用于重置Cron生成框的key值
+  const [modalKey, setModalKey] = useState(0);
+
+  //展示Cron对话框，区分新建用还是修改用
+  const showCronModal = (isNew: boolean) => {
+    setIsNew(isNew);
+    setIsCronShow(true);
+  };
+
+  const getCronData = () => {
+    setIsCronShow(false);
+    if (isNew) {
+      addFormRef?.current?.setFieldsValue({
+        cronExpression: cronValue,
+      });
+    } else {
+      modifyFormRef?.current?.setFieldsValue({
+        cronExpression: cronValue,
+      });
+    }
+    //重置Cron数据
+    setCronValue("");
+    setModalKey((preKey) => preKey + 1);
+  };
 
   return (
     <PageContainer title={false}>
@@ -547,12 +587,9 @@ export default function Job() {
         toolbar={{
           actions: [
             <ModalForm
+              formRef={addFormRef}
               key="addmodal"
               layout="horizontal"
-              // // labelCol={{ span: 4 }}
-              // labelCol={{ flex: '100px' }}
-              // labelAlign="right"
-              // wrapperCol={{ span: 14 }}
               title="添加任务"
               trigger={
                 <Button icon={<PlusOutlined />} type="primary">
@@ -579,13 +616,13 @@ export default function Job() {
                   name="jobGroup"
                   label="任务分组"
                   valueEnum={{
-                    default: {
+                    DEFAULT: {
                       text: "默认",
-                      status: "default",
+                      status: "DEFAULT",
                     },
-                    system: {
+                    SYSTEM: {
                       text: "系统",
-                      status: "system",
+                      status: "SYSTEM",
                     },
                   }}
                 />
@@ -596,6 +633,9 @@ export default function Job() {
                   name="invokeTarget"
                   label="调用方法"
                   placeholder="请输入调用方法的字符串"
+                  tooltip="Bean调用示例：ryTask.ryParams('ry')
+                  Class调用示例：com.ruoyi.quartz.task.RyTask.ryParams('ry')
+                  参数说明：支持字符串，布尔类型，长整型，浮点型，整型"
                   rules={[
                     { required: true, message: "请输入调用方法的字符串" },
                   ]}
@@ -610,7 +650,10 @@ export default function Job() {
                     placeholder="请输入Cron表达式"
                     rules={[{ required: true, message: "请输入Cron表达式" }]}
                   />
-                  <Button onClick={() => setIsCronShow(true)}>
+                  <Button
+                    icon={<ClockCircleOutlined />}
+                    onClick={() => showCronModal(true)}
+                  >
                     生成表达式
                   </Button>
                 </Space.Compact>
@@ -657,6 +700,7 @@ export default function Job() {
             <ModalForm
               key="modifymodal"
               title="修改岗位"
+              layout="horizontal"
               formRef={modifyFormRef}
               trigger={
                 <Button
@@ -681,10 +725,112 @@ export default function Job() {
               <ProForm.Group>
                 <ProFormText
                   width="md"
-                  name="nickName"
-                  label="用户昵称"
-                  placeholder="请输入用户昵称"
-                  rules={[{ required: true, message: "请输入用户昵称" }]}
+                  name="jobName"
+                  label="任务名称"
+                  placeholder="请输入任务名称"
+                  rules={[{ required: true, message: "请输入任务名称" }]}
+                />
+                <ProFormSelect
+                  width="md"
+                  name="jobGroup"
+                  label="任务分组"
+                  valueEnum={{
+                    DEFAULT: {
+                      text: "默认",
+                      status: "DEFAULT",
+                    },
+                    SYSTEM: {
+                      text: "系统",
+                      status: "SYSTEM",
+                    },
+                  }}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormText
+                  width="lg"
+                  name="invokeTarget"
+                  label="调用方法"
+                  placeholder="请输入调用方法的字符串"
+                  tooltip="Bean调用示例：ryTask.ryParams('ry')
+                  Class调用示例：com.ruoyi.quartz.task.RyTask.ryParams('ry')
+                  参数说明：支持字符串，布尔类型，长整型，浮点型，整型"
+                  rules={[
+                    { required: true, message: "请输入调用方法的字符串" },
+                  ]}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <Space.Compact>
+                  <ProFormText
+                    width="lg"
+                    name="cronExpression"
+                    label="Cron表达式"
+                    placeholder="请输入Cron表达式"
+                    rules={[{ required: true, message: "请输入Cron表达式" }]}
+                  />
+                  <Button
+                    icon={<ClockCircleOutlined />}
+                    onClick={() => showCronModal(false)}
+                  >
+                    生成表达式
+                  </Button>
+                </Space.Compact>
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormRadio.Group
+                  name="status"
+                  width="md"
+                  label="状态"
+                  initialValue="0"
+                  options={[
+                    {
+                      label: "正常",
+                      value: "0",
+                    },
+                    {
+                      label: "暂停",
+                      value: "1",
+                    },
+                  ]}
+                />
+              </ProForm.Group>
+              <ProForm.Group>
+                <ProFormRadio.Group
+                  width="md"
+                  name="misfirePolicy"
+                  label="执行策略"
+                  initialValue="1"
+                  options={[
+                    {
+                      label: "立即执行",
+                      value: "1",
+                    },
+                    {
+                      label: "执行一次",
+                      value: "2",
+                    },
+                    {
+                      label: "放弃执行",
+                      value: "3",
+                    },
+                  ]}
+                />
+                <ProFormRadio.Group
+                  name="concurrent"
+                  width="md"
+                  label="是否并发"
+                  initialValue="0"
+                  options={[
+                    {
+                      label: "允许",
+                      value: "0",
+                    },
+                    {
+                      label: "禁止",
+                      value: "1",
+                    },
+                  ]}
                 />
               </ProForm.Group>
             </ModalForm>,
@@ -733,7 +879,26 @@ export default function Job() {
           ],
         }}
       />
-      <Modal open={isCronShow}><ReUnixCron cssClassPrefix="my-"/></Modal>
+      <Modal
+        title="Cron表达式生成器"
+        key={modalKey}
+        zIndex={10000}
+        open={isCronShow}
+        onOk={getCronData}
+        onCancel={() => setIsCronShow(false)}
+        // confirmLoading={confirmLoading}
+      >
+        <Input prefix={<ClockCircleOutlined />} value={cronValue} />
+        <div style={{ maxHeight: 450, overflow: "auto" }}>
+          <ReQuartzCron
+            cssClassPrefix="cron-"
+            localization={MortnonCronLocalization}
+            value={cronValue}
+            onChange={setCronValue}
+            renderYearsFrom={new Date().getFullYear()}
+          />
+        </div>
+      </Modal>
     </PageContainer>
   );
 }

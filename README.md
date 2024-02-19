@@ -14,7 +14,7 @@
 - cookies-next：cookies 操作
 - jsencrypt：加解密
 - [React Spinner](https://www.davidhu.io/react-spinners/)：加载状态组件
-- [React Cron](https://recron.emptyui.com/)
+- [React Cron](https://recron.emptyui.com/)：Cron 表达式生成
 
 ## 项目创建来源
 

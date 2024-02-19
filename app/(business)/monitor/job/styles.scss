@@ -1,4 +1,4 @@
-$prefix: '.my';
+$prefix: '.cron';
 
 #{$prefix}-row {
   overflow: hidden;
@@ -25,4 +25,25 @@ $prefix: '.my';
 
 #{$prefix}-form-check-label {
   padding-left: .4rem;
+}
+
+#{$prefix}-nav-tabs {
+  list-style: none;
+  display: flex;
+  padding:0;
+  border-bottom: 1px solid lightgray;
+}
+
+#{$prefix}-nav-item {
+  // margin-right: 10px;
+}
+
+#{$prefix}-nav-link {
+  padding: 10px;
+  background-color: rgba($color: #ffffff, $alpha: 1.0);
+  border: none;
+}
+
+#{$prefix}-active {
+  border-bottom: 2px solid #1677ff;
 }
