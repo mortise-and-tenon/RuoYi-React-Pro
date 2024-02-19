@@ -6,6 +6,10 @@ import { Avatar, Button, Col, List, Row, Space, Typography } from "antd";
 import Image from "next/image";
 import RcResizeObserver from "rc-resize-observer";
 import { useState } from "react";
+import {
+  faDownload
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const { Text, Link, Title } = Typography;
 
 export default function Index() {
@@ -111,7 +115,7 @@ export default function Index() {
                 <Col>
                   <Button
                     type="dashed"
-                    icon={<GithubOutlined />}
+                    icon={<FontAwesomeIcon icon={faDownload} />}
                     href="https://gitee.com/mortise-and-tenon/ruoyi-react-pro"
                   >
                     访问 Gitee
