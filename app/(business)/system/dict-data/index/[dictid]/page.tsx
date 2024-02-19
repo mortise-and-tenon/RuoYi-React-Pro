@@ -2,73 +2,41 @@
 
 import { fetchApi, fetchFile } from "@/app/_modules/func";
 import {
-  CaretDownOutlined,
-  CheckOutlined,
-  CloseOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
-  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
-  KeyOutlined,
-  LoadingOutlined,
-  CloudUploadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import type {
+  ActionType,
   ProColumns,
   ProFormInstance,
-  ActionType,
 } from "@ant-design/pro-components";
 import {
   ModalForm,
   PageContainer,
-  ProCard,
   ProForm,
+  ProFormDigit,
   ProFormRadio,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
-  ProFormTreeSelect,
   ProTable,
-  ProFormDigit,
 } from "@ant-design/pro-components";
-import type { TreeDataNode, MenuProps, UploadProps, GetProp } from "antd";
-import {
-  Button,
-  Col,
-  Flex,
-  Input,
-  message,
-  Modal,
-  Row,
-  Space,
-  Spin,
-  Switch,
-  Tree,
-  Dropdown,
-  Form,
-  Upload,
-  Typography,
-  Checkbox,
-  Tag,
-} from "antd";
+import { Button, message, Modal, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
+  faCheck,
   faDownload,
   faPenToSquare,
   faToggleOff,
   faToggleOn,
-  faUpload,
-  faUsers,
-  faCheck,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 //查询类型详情
 const queryTypeAPI = "/api/system/dict/type";
