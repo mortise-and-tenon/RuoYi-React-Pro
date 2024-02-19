@@ -8,7 +8,7 @@ export default function Druid() {
     <PageContainer title={false}>
       <div style={{ height: "100vh" }}>
         <iframe
-          src="http://localhost:8080/druid/login.html"
+          src="/api/druid/login.html"
           width="100%"
           height="100%"
           style={{border: "none"}}
