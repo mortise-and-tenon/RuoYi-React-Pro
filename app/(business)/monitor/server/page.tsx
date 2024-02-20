@@ -80,7 +80,9 @@ export default function Server() {
     queryData();
   }, []);
 
-  const formatterDecimal = (value: number) => <CountUp end={value} separator="," decimals={2}/>;
+  const formatterDecimal = (value: any) => (
+    <CountUp end={parseFloat(value)} separator="," decimals={2} />
+  );
 
   return (
     <PageContainer title={false}>
@@ -99,19 +101,34 @@ export default function Server() {
             hoverable
           >
             <ProCard>
-              <Statistic title="核心数" value={data.cpu.cpuNum}/>
+              <Statistic title="核心数" value={data.cpu.cpuNum} />
             </ProCard>
             <Divider type="vertical" />
             <ProCard>
-              <Statistic title="用户使用率" value={data.cpu.used} suffix="%" formatter={formatterDecimal} />
+              <Statistic
+                title="用户使用率"
+                value={data.cpu.used}
+                suffix="%"
+                formatter={formatterDecimal}
+              />
             </ProCard>
             <Divider type="vertical" />
             <ProCard>
-              <Statistic title="系统使用率" value={data.cpu.sys} suffix="%" formatter={formatterDecimal}/>
+              <Statistic
+                title="系统使用率"
+                value={data.cpu.sys}
+                suffix="%"
+                formatter={formatterDecimal}
+              />
             </ProCard>
             <Divider type="vertical" />
             <ProCard>
-              <Statistic title="当前空闲率" value={data.cpu.free} suffix="%" formatter={formatterDecimal}/>
+              <Statistic
+                title="当前空闲率"
+                value={data.cpu.free}
+                suffix="%"
+                formatter={formatterDecimal}
+              />
             </ProCard>
           </ProCard>
 
@@ -132,12 +149,32 @@ export default function Server() {
               <Statistic title="JVM" value={data.jvm.total} suffix="M" />
             </ProCard>
             <ProCard title="已用内存">
-              <Statistic title="内存" value={data.mem.used} suffix="G" formatter={formatterDecimal} />
-              <Statistic title="JVM" value={data.jvm.used} suffix="M" formatter={formatterDecimal} />
+              <Statistic
+                title="内存"
+                value={data.mem.used}
+                suffix="G"
+                formatter={formatterDecimal}
+              />
+              <Statistic
+                title="JVM"
+                value={data.jvm.used}
+                suffix="M"
+                formatter={formatterDecimal}
+              />
             </ProCard>
             <ProCard title="剩余内存">
-              <Statistic title="内存" value={data.mem.free} suffix="G" formatter={formatterDecimal} />
-              <Statistic title="JVM" value={data.jvm.free} suffix="M" formatter={formatterDecimal} />
+              <Statistic
+                title="内存"
+                value={data.mem.free}
+                suffix="G"
+                formatter={formatterDecimal}
+              />
+              <Statistic
+                title="JVM"
+                value={data.jvm.free}
+                suffix="M"
+                formatter={formatterDecimal}
+              />
             </ProCard>
             <ProCard title="使用率">
               <Statistic
@@ -147,7 +184,7 @@ export default function Server() {
                 valueStyle={{
                   color: data.mem.usage > 80 ? "#cf1322" : "inherit",
                 }}
-                formatter={formatterDecimal} 
+                formatter={formatterDecimal}
               />
               <Statistic
                 title="JVM"
@@ -156,7 +193,7 @@ export default function Server() {
                 valueStyle={{
                   color: data.jvm.usage > 80 ? "#cf1322" : "inherit",
                 }}
-                formatter={formatterDecimal} 
+                formatter={formatterDecimal}
               />
             </ProCard>
           </ProCard>
@@ -199,7 +236,7 @@ export default function Server() {
             bordered
             hoverable
           >
-            <Row gutter={[0,16]}>
+            <Row gutter={[0, 16]}>
               <Col span={12}>
                 <Statistic title="名称" value={data.jvm.name} />
               </Col>
@@ -207,7 +244,7 @@ export default function Server() {
                 <Statistic title="版本" value={data.jvm.version} />
               </Col>
             </Row>
-            <Row gutter={[0,16]}>
+            <Row gutter={[0, 16]}>
               <Col span={12}>
                 <Statistic title="启动时间" value={data.jvm.startTime} />
               </Col>
@@ -215,18 +252,18 @@ export default function Server() {
                 <Statistic title="运行时长" value={data.jvm.runTime} />
               </Col>
             </Row>
-            <Row gutter={[0,16]}>
+            <Row gutter={[0, 16]}>
               <Col span={24}>
                 <Statistic title="安装路径" value={data.jvm.home} />
               </Col>
             </Row>
-            <Row gutter={[0,16]}>
+            <Row gutter={[0, 16]}>
               <Col span={24}>
                 <Statistic title="项目路径" value={data.sys.userDir} />
               </Col>
             </Row>
-            <Row gutter={[0,16]}>
-              <Col span={{xs: 8, sm: 16, md: 24}}>
+            <Row gutter={[0, 16]}>
+              <Col span={24}>
                 <Statistic title="运行参数" value={data.jvm.inputArgs} />
               </Col>
             </Row>

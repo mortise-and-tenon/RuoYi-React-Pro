@@ -105,7 +105,7 @@ export default function Cache() {
               Math.round(
                 (context.parsed * 100) /
                   context.dataset.data.reduce(
-                    (a, b) => parseInt(a) + parseInt(b),
+                    (a: string, b: string) => parseInt(a) + parseInt(b),
                     0
                   )
               ) +
@@ -123,7 +123,9 @@ export default function Cache() {
   }, []);
 
   //数字展示的动态效果
-  const formatter = (value: number) => <CountUp end={value} separator="," />;
+  const formatter = (value: any) => (
+    <CountUp end={parseInt(value)} separator="," />
+  );
 
   return (
     <PageContainer title={false}>
