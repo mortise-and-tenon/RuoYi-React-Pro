@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ReloadOutlined, ClearOutlined } from "@ant-design/icons";
-import { Row, Col, Tooltip } from "antd";
+import { Row, Col, Tooltip, Table,Button } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import { PageContainer, ProCard } from "@ant-design/pro-components";
 import {
   faFloppyDisk,
@@ -13,8 +14,63 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchApi } from "@/app/_modules/func";
 
+//查询缓存
+const queryCacheAPI = "/api/monitor/cache/getNames";
+
 export default function CacheList() {
   const { push } = useRouter();
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [cacheData, setCacheData] = useState([]);
+
+  //查询缓存
+  const queryCache = async () => {
+    const body = await fetchApi(queryCacheAPI, push);
+    if (body !== undefined) {
+      if (body.code == 200) {
+        setCacheData(body.data);
+        setIsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    queryCache();
+  }, []);
+
+  //缓存列定义
+  const cacheColumns = [
+    {
+      title: "序号",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => `${index + 1}`,
+    },
+    {
+      title: "缓存名称",
+      dataIndex: "cacheName",
+    },
+    {
+      title: "备注",
+      dataIndex: "remark",
+    },
+    {
+      title: "操作",
+      key: "action",
+      render: (text, record) => [
+        <Button
+          key="deleteBtn"
+          type="link"
+          danger
+          icon={<DeleteOutlined />}
+          // onClick={() => onClickDeleteRow(record)}
+        >
+          
+        </Button>,
+      ],
+    },
+  ];
 
   return (
     <PageContainer title={false}>
@@ -38,7 +94,12 @@ export default function CacheList() {
             bordered
             hoverable
           >
-            1
+            <Table
+              dataSource={cacheData}
+              columns={cacheColumns}
+              loading={isLoading}
+            />
+            ;
           </ProCard>
         </Col>
         <Col span={8}>
