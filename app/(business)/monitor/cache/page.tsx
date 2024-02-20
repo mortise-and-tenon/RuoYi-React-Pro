@@ -93,7 +93,7 @@ export default function Cache() {
     plugins: {
       tooltip: {
         callbacks: {
-          label: function (context) {
+          label: function (context: any) {
             let label = context.dataset.label || "";
             if (label) {
               label += ": ";
@@ -229,7 +229,13 @@ export default function Cache() {
                     currentValueText={`内存消耗：${data.info.used_memory_human}`}
                     value={parseFloat(data.info.used_memory_human)}
                     needleColor="#1677ff"
-                    segmentColors={["#82C182","#A3D972","#F5D061","#FF9933","#FF6666"]}
+                    segmentColors={[
+                      "#82C182",
+                      "#A3D972",
+                      "#F5D061",
+                      "#FF9933",
+                      "#FF6666",
+                    ]}
                   />
                 </div>
               </ProCard>
