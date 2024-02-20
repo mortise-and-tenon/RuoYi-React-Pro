@@ -15,6 +15,9 @@ import {
   faHardDrive,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Col, Row } from "@/node_modules/antd/es/index";
+
+import CountUp from "react-countup";
 
 //查询API
 const queryAPI = "/api/monitor/server";
@@ -77,6 +80,8 @@ export default function Server() {
     queryData();
   }, []);
 
+  const formatterDecimal = (value: number) => <CountUp end={value} separator="," decimals={2}/>;
+
   return (
     <PageContainer title={false}>
       {data !== undefined && (
@@ -89,23 +94,24 @@ export default function Server() {
               </>
             }
             direction="row"
+            headerBordered
             bordered
             hoverable
           >
             <ProCard>
-              <Statistic title="核心数" value={data.cpu.cpuNum} />
+              <Statistic title="核心数" value={data.cpu.cpuNum}/>
             </ProCard>
             <Divider type="vertical" />
             <ProCard>
-              <Statistic title="用户使用率" value={data.cpu.used} suffix="%" />
+              <Statistic title="用户使用率" value={data.cpu.used} suffix="%" formatter={formatterDecimal} />
             </ProCard>
             <Divider type="vertical" />
             <ProCard>
-              <Statistic title="系统使用率" value={data.cpu.sys} suffix="%" />
+              <Statistic title="系统使用率" value={data.cpu.sys} suffix="%" formatter={formatterDecimal}/>
             </ProCard>
             <Divider type="vertical" />
             <ProCard>
-              <Statistic title="当前空闲率" value={data.cpu.free} suffix="%" />
+              <Statistic title="当前空闲率" value={data.cpu.free} suffix="%" formatter={formatterDecimal}/>
             </ProCard>
           </ProCard>
 
@@ -117,6 +123,7 @@ export default function Server() {
               </>
             }
             direction="row"
+            headerBordered
             bordered
             hoverable
           >
@@ -125,21 +132,32 @@ export default function Server() {
               <Statistic title="JVM" value={data.jvm.total} suffix="M" />
             </ProCard>
             <ProCard title="已用内存">
-              <Statistic title="内存" value={data.mem.used} suffix="G" />
-              <Statistic title="JVM" value={data.jvm.used} suffix="M" />
+              <Statistic title="内存" value={data.mem.used} suffix="G" formatter={formatterDecimal} />
+              <Statistic title="JVM" value={data.jvm.used} suffix="M" formatter={formatterDecimal} />
             </ProCard>
             <ProCard title="剩余内存">
-              <Statistic title="内存" value={data.mem.free} suffix="G" />
-              <Statistic title="JVM" value={data.jvm.free} suffix="M" />
+              <Statistic title="内存" value={data.mem.free} suffix="G" formatter={formatterDecimal} />
+              <Statistic title="JVM" value={data.jvm.free} suffix="M" formatter={formatterDecimal} />
             </ProCard>
             <ProCard title="使用率">
               <Statistic
                 title="内存"
                 value={data.mem.usage}
                 suffix="%"
-                valueStyle={{ color: "#cf1322" }}
+                valueStyle={{
+                  color: data.mem.usage > 80 ? "#cf1322" : "inherit",
+                }}
+                formatter={formatterDecimal} 
               />
-              <Statistic title="JVM" value={data.jvm.usage} suffix="%" />
+              <Statistic
+                title="JVM"
+                value={data.jvm.usage}
+                suffix="%"
+                valueStyle={{
+                  color: data.jvm.usage > 80 ? "#cf1322" : "inherit",
+                }}
+                formatter={formatterDecimal} 
+              />
             </ProCard>
           </ProCard>
 
@@ -151,6 +169,7 @@ export default function Server() {
               </>
             }
             direction="row"
+            headerBordered
             bordered
             hoverable
           >
@@ -175,21 +194,42 @@ export default function Server() {
                 <span style={{ marginLeft: 6 }}>Java虚拟机信息</span>
               </>
             }
-            direction="row"
+            direction="column"
+            headerBordered
             bordered
             hoverable
           >
-            <ProCard>
-              <Statistic title="名称" value={data.jvm.name} />
-              <Statistic title="版本" value={data.jvm.version} />
-              <Statistic title="安装路径" value={data.jvm.home} />
-              <Statistic title="项目路径" value={data.sys.userDir} />
-            </ProCard>
-            <ProCard>
-              <Statistic title="启动时间" value={data.jvm.startTime} />
-              <Statistic title="运行时长" value={data.jvm.runTime} />
-              <Statistic title="运行参数" value={data.jvm.inputArgs} />
-            </ProCard>
+            <Row gutter={[0,16]}>
+              <Col span={12}>
+                <Statistic title="名称" value={data.jvm.name} />
+              </Col>
+              <Col span={12}>
+                <Statistic title="版本" value={data.jvm.version} />
+              </Col>
+            </Row>
+            <Row gutter={[0,16]}>
+              <Col span={12}>
+                <Statistic title="启动时间" value={data.jvm.startTime} />
+              </Col>
+              <Col span={12}>
+                <Statistic title="运行时长" value={data.jvm.runTime} />
+              </Col>
+            </Row>
+            <Row gutter={[0,16]}>
+              <Col span={24}>
+                <Statistic title="安装路径" value={data.jvm.home} />
+              </Col>
+            </Row>
+            <Row gutter={[0,16]}>
+              <Col span={24}>
+                <Statistic title="项目路径" value={data.sys.userDir} />
+              </Col>
+            </Row>
+            <Row gutter={[0,16]}>
+              <Col span={{xs: 8, sm: 16, md: 24}}>
+                <Statistic title="运行参数" value={data.jvm.inputArgs} />
+              </Col>
+            </Row>
           </ProCard>
 
           <ProCard
@@ -199,6 +239,7 @@ export default function Server() {
                 <span style={{ marginLeft: 6 }}>磁盘状态</span>
               </>
             }
+            headerBordered
             bordered
             hoverable
           >

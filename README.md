@@ -15,29 +15,16 @@
 - [jsencrypt](https://github.com/travist/jsencrypt)：加解密
 - [React Spinner](https://www.davidhu.io/react-spinners/)：加载状态组件
 - [React Cron](https://recron.emptyui.com/)：Cron 表达式生成
+- [react-countup](https://github.com/glennreyes/react-countup)：数字自动增长效果
+- [react-chartjs-2](https://react-chartjs-2.js.org/)：图表
+- [react-d3-speedometer](https://github.com/palerdot/react-d3-speedometer)：速度表盘
 
-## 项目创建来源
+## 项目初始化
 
-- 基于 [Next.js](https://nextjs.org/) 创建项目
-
-```bash
-npm create-next-app
-```
-
-- 引入 [Antd](https://ant-design.antgroup.com/docs/react/use-with-next-cn)
+- 安装依赖
 
 ```bash
-npm install antd --save
-```
-
-- 引入 [Antd Pro Components](https://procomponents.ant.design/docs)
-
-```bash
-npm i @ant-design/pro-components --save
-```
-
-```bash
-npm i @emotion/react
+npm i
 ```
 
 ## 项目相关命令
