@@ -11,7 +11,7 @@ import {
   faGaugeHigh,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Statistic, Col, Row, Divider } from "antd";
+import { Statistic, Col, Row, Flex } from "antd";
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
@@ -118,12 +118,12 @@ export default function Cache() {
     },
   };
 
-  const speedParentRef = useRef(null);
+  const speedParentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     queryData();
     window.addEventListener("resize", handleResize);
-    handleResize();
+    setDaynamicWidth();
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -134,12 +134,29 @@ export default function Cache() {
     <CountUp end={parseInt(value)} separator="," />
   );
 
-  const [speedWidth, setparentWidth] = useState(300);
+  //超小屏的边界值
+  const xsScreenWidth = 768;
+  //界面两个ProCard横向布局空白空间宽度
+  const spaceTotalWidth = 212;
+  //侧边栏展开占据的宽度
+  const siderExpand = 214;
+  //计算初始的速度表宽度
+  const setDaynamicWidth = () => {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < xsScreenWidth) {
+      setParentWidth((screenWidth - spaceTotalWidth) / 2);
+    } else if (screenWidth >= xsScreenWidth) {
+      setParentWidth((screenWidth - spaceTotalWidth - siderExpand) / 2);
+    }
+  };
 
+  //速度表绘制的宽度值
+  const [speedWidth, setParentWidth] = useState(0);
+
+  //处理屏幕变化时，速度表宽度动态变化
   const handleResize = () => {
     if (speedParentRef.current) {
-      console.log("current:", speedParentRef.current.clientWidth);
-      setparentWidth(speedParentRef.current.clientWidth);
+      setParentWidth(speedParentRef.current.clientWidth);
     } else {
       console.log("no current");
     }
@@ -226,7 +243,9 @@ export default function Cache() {
                 bordered
                 hoverable
               >
-                <Doughnut data={commandChartData} options={options} />
+                <Flex justify="center">
+                  <Doughnut data={commandChartData} options={options} />
+                </Flex>
               </ProCard>
             </Col>
             <Col span={12}>
@@ -242,10 +261,9 @@ export default function Cache() {
                 bordered
                 hoverable
               >
-                <div ref={speedParentRef} style={{ width: "100%", height: 300 }}>
+                <Flex justify="center" ref={speedParentRef}>
                   <ReactSpeedometer
                     key={speedWidth}
-                    height={300}
                     width={speedWidth}
                     currentValueText={`内存消耗：${data.info.used_memory_human}`}
                     value={parseFloat(data.info.used_memory_human)}
@@ -258,7 +276,7 @@ export default function Cache() {
                       "#FF6666",
                     ]}
                   />
-                </div>
+                </Flex>
               </ProCard>
             </Col>
           </Row>
