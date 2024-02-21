@@ -28,7 +28,7 @@
 npm i
 ```
 
-## 项目相关命令
+## 项目运行
 
 - 启动项目
 
@@ -38,5 +38,7 @@ npm run dev
 
 - 访问 [http://localhost:3000](http://localhost:3000)
 
+## TODO
 
-
+- 表单构建页面
+- 代码生成页面
