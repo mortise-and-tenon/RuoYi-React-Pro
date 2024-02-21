@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageContainer, ProCard } from "@ant-design/pro-components";
 import { fetchApi } from "@/app/_modules/func";
@@ -118,14 +118,32 @@ export default function Cache() {
     },
   };
 
+  const speedParentRef = useRef(null);
+
   useEffect(() => {
     queryData();
-  }, []);
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [speedParentRef]);
 
   //数字展示的动态效果
   const formatter = (value: any) => (
     <CountUp end={parseInt(value)} separator="," />
   );
+
+  const [speedWidth, setparentWidth] = useState(300);
+
+  const handleResize = () => {
+    if (speedParentRef.current) {
+      console.log("current:", speedParentRef.current.clientWidth);
+      setparentWidth(speedParentRef.current.clientWidth);
+    } else {
+      console.log("no current");
+    }
+  };
 
   return (
     <PageContainer title={false}>
@@ -224,10 +242,11 @@ export default function Cache() {
                 bordered
                 hoverable
               >
-                <div style={{ width: "100%", height: 300 }}>
+                <div ref={speedParentRef} style={{ width: "100%", height: 300 }}>
                   <ReactSpeedometer
+                    key={speedWidth}
                     height={300}
-                    fluidWidth={true}
+                    width={speedWidth}
                     currentValueText={`内存消耗：${data.info.used_memory_human}`}
                     value={parseFloat(data.info.used_memory_human)}
                     needleColor="#1677ff"
