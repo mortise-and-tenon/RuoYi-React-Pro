@@ -215,7 +215,7 @@ export default function RootLayout({
   return (
     <ProConfigProvider dark={isDark}>
       <ProLayout
-        title="MorTnon RouYi"
+        title="MorTnon 若依"
         logo="https://static.dongfangzan.cn/img/mortnon.svg"
         menu={{
           request: getRoutes,
