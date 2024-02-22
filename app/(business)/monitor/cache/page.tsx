@@ -282,7 +282,6 @@ export default function Cache() {
           </Row>
         </>
       )}
-      ;
     </PageContainer>
   );
 }
