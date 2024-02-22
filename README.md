@@ -1,7 +1,50 @@
 
-# RuoYi React Pro
+# 若依 React Pro
+
+> 实现效果截图
+
+- 浅色模式
+
+1. 登录
+
+![](https://images.bookhub.tech/ruoyi/login_light.png)
+
+2. 首页
+
+![](https://images.bookhub.tech/ruoyi/home_light.png)
+
+3. 表单
+
+![](https://images.bookhub.tech/ruoyi/table_light.png)
+
+4. 统计
+
+![](https://images.bookhub.tech/ruoyi/statis_light.png)
+
+- 深色模式
+
+1. 登录
+
+![](https://images.bookhub.tech/ruoyi/login_dark.png)
+
+2. 首页
+
+![](https://images.bookhub.tech/ruoyi/home_dark.png)
+
+3. 表单
+
+![](https://images.bookhub.tech/ruoyi/table_dark.png)
+
+4. 统计
+
+![](https://images.bookhub.tech/ruoyi/statis_dark.png)
 
 ## 项目说明
+
+![Static Badge](https://img.shields.io/badge/React-18.2.0-%236EB6FF) ![Static Badge](https://img.shields.io/badge/NextJS-14.1.0-%2349D49D) ![Static Badge](https://img.shields.io/badge/AntD-5.13.1-%23FFA94D) ![Static Badge](https://img.shields.io/badge/AntD%20ProComponets-2.6.48-%23E94F87)
+
+![Static Badge](https://img.shields.io/badge/%E8%8B%A5%E4%BE%9D-%E6%94%AF%E6%8C%81-green)
+![Static Badge](https://img.shields.io/badge/ESLint-PASS-green)
 
 本项目为 RuoYi 前后端分离版本的前端适配项目。原作者的 RuoYi 前端项目使用 Vue 开发，本项目使用 React 开发，并引入了 Antd 和 Antd ProComponents，具有更高的美观度。
 
