@@ -118,7 +118,7 @@ export default function User() {
       title: "部门名称",
       key: "deptName",
       search: false,
-      render: (text, record) => record.dept.deptName,
+      render: (text, record) => record.dept?.deptName,
     },
 
     {

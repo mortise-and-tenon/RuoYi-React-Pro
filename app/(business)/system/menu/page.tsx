@@ -422,7 +422,7 @@ export default function Menu() {
     Modal.confirm({
       title: "系统提示",
       icon: <ExclamationCircleFilled />,
-      content: `确定删除部门名称为“${record.deptName}”的数据项？`,
+      content: `确定删除菜单名称为“${record.menuName}”的数据项？`,
       onOk() {
         executeDeleteRow(record.menuId);
       },
