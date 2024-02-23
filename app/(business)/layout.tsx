@@ -1,52 +1,30 @@
 "use client";
 import {
-  ApiOutlined,
-  BookOutlined,
   ChromeFilled,
-  CodeOutlined,
-  EditOutlined,
+  ExclamationCircleFilled,
   GithubOutlined,
   HomeOutlined,
   LogoutOutlined,
   MenuOutlined,
-  MessageOutlined,
-  MonitorOutlined,
   QuestionCircleFilled,
   SearchOutlined,
-  ToolOutlined,
   UserOutlined,
-  ExclamationCircleFilled,
 } from "@ant-design/icons";
-import type { ProSettings } from "@ant-design/pro-components";
-import { ProLayout, ProConfigProvider } from "@ant-design/pro-components";
+import { ProConfigProvider, ProLayout } from "@ant-design/pro-components";
+import { Dropdown, Select, MenuProps, Modal, Tooltip, Input } from "antd";
+import type { SelectProps } from "antd";
 import { deleteCookie, getCookie } from "cookies-next";
-import { Dropdown, Input, MenuProps, Tooltip, Modal } from "antd";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  faAddressCard,
-  faBookAtlas,
-  faChalkboardUser,
-  faDatabase,
-  faDesktop,
-  faFileWaveform,
-  faGear,
-  faList,
-  faLocationArrow,
-  faMemory,
-  faReceipt,
-  faRectangleList,
-  faSitemap,
-  faTableCells,
-  faThumbtack,
-  faUsers,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { RouteInfo, UserInfo, IconMap } from "../_modules/definies";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { IconMap, RouteInfo, UserInfo } from "../_modules/definies";
 import "./styles.css";
 
-import { displayModeIsDark, fetchApi, watchDarkModeChange } from "../_modules/func";
+import {
+  displayModeIsDark,
+  fetchApi,
+  watchDarkModeChange,
+} from "../_modules/func";
 
 export default function RootLayout({
   children,
@@ -77,10 +55,26 @@ export default function RootLayout({
       setIsDark(matches);
     });
 
+    document.addEventListener("click", hideSearchInput);
+
     return () => {
       unsubscribe();
+      document.removeEventListener("click", hideSearchInput);
     };
   }, []);
+
+  //搜索按钮区域引用
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  //点击非搜索按钮区域，用于隐藏搜索框
+  const hideSearchInput = (e: any) => {
+    if (searchRef.current && !searchRef.current.contains(e.target)) {
+      //关闭搜索框
+      setShowSearch(false);
+      //清空搜索列表数据
+      setSearchListData([]);
+    }
+  };
 
   //是否展示搜索框
   const [showSearch, setShowSearch] = useState(false);
@@ -95,7 +89,6 @@ export default function RootLayout({
     if (key === "logout") {
       setIsLogoutShow(true);
     } else if (key === "profile") {
-      console.log("profile");
       push("/user/profile");
     }
   };
@@ -125,16 +118,26 @@ export default function RootLayout({
     }
   };
 
+  //缓存的菜单数据
+  const [menuData, setMenuData] = useState<any[]>([]);
+
   //获取菜单
   const getRoutes = async () => {
     const body = await fetchApi("/api/getRouters", push);
     const rootChildren: Array<RouteInfo> = new Array<RouteInfo>();
+    //搜索用的菜单列表
+    const searchMenuList: any[] = [];
 
     const indexRoute: RouteInfo = {
       path: "/home",
       name: "首页",
       icon: <HomeOutlined />,
     };
+
+    searchMenuList.push({
+      value: indexRoute.path,
+      text: indexRoute.name,
+    });
 
     rootChildren.push(indexRoute);
 
@@ -152,7 +155,13 @@ export default function RootLayout({
         };
 
         if (menu.children && menu.children.length > 0) {
-          getSubMenu(route, menu.children);
+          getSubMenu(
+            route,
+            menu.children,
+            route.name,
+            route.path,
+            searchMenuList
+          );
         }
         rootChildren.push(route);
       });
@@ -166,11 +175,17 @@ export default function RootLayout({
 
     rootChildren.push(bookHub);
 
-    console.log("menu:", rootChildren);
+    setMenuData(searchMenuList);
     return rootChildren;
   };
 
-  const getSubMenu = (parent: RouteInfo, menuChildren: any) => {
+  const getSubMenu = (
+    parent: RouteInfo,
+    menuChildren: any,
+    parentName: any,
+    parentPath: any,
+    searchMenuList: any[]
+  ) => {
     const routeChildren: Array<RouteInfo> = new Array<RouteInfo>();
     menuChildren.forEach((menu: any) => {
       const route: RouteInfo = {
@@ -186,7 +201,18 @@ export default function RootLayout({
       routeChildren.push(route);
 
       if (menu.children && menu.children.length > 0) {
-        getSubMenu(route, menu.children);
+        getSubMenu(
+          route,
+          menu.children,
+          parentName + " > " + route.name,
+          parentPath + "/" + route.path,
+          searchMenuList
+        );
+      } else {
+        searchMenuList.push({
+          text: parentName + " > " + menu.meta.title,
+          value: parentPath + "/" + route.path,
+        });
       }
     });
 
@@ -211,6 +237,26 @@ export default function RootLayout({
   //默认当前展示首页
   const pathName = usePathname();
   const [pathname, setPathname] = useState(pathName);
+
+  //搜索数据
+  const [searchListData, setSearchListData] = useState<SelectProps["options"]>(
+    []
+  );
+
+  //处理搜索
+  const handleSearch = (newValue: string) => {
+    if (newValue === "") {
+      return;
+    }
+
+    setSearchListData(menuData.filter((item) => item.text.includes(newValue)));
+  };
+
+  //点击选中搜索结果
+  const handleSearchChange = (path: string) => {
+    setPathname(path || "/index");
+    push(path);
+  };
 
   return (
     <ProConfigProvider dark={isDark}>
@@ -305,43 +351,48 @@ export default function RootLayout({
                 key="SearchOutlined"
                 aria-hidden
                 style={{
+                  height: "100%",
                   display: "flex",
                   alignItems: "center",
                 }}
-                onMouseDown={(e) => {
-                  console.log("search click");
-                  e.stopPropagation();
-                  e.preventDefault();
-                }}
+                ref={searchRef}
               >
                 <SearchOutlined
                   style={{
                     color: "var(--ant-primary-color)",
+                    marginRight: showSearch && 8,
+                    height: "100%",
                   }}
                   onClick={() => setShowSearch(!showSearch)}
                 />
+
                 {showSearch && (
-                  <Input
+                  <Select
+                    showSearch
+                    autoFocus
                     style={{
                       borderRadius: 4,
                       marginInlineEnd: 12,
                       backgroundColor: "rgba(0,0,0,0.03)",
+                      width: 300,
                     }}
-                    prefix={
-                      <SearchOutlined
-                        style={{
-                          color: "rgba(0, 0, 0, 0.15)",
-                        }}
-                      />
-                    }
-                    placeholder="搜索"
+                    suffixIcon={null}
+                    placeholder="搜索菜单"
                     variant="borderless"
+                    filterOption={false}
+                    notFoundContent={null}
+                    onSearch={handleSearch}
+                    onChange={handleSearchChange}
+                    options={(searchListData || []).map((d) => ({
+                      value: d.value,
+                      label: d.text,
+                    }))}
                   />
                 )}
               </div>
             ) : undefined,
             <Link
-              style={{ padding: "0 6px" }}
+              style={{ padding: "0 8px" }}
               key="github"
               href="https://github.com/mortise-and-tenon/RuoYi-React-Pro"
               target="_blank"
@@ -351,7 +402,7 @@ export default function RootLayout({
               </Tooltip>
             </Link>,
             <Link
-              style={{ padding: "0 6px" }}
+              style={{ padding: "0 8px" }}
               key="question"
               href="https://doc.ruoyi.vip/ruoyi-vue/"
               target="_blank"
