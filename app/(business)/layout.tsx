@@ -9,6 +9,8 @@ import {
   QuestionCircleFilled,
   SearchOutlined,
   UserOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
 } from "@ant-design/icons";
 import { ProConfigProvider, ProLayout } from "@ant-design/pro-components";
 import { Dropdown, Select, MenuProps, Modal, Tooltip, Input } from "antd";
@@ -55,6 +57,7 @@ export default function RootLayout({
       setIsDark(matches);
     });
 
+    //点击非搜索区域隐藏搜索框
     document.addEventListener("click", hideSearchInput);
 
     return () => {
@@ -258,6 +261,36 @@ export default function RootLayout({
     push(path);
   };
 
+  //页面是否全屏
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  //打开全屏
+  const openFullscreen = () => {
+    const element = document.documentElement;
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullScreen) {
+      element.webkitRequestFullScreen();
+    }
+
+    setIsFullscreen(true);
+  };
+
+  //关闭全屏
+  const closeFullscreen = () => {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullScreen) {
+      document.webkitExitFullScreen();
+    }
+
+    setIsFullscreen(false);
+  };
+
   return (
     <ProConfigProvider dark={isDark}>
       <ProLayout
@@ -411,6 +444,25 @@ export default function RootLayout({
                 <QuestionCircleFilled style={{ color: "gray" }} />
               </Tooltip>
             </Link>,
+            isFullscreen ? (
+              <FullscreenExitOutlined
+                style={{
+                  color: "var(--ant-primary-color)",
+                  marginRight: showSearch && 8,
+                  height: "100%",
+                }}
+                onClick={closeFullscreen}
+              />
+            ) : (
+              <FullscreenOutlined
+                style={{
+                  color: "var(--ant-primary-color)",
+                  marginRight: showSearch && 8,
+                  height: "100%",
+                }}
+                onClick={openFullscreen}
+              />
+            ),
           ];
         }}
         menuFooterRender={(props) => {
