@@ -430,9 +430,9 @@ export default function Menu() {
     });
   };
 
-  //确定删除选中的部门
-  const executeDeleteRow = async (roleId: any) => {
-    const body = await fetchApi(`${deleteAPI}/${roleId}`, push, {
+  //确定删除选中的菜单
+  const executeDeleteRow = async (menuId: any) => {
+    const body = await fetchApi(`${deleteAPI}/${menuId}`, push, {
       method: "DELETE",
     });
     if (body !== undefined) {
@@ -512,7 +512,7 @@ export default function Menu() {
           actions: [
             <ModalForm
               key="addmodal"
-              title="添加部门"
+              title="添加菜单"
               open={showAddModal}
               trigger={
                 <Button icon={<PlusOutlined />} type="primary">
@@ -717,7 +717,7 @@ export default function Menu() {
       />
       <ModalForm
         key="modifymodal"
-        title="修改部门"
+        title="修改菜单"
         formRef={modifyFormRef}
         open={isShowModifyDataModal}
         autoFocusFirstInput
