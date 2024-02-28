@@ -505,7 +505,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
         }}
@@ -591,7 +591,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
             });
           }}
           pagination={{
-            pageSize: defualtPageSize,
+            defualtPageSize: defualtPageSize,
             showQuickJumper: true,
             showSizeChanger: true,
           }}

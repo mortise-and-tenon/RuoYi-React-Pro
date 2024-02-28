@@ -428,7 +428,7 @@ export default function Post() {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,

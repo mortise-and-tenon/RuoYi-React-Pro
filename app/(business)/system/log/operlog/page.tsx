@@ -413,7 +413,7 @@ export default function OperLog() {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,

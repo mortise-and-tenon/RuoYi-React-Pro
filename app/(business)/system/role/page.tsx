@@ -687,7 +687,7 @@ export default function Role() {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,

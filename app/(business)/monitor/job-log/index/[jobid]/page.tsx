@@ -408,7 +408,7 @@ export default function JobLog({ params }: { params: { jobid: string } }) {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,

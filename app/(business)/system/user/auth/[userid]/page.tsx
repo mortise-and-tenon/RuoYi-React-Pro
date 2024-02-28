@@ -152,7 +152,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
               columns={columns}
               dataSource={roles}
               pagination={{
-                pageSize: defualtPageSize,
+                defualtPageSize: defualtPageSize,
                 showQuickJumper: true,
                 showSizeChanger: true,
                 // onChange: pageChange,

@@ -196,7 +196,7 @@ export default function Online() {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,

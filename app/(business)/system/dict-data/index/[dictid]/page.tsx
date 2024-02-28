@@ -531,7 +531,7 @@ export default function DictData({ params }: { params: { dictid: string } }) {
           });
         }}
         pagination={{
-          pageSize: defualtPageSize,
+          defualtPageSize: defualtPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,
