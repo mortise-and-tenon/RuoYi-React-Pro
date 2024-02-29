@@ -316,8 +316,8 @@ export default function OperLog() {
 
   //当前页数和每页条数
   const [page, setPage] = useState(1);
-  const defualtPageSize = 10;
-  const [pageSize, setPageSize] = useState(defualtPageSize);
+  const defaultPageSize = 10;
+  const [pageSize, setPageSize] = useState(defaultPageSize);
 
   const pageChange = (page: number, pageSize: number) => {
     setPage(page);
@@ -379,7 +379,7 @@ export default function OperLog() {
           });
         }}
         pagination={{
-          defualtPageSize: defualtPageSize,
+          defaultPageSize: defaultPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
           onChange: pageChange,

@@ -85,7 +85,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
   };
 
   //当前每页条数
-  const defualtPageSize = 10;
+  const defaultPageSize = 10;
 
   //提交按钮加载状态
   const [confirmLoding, setConfirmLoading] = useState(false);
@@ -152,7 +152,7 @@ export default function UserAuth({ params }: { params: { userid: string } }) {
               columns={columns}
               dataSource={roles}
               pagination={{
-                defualtPageSize: defualtPageSize,
+                defaultPageSize: defaultPageSize,
                 showQuickJumper: true,
                 showSizeChanger: true,
                 // onChange: pageChange,

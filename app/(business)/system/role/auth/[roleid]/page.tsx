@@ -470,7 +470,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
   const unallocateActionRef = useRef<ActionType>();
 
   //当前默认条数
-  const defualtPageSize = 10;
+  const defaultPageSize = 10;
 
   return (
     <PageContainer
@@ -505,7 +505,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
           });
         }}
         pagination={{
-          defualtPageSize: defualtPageSize,
+          defaultPageSize: defaultPageSize,
           showQuickJumper: true,
           showSizeChanger: true,
         }}
@@ -591,7 +591,7 @@ export default function RoleAuth({ params }: { params: { roleid: string } }) {
             });
           }}
           pagination={{
-            defualtPageSize: defualtPageSize,
+            defaultPageSize: defaultPageSize,
             showQuickJumper: true,
             showSizeChanger: true,
           }}
