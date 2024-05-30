@@ -991,9 +991,9 @@ export default function User() {
                       fieldProps={{
                         filterTreeNode: true,
                         showSearch: true,
-                        treeNodeFilterProp: "label",
+                        treeNodeFilterProp: "name",
                         fieldNames: {
-                          label: "label",
+                          label: "name",
                           value: "id",
                         },
                       }}
@@ -1143,7 +1143,7 @@ export default function User() {
                         treeNodeFilterProp: "label",
                         fieldNames: {
                           label: "label",
-                          value: "id",
+                          value: "key",
                         },
                       }}
                     />

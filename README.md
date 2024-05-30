@@ -73,6 +73,17 @@ npm i
 
 ## 项目运行
 
+- 配置本地环境变量
+
+1. 根目录下新建 `.env.local` 文件
+2. 配置 RuoYi 前后端分离版本中的[后端项目](https://github.com/yangzongzhuan/RuoYi-Vue)的访问地址，如：http://localhost:8080
+
+示例内容如下：
+
+```bash
+BACKEND_URL=http://localhost:8080
+```
+
 - 启动项目
 
 ```bash
